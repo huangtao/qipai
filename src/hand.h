@@ -1,0 +1,47 @@
+﻿/*
+*
+* code: huangtao117@gmail.com
+*
+*/
+#ifndef _HAND_H
+#define _HAND_H
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "card.h"
+
+/*
+ * represent a hand or a deck
+ */
+typedef struct hand_s{
+    int num;        /* current valid data number of array */
+    int max_size;   /* maximum number of array */
+    card_t* cards;  /* card array */
+}hand_t;
+
+/* for hand type calc */
+typedef struct hand_type_s{
+    int type;           /* type enum */
+    int num;            /* number */
+    int logic_value;    /* logic value */
+}hand_type;
+
+hand_t* hand_new(int max_size);
+void hand_free(hand_t* hand);
+void hand_zero(hand_t* hand);
+int hand_num(hand_t* hand);
+hand_t* hand_clone(hand_t* hand);
+card_t* hand_get(hand_t* hand, int n);
+int hand_push(hand_t* hand, card_t* card);
+int hand_pop(hand_t* hand, card_t* card);
+int hand_del(hand_t* hand, card_t* card);
+int hand_trim(hand_t* hand);
+/* print readable format */
+void hand_print(hand_t* hand, int line_number);
+const char* card_text(card_t* card);
+
+#ifdef __cplusplus
+}
+#endif
+#endif
