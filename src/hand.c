@@ -4,30 +4,43 @@
 #include <string.h>
 #include "ht_lch.h"
 
-static char c_suit[] = {'?','D','C','H','S','*'};
-static char c_rank[] = {'?','A','2','3','4','5','6','7','8','9','T','J','Q','K','F','Z'};
+static char c_suit[] = {'0','D','C','H','S','*','?'};
+static char c_rank[] = {'0','A','2','3','4','5','6','7','8','9','T','J','Q','K','F','Z','?'};
 
 hand_t* hand_new(int max_size)
 {
     int byte_size;
     hand_t* p;
+    card_t* cd;
 
     if(max_size <= 0)
         return 0;
 
-    byte_size = sizeof(hand_t) + sizeof(card_t) * max_size;
-    p = (hand_t*)malloc(byte_size);
-    if(p){
-        memset(p, 0, byte_size);
+    p = (hand_t*)malloc(sizeof(hand_t));
+    p->num = 0;
+    p->max_size = 0;
+    byte_size = sizeof(card_t) * max_size;
+    cd = (card_t*)malloc(byte_size);
+    if(cd){
+        memset(cd, 0, byte_size);
         p->max_size = max_size;
     }
+    p->cards = cd;
 
     return p;
 }
 
 void hand_free(hand_t* hand)
 {
-    free(hand);
+    if(hand){
+        if(hand->cards){
+            free(hand->cards);
+            hand->cards = 0;
+        }
+        hand->num = 0;
+        free(hand);
+        hand = 0;
+    }
 }
 
 void hand_zero(hand_t* hand)
@@ -72,10 +85,13 @@ hand_t* hand_clone(hand_t* hand)
     if(!hand)
         return 0;
 
-    byte_size = sizeof(hand_t) + hand->max_size * sizeof(card_t);
-    p = (hand_t*)malloc(byte_size);
+    byte_size = hand->max_size * sizeof(card_t);
+    p = (hand_t*)malloc(sizeof(hand_t));
     if(p){
-        memcpy(p, hand, byte_size);
+        p->cards = (card_t*)malloc(byte_size);
+        p->max_size = hand->max_size;
+        p->num = hand->num;
+        memcpy(p->cards, hand->cards, byte_size);
     }
 
     return p;
@@ -111,7 +127,7 @@ int hand_push(hand_t* hand, card_t* card)
     p->suit = card->suit;
     hand->num++;
 
-    return 0;
+    return hand->num;
 }
 
 int hand_pop(hand_t* hand, card_t* card)
@@ -127,9 +143,11 @@ int hand_pop(hand_t* hand, card_t* card)
     p = hand->cards + (hand->num - 1);
     card->suit = p->suit;
     card->rank = p->rank;
+    p->suit = 0;
+    p->rank = 0;
     hand->num--;
 
-    return 0;
+    return hand->num;
 }
 
 int hand_del(hand_t* hand, card_t* card)
@@ -145,6 +163,7 @@ int hand_del(hand_t* hand, card_t* card)
         if(p->suit == card->suit && p->rank == card->rank){
             p->suit = 0;
             p->rank = 0;
+            break;
         }
     }
 
@@ -153,34 +172,38 @@ int hand_del(hand_t* hand, card_t* card)
 
 int hand_trim(hand_t* hand)
 {
-    int i,j,num;
-    card_t *p1,*p2;
+    int i,num;
+    int byte_size;
+    card_t *tmp_cards,*p1,*p2;
 
     if(!hand)
         return HTERR_PARAM;
     if(hand->num < 1)
         return 0;
+        
+    byte_size = hand->max_size * sizeof(card_t);
+    tmp_cards = (card_t*)malloc(byte_size);
+    if(!p1)
+        return HTERR_OUTOFMEMORY;
+    memset((void*)tmp_cards, 0, byte_size);
 
     num = 0;
-    for(i = 0; i < hand->num; ++i){
-        p1 = hand->cards + i;
-        if(p1->suit == 0 && p1->rank == 0){
-            for(j = i + 1; j < hand->num; ++j){
-                p2 = hand->cards + j;
-                if(p2->suit || p2->rank){
-                    p1->rank = p2->rank;
-                    p1->suit = p2->suit;
-                    num++;
-                    p2->rank = p2->suit = 0;
-                    break;
-                }
-            }
-        }
-        else
+    p1 = tmp_cards;
+    p2 = hand->cards;
+    for(i = 0; i < hand->max_size; ++i){
+        if(p2->suit || p2->rank){
+            p1->suit = p2->suit;
+            p1->rank = p2->rank;
             num++;
+            p1++;
+        }
+        p2++;
     }
+    memcpy((void*)hand->cards, (const void*)tmp_cards, byte_size);
+    free((void*)tmp_cards);
+    hand->num = num;
 
-    return 0;
+    return num;
 }
 
 void hand_print(hand_t* hand, int line_number)
@@ -192,6 +215,27 @@ void hand_print(hand_t* hand, int line_number)
         return;
 
     for(i = 0; i < hand->num; ++i){
+        p = hand->cards + i;
+        printf("%c%c ", c_suit[p->suit], c_rank[p->rank]);
+        if((i+1) % line_number == 0){
+            printf("\n");
+        }
+    }
+    if(hand->num % line_number != 0)
+		printf("\n");
+}
+
+void hand_dump(hand_t* hand, int line_number)
+{
+    int i;
+    card_t* p;
+
+    if(!hand || !hand->cards){
+        printf("hand or cards is invalid pointer!\n");
+        return;
+    }
+
+    for(i = 0; i < hand->max_size; ++i){
         p = hand->cards + i;
         printf("%c%c ", c_suit[p->suit], c_rank[p->rank]);
         if((i+1) % line_number == 0){

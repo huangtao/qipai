@@ -1,4 +1,4 @@
-﻿/*
+/*
 *
 * code: huangtao117@gmail.com
 *
@@ -15,7 +15,7 @@ extern "C" {
 typedef struct deck_s{
     int num_pack;       /* number pack */
     int have_joker;     /* have_joker */
-    int card_advid;     /* card back image id */
+    int card_adv_id;    /* card back image id */
     int deal_index;     /* current deal card index */
     hand_t* poker;      /* all card */
 }deck_t;

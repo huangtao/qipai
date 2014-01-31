@@ -1,15 +1,11 @@
-﻿/*
-*
-* code: huangtao117@gmail.com
-*
-*/
+/* code: huangtao117@gmail.com */
 #ifndef _CARD_H
 #define _CARD_H
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* suit define */
+/* poker suit define */
 typedef enum card_suit
 {
     cdSuitNone,     /* none */
@@ -17,11 +13,12 @@ typedef enum card_suit
     cdSuitClub,     /* club */
     cdSuitHeart,    /* heart */
     cdSuitSpade,    /* spade */
-    cdSuitJoker     /* joker */
+    cdSuitJoker,    /* joker */
+    cdSuitUnknow    /* unknow suit(ob) */
 }cdSuit;
 
-/* rank define */
-typedef enum cd_rank
+/* poker rank define */
+typedef enum card_rank
 {
     cdRankNone = 0,
     cdRankAce,
@@ -66,7 +63,7 @@ typedef struct card_s{
 void card_init(card_t* card, const char* sn);
 int card_equal(card_t* a, card_t* b);
 char card_encode(card_t* card);
-void decode_card(card_t* card, char x);
+void card_decode(card_t* card, char x);
 
 ///* card collection oprate */
 //card_coll* card_coll_new(int max_size);

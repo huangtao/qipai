@@ -7,6 +7,10 @@
 static char c_suit[] = {'?','D','C','H','S','*'};
 static char c_rank[] = {'?','A','2','3','4','5','6','7','8','9','T','J','Q','K','F','Z'};
 
+void card_init(card_t* card, const char* sn)
+{
+}
+
 int card_equal(card_t* a, card_t* b)
 {
     if(!a || !b)

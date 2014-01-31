@@ -1,4 +1,4 @@
-﻿/*
+/*
 *
 * code: huangtao117@gmail.com
 *
@@ -33,12 +33,14 @@ void hand_zero(hand_t* hand);
 int hand_num(hand_t* hand);
 hand_t* hand_clone(hand_t* hand);
 card_t* hand_get(hand_t* hand, int n);
+/* push a card to hand and return card num */
 int hand_push(hand_t* hand, card_t* card);
 int hand_pop(hand_t* hand, card_t* card);
 int hand_del(hand_t* hand, card_t* card);
 int hand_trim(hand_t* hand);
 /* print readable format */
 void hand_print(hand_t* hand, int line_number);
+void hand_dump(hand_t* hand, int line_number);
 const char* card_text(card_t* card);
 
 #ifdef __cplusplus
