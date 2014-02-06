@@ -32,10 +32,15 @@ void hand_free(hand_t* hand);
 void hand_zero(hand_t* hand);
 int hand_num(hand_t* hand);
 hand_t* hand_clone(hand_t* hand);
+/* initialize hand from a string */
+void hand_from_string(hand_t* hand, char* string);
 card_t* hand_get(hand_t* hand, int n);
-/* push a card to hand and return card num */
+/* hand have this card */
+int hand_have(hand_t* hand, card_t* card);
+/* push/pop a card to hand and return card num */
 int hand_push(hand_t* hand, card_t* card);
 int hand_pop(hand_t* hand, card_t* card);
+/* delete a card from hand */
 int hand_del(hand_t* hand, card_t* card);
 int hand_trim(hand_t* hand);
 /* print readable format */

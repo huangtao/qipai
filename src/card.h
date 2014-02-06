@@ -34,8 +34,8 @@ typedef enum card_rank
     cdRankJ,        /* jack */
     cdRankQ,        /* queen */
     cdRankK,        /* king */
-    cdRankFJoker,   /* small joker */
-    cdRankZJoker,   /* big joker */
+    cdRankSJoker,   /* small joker */
+    cdRankBJoker,   /* big joker */
     cdRankUnknow    /* unknow rank(ob) */
 }cdRank;
 

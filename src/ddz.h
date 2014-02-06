@@ -1,6 +1,6 @@
-﻿/*
+/*
 *
-* code: huangtao117@gmail.com
+* code:huangtao117@gmail.com
 *
 */
 #ifndef _DDZ_H
@@ -64,12 +64,15 @@ void ddz_free(ddz_t* ddz);
 void ddz_start(ddz_t* ddz);      /* start a new game */
 int ddz_get_state(ddz_t* ddz);
 void ddz_set_state(ddz_t* ddz, int state);
+const char* ddz_htype_name(hand_type* htype);
 void ddz_sort(hand_t* coll);
-int ddz_playcards(ddz_t* ddz, int player_no, hand_t* coll);
-int ddz_canplay(ddz_t* ddz, hand_t* coll, hand_type* cdtype);
+void ddz_handtype(hand_t* hand, hand_type* htype);
+int ddz_play(ddz_t* ddz, int player_no, hand_t* hand);
+int ddz_canplay(ddz_t* ddz, hand_t* hand, hand_type* htype);
 void ddz_next_player(ddz_t* ddz);
 int ddz_call(ddz_t* ddz, int call_no, int fen);
 int ddz_pass(ddz_t* ddz, int player_no);
+void ddz_dump(ddz_t* ddz);
 
 #ifdef __cplusplus
 }

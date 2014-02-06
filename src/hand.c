@@ -3,9 +3,10 @@
 #include <stdio.h>
 #include <string.h>
 #include "ht_lch.h"
+#include "ht_str.h"
 
 static char c_suit[] = {'0','D','C','H','S','*','?'};
-static char c_rank[] = {'0','A','2','3','4','5','6','7','8','9','T','J','Q','K','F','Z','?'};
+static char c_rank[] = {'0','A','2','3','4','5','6','7','8','9','T','J','Q','K','S','B','?'};
 
 hand_t* hand_new(int max_size)
 {
@@ -95,6 +96,67 @@ hand_t* hand_clone(hand_t* hand)
     }
 
     return p;
+}
+
+/* note:string's format must be "DA,D2,..." */
+void hand_from_string(hand_t* hand, char* string)
+{
+    int i,j,len,num;
+    int realnum;
+    char **v;
+    char *p;
+    card_t card;
+    
+    if(!hand || !string)
+        return;
+    
+    len = strlen(string);
+    if(len < 2 || (len + 1) % 3 != 0)
+        return;
+    num = (len + 1) / 3;
+    v = (char**)malloc(sizeof(char*) * num);
+    memset(v, 0, sizeof(char*) * num);
+    
+    realnum = ht_string_split(string, v, num, ",");
+    if(realnum > 0)
+        hand_zero(hand);
+    for(i = 0; i < realnum; i++){
+        p = v[i];
+        card.suit = card.rank = 0;
+        for(j = 0; j < 7; j++){
+            if(*p == c_suit[j]){
+                card.suit = j;
+                break;
+            }
+        }
+        for(j = 0; j < 17; j++){
+            if(*(p+1) == c_rank[j]){
+                card.rank = j;
+                break;
+            }
+        }
+        hand_push(hand, &card);
+    }
+    
+    free(v);
+}
+
+int hand_have(hand_t* hand, card_t* card)
+{
+    int i;
+    card_t* p;
+    
+    if(!hand || !card)
+        return 0;
+    
+    p = hand->cards;
+    for(i = 0; i < hand->num; i++,p++){
+        if(p->suit != card->suit || p->rank != card->rank)
+            continue;
+        return 1;
+    }
+    
+    return 0;
 }
 
 card_t* hand_get(hand_t* hand, int n)
@@ -242,13 +304,13 @@ void hand_dump(hand_t* hand, int line_number)
             printf("\n");
         }
     }
-    if(hand->num % line_number != 0)
-		printf("\n");
 }
 
 const char* card_text(card_t* card)
 {
     static char readable[8];
+    
+    memset(readable, 0, 8);
     if(!card)
         return 0;
 

@@ -24,19 +24,27 @@ deck_t* deck_new(int number, int have_joker)
         return 0;
     }
     deck->num_pack = number;
-    deck->card_advid = 0;
+    deck->card_adv_id = 0;
     deck->deal_index = 0;
     deck->have_joker = have_joker;
 
     idx = 0;
     p = deck->poker->cards;
     for(i = 0; i < number; ++i){
-        for(j = cdSuitDiamond; j < cdSuitSpade; ++j){
-            for(k = cdRankAce; k < cdRankK; ++k){
+        for(j = cdSuitDiamond; j <= cdSuitSpade; ++j){
+            for(k = cdRankAce; k <= cdRankK; ++k){
                 p->rank = k;
                 p->suit = j;
                 p++;
             }
+        }
+        if(have_joker){
+            p->suit = cdSuitJoker;
+            p->rank = cdRankSJoker;
+            p++;
+            p->suit = cdSuitJoker;
+            p->rank = cdRankBJoker;
+            p++;
         }
     }
     deck->poker->num = number * n;
@@ -57,7 +65,7 @@ void deck_free(deck_t* deck)
 
 void deck_shuffle(deck_t* deck)
 {
-    int i;
+    int i,n;
     int a,b;
     card_t temp;
     card_t *pa, *pb;
@@ -65,7 +73,8 @@ void deck_shuffle(deck_t* deck)
     if(!deck || !deck->poker)
         return;
 
-    for(i = 0; i < 1000; ++i){
+    n = 1000 + rand() % 50;
+    for(i = 0; i < n; ++i){
         a = rand() % deck->poker->num;
         b = rand() % deck->poker->num;
         if(a != b){
@@ -104,10 +113,6 @@ int deck_deal(deck_t* deck, card_t* card)
     }
 
     return HTERR_NOCARD;
-}
-
-void deck_cut(deck_t* deck, int index)
-{
 }
 
 int deck_get(deck_t* deck, int index, card_t* card)

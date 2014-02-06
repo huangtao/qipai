@@ -246,7 +246,7 @@ void texas_handtype(hand_t* hand, hand_type* htype)
     return;
 }
 
-void gp_next_player(texas_t* texas)
+void texas_next_player(texas_t* texas)
 {
     if(!texas)
         return;
