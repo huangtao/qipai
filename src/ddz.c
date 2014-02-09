@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "sort_card.h"
+#include "ht_lch.h"
 #include "ht_str.h"
 
 #define DECK_FU     1
@@ -115,6 +116,7 @@ void ddz_start(ddz_t* ddz)
 
     ddz->game_state = DDZ_GAME_CALL;
     ddz->inning++;
+    ddz->landlord_win = 0;
     /* the first inning call random */
 	if(ddz->inning == 1)
         ddz->first_player_no = rand() % DDZ_MAX_PLAYER;
@@ -357,23 +359,23 @@ int ddz_play(ddz_t* ddz, int player_no, hand_t* hand)
     card_t* plast;
 
     if(!hand)
-        return 0;
+        return HTERR_PARAM;
 
     if(ddz->game_state != DDZ_GAME_PLAY){
         if(ddz->debug)
             printf("play cards but game state not play.\n");
-        return 0;
+        return HTERR_STATE;
     }
     if(player_no != ddz->curr_player_no){
         if(ddz->debug)
             printf("play cards but not this no.\n");
-        return 0;
+        return -1001;
     }
 
     if(hand->num == 0){
         if(ddz->debug)
             printf("play zero cards.\n");
-        return 0;
+        return HTERR_PARAM;
     }
 
     for(i = 0; i < hand->num; ++i){
@@ -383,17 +385,19 @@ int ddz_play(ddz_t* ddz, int player_no, hand_t* hand)
                 printf("play cards but player hasn't this card(%s).\n",
                     card_text(card));
             }
-            return 0;
+            return HTERR_NOCARD;
         }
     }
 
     ddz_handtype(hand, &htype);
 
     /* can play out these cards */
-    if(!ddz_canplay(ddz, hand, &htype)){
-        if(ddz->debug)
-            printf("cann't play these cards(smaller).\n");
-        return 0;
+    if(ddz->largest_player_no != player_no){
+        if(!ddz_canplay(ddz, hand, &htype)){
+            if(ddz->debug)
+                printf("cann't play these cards(smaller).\n");
+            return -1002;
+        }
     }
 
     /* player play these cards */
@@ -411,8 +415,17 @@ int ddz_play(ddz_t* ddz, int player_no, hand_t* hand)
     ddz->last_htype.logic_value = htype.logic_value;
     ddz->last_htype.num = htype.num;
     ddz->largest_player_no = player_no;
-
-    ddz_next_player(ddz);
+    
+    hand_trim(ddz->players[player_no].mycards);
+    if(hand_num(ddz->players[player_no].mycards))
+        ddz_next_player(ddz);
+    else{
+        ddz->game_state = DDZ_GAME_END;
+        if(player_no == ddz->landlord_no)
+            ddz->landlord_win = 1;
+        else
+            ddz->landlord_win = 0;
+    }
 
     return 1;
 }

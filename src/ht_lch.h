@@ -14,5 +14,7 @@
 #define HTERR_OUTOFRANGE        -3
 #define HTERR_NOINIT            -4
 #define HTERR_NOCARD            -5
+#define HTERR_STATE             -6
+#define HTERR_RULE              -7
 
 #endif

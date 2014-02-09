@@ -45,6 +45,7 @@ typedef struct ddz_s{
     int curr_turn_time; /* current turn left time */
     int round;
     int inning;
+    int landlord_win;   /* is landlord win */
 
     int landlord_no;        /* landloard no. */
     int first_player_no;    /* first player no. */
