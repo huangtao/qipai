@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "ht_lch.h"
 #include "sort_card.h"
 
 /* this is zhuji's rule */
@@ -29,7 +30,7 @@ gp_t* gp_new()
     gp = (gp_t*)malloc(sizeof(gp_t));
     if(!gp)
         return 0;
-    gp->deck = deck_new(DECK_FU, 1);
+    gp->deck = deck_new(DECK_FU, 0);
     if(!gp->deck){
         gp_free(gp);
         return 0;
@@ -64,6 +65,7 @@ gp_t* gp_new()
     gp->game_state = GP_GAME_END;
     gp->inning = 0;
     gp->turn_time = 30;
+    gp->player_num = 3;
 
     for(i = 0; i < GP_MAX_PLAYER; i++){
         card_player_init(&(gp->players[i]), MAX_CARDS);
@@ -138,6 +140,8 @@ void gp_start(gp_t* gp)
                 }
             }
         }
+        else
+            hand_zero(gp->players[2].mycards);
     }
 
     /* the first player */
@@ -344,7 +348,7 @@ void gp_cardtype(hand_t* hand, hand_type* htype)
     return;
 }
 
-int gp_playcards(gp_t* gp, int player_no, hand_t* hand)
+int gp_play(gp_t* gp, int player_no, hand_t* hand)
 {
     int i;
     hand_type cd_type;
@@ -352,23 +356,23 @@ int gp_playcards(gp_t* gp, int player_no, hand_t* hand)
     card_t* plast;
 
     if(!hand)
-        return 0;
+        return HTERR_PARAM;
 
     if(gp->game_state != GP_GAME_PLAY){
         if(gp->debug)
             printf("play cards but game state not play.\n");
-        return 0;
+        return HTERR_STATE;
     }
     if(player_no != gp->curr_player_no){
         if(gp->debug)
             printf("play cards but not this no.\n");
-        return 0;
+        return -1001;
     }
 
     if(hand->num == 0){
         if(gp->debug)
             printf("play zero cards.\n");
-        return 0;
+        return HTERR_PARAM;
     }
 
     for(i = 0; i < hand->num; ++i){
@@ -378,17 +382,19 @@ int gp_playcards(gp_t* gp, int player_no, hand_t* hand)
                 printf("play cards but player hasn't this card(%s).\n",
                     card_text(card));
             }
-            return 0;
+            return HTERR_NOCARD;
         }
     }
 
     gp_cardtype(hand, &cd_type);
 
     /* can play out these cards */
-    if(!gp_canplay(gp, hand, &cd_type)){
-        if(gp->debug)
-            printf("cann't play these cards(smaller).\n");
-        return 0;
+    if(gp->largest_player_no != player_no){
+        if(!gp_canplay(gp, hand, &cd_type)){
+            if(gp->debug)
+                printf("cann't play these cards(smaller).\n");
+            return -1002;
+        }
     }
 
     /* player play these cards */
@@ -407,7 +413,12 @@ int gp_playcards(gp_t* gp, int player_no, hand_t* hand)
     gp->last_htype.num = cd_type.num;
     gp->largest_player_no = player_no;
 
-    gp_next_player(gp);
+    hand_trim(gp->players[player_no].mycards);
+    if(hand_num(gp->players[player_no].mycards))
+        gp_next_player(gp);
+    else{
+        gp->game_state = GP_GAME_END;
+    }
 
     return 1;
 }
@@ -442,7 +453,7 @@ void gp_next_player(gp_t* gp)
     if(!gp)
         return;
     gp->curr_player_no++;
-    if(gp->curr_player_no >= GP_MAX_PLAYER)
+    if(gp->curr_player_no >= gp->player_num)
         gp->curr_player_no = 0;
 }
 
@@ -459,3 +470,29 @@ int gp_pass(gp_t* gp, int player_no)
 
     return 1;
 }
+
+void gp_dump(gp_t* gp)
+{
+    if(!gp)
+        return;
+    
+    printf("player number:%d\n", gp->player_num);
+        
+    /* dump player's cards */
+    printf("players cards:\n");
+    hand_dump(gp->players[0].mycards, 10);
+    printf("\n");
+    hand_dump(gp->players[1].mycards, 10);
+    printf("\n");
+    if(gp->player_num > 2){
+        hand_dump(gp->players[2].mycards, 10);
+        printf("\n");
+    }
+    
+    printf("last hand:\n");
+    hand_dump(gp->last_hand, 10);
+    printf("\n");
+    
+    printf("current player no is %d\n", gp->curr_player_no);
+}
+

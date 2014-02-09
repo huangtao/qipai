@@ -543,6 +543,7 @@ void ddz_dump(ddz_t* ddz)
     printf("call:%d,%d,%d\n", ddz->call[0], ddz->call[1], ddz->call[2]);
         
     /* dump player's cards */
+    printf("players cards:\n");
     hand_dump(ddz->players[0].mycards, 10);
     printf("\n");
     hand_dump(ddz->players[1].mycards, 10);
@@ -550,7 +551,10 @@ void ddz_dump(ddz_t* ddz)
     hand_dump(ddz->players[2].mycards, 10);
     printf("\n");
     
+    printf("last hand:\n");
     hand_dump(ddz->last_hand, 10);
+    printf("\n");
     
     printf("current player no is %d\n", ddz->curr_player_no);
 }
+

@@ -1,4 +1,4 @@
-﻿/*
+/*
 *
 * code: huangtao117@gmail.com
 *
@@ -61,11 +61,11 @@ void gp_start(gp_t* gp);      /* start a new game */
 int gp_get_state(gp_t* gp);
 void gp_set_state(gp_t* gp, int state);
 void gp_sort(hand_t* hand);
-int gp_playcards(gp_t* gp, int player_no, hand_t* coll);
-int gp_canplay(gp_t* gp, hand_t* coll, hand_type* cdtype);
+int gp_play(gp_t* gp, int player_no, hand_t* hand);
+int gp_canplay(gp_t* gp, hand_t* hand, hand_type* cdtype);
 void gp_next_player(gp_t* gp);
 int gp_pass(gp_t* gp, int player_no);
-
+void gp_dump(gp_t* gp);
 
 #ifdef __cplusplus
 }
