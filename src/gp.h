@@ -61,6 +61,8 @@ void gp_start(gp_t* gp);      /* start a new game */
 int gp_get_state(gp_t* gp);
 void gp_set_state(gp_t* gp, int state);
 void gp_sort(hand_t* hand);
+const char* gp_htype_name(hand_type* htype);
+void gp_handtype(hand_t* hand, hand_type* htype);
 int gp_play(gp_t* gp, int player_no, hand_t* hand);
 int gp_canplay(gp_t* gp, hand_t* hand, hand_type* cdtype);
 void gp_next_player(gp_t* gp);

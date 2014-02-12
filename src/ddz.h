@@ -65,8 +65,8 @@ void ddz_free(ddz_t* ddz);
 void ddz_start(ddz_t* ddz);      /* start a new game */
 int ddz_get_state(ddz_t* ddz);
 void ddz_set_state(ddz_t* ddz, int state);
-const char* ddz_htype_name(hand_type* htype);
 void ddz_sort(hand_t* coll);
+const char* ddz_htype_name(hand_type* htype);
 void ddz_handtype(hand_t* hand, hand_type* htype);
 int ddz_play(ddz_t* ddz, int player_no, hand_t* hand);
 int ddz_canplay(ddz_t* ddz, hand_t* hand, hand_type* htype);

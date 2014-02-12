@@ -143,32 +143,6 @@ void ddz_set_state(ddz_t* ddz, int state)
     }
 }
 
-const char* ddz_htype_name(hand_type* htype)
-{
-    static char* htype_name[] = {
-        "DDZ_ERROR",
-        "DDZ_SINGLE",
-        "DDZ_DOUBLE",
-        "DDZ_THREE",
-        "DDZ_STRAIGHT",
-        "DDZ_D_STRAIGHT",
-        "DDZ_T_STRAIGHT",
-        "DDZ_THREE_P1",
-        "DDZ_THREE_P2",
-        "DDZ_FOUR_2S",
-        "DDZ_FOUR_2D",
-        "DDZ_BOMB",
-        "DDZ_ATOM"
-        };
-    
-    if(htype){
-        if(htype->type <= 12)
-            return htype_name[htype->type];
-    }
-    
-    return htype_name[0];
-}
-
 void ddz_sort(hand_t* hand)
 {
     cards_sort(hand);
@@ -205,6 +179,32 @@ void ddz_analyse(hand_t* hand, analyse_r* ar)
             break;
         }
     }
+}
+
+const char* ddz_htype_name(hand_type* htype)
+{
+    static char* htype_name[] = {
+        "DDZ_ERROR",
+        "DDZ_SINGLE",
+        "DDZ_DOUBLE",
+        "DDZ_THREE",
+        "DDZ_STRAIGHT",
+        "DDZ_D_STRAIGHT",
+        "DDZ_T_STRAIGHT",
+        "DDZ_THREE_P1",
+        "DDZ_THREE_P2",
+        "DDZ_FOUR_2S",
+        "DDZ_FOUR_2D",
+        "DDZ_BOMB",
+        "DDZ_ATOM"
+        };
+    
+    if(htype){
+        if(htype->type <= 12)
+            return htype_name[htype->type];
+    }
+    
+    return htype_name[0];
 }
 
 void ddz_handtype(hand_t* hand, hand_type* htype)

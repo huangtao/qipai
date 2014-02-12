@@ -207,7 +207,32 @@ void gp_analyse(hand_t* hand, analyse_r* ar)
     }
 }
 
-void gp_cardtype(hand_t* hand, hand_type* htype)
+const char* gp_htype_name(hand_type* htype)
+{
+    static char* htype_name[] = {
+        "GP_ERROR",
+        "GP_SINGLE",
+        "GP_DOUBLE",
+        "GP_THREE",
+        "GP_STRAIGHT",
+        "GP_D_STRAIGHT",
+        "GP_T_STRAIGHT",
+        "GP_THREE_P1",
+        "GP_THREE_P2",
+        "GP_PLANE",
+        "GP_FOUR_P3",
+        "GP_BOMB"
+        };
+    
+    if(htype){
+        if(htype->type <= 11)
+            return htype_name[htype->type];
+    }
+    
+    return htype_name[0];
+}
+
+void gp_handtype(hand_t* hand, hand_type* htype)
 {
     int flag,i;
     analyse_r ar;
@@ -351,7 +376,7 @@ void gp_cardtype(hand_t* hand, hand_type* htype)
 int gp_play(gp_t* gp, int player_no, hand_t* hand)
 {
     int i;
-    hand_type cd_type;
+    hand_type htype;
     card_t* card;
     card_t* plast;
 
@@ -386,11 +411,11 @@ int gp_play(gp_t* gp, int player_no, hand_t* hand)
         }
     }
 
-    gp_cardtype(hand, &cd_type);
+    gp_handtype(hand, &htype);
 
     /* can play out these cards */
     if(gp->largest_player_no != player_no){
-        if(!gp_canplay(gp, hand, &cd_type)){
+        if(!gp_canplay(gp, hand, &htype)){
             if(gp->debug)
                 printf("cann't play these cards(smaller).\n");
             return -1002;
@@ -408,9 +433,9 @@ int gp_play(gp_t* gp, int player_no, hand_t* hand)
         plast++;
         gp->last_hand->num++;
     }
-    gp->last_htype.type = cd_type.type;
-    gp->last_htype.logic_value = cd_type.logic_value;
-    gp->last_htype.num = cd_type.num;
+    gp->last_htype.type = htype.type;
+    gp->last_htype.logic_value = htype.logic_value;
+    gp->last_htype.num = htype.num;
     gp->largest_player_no = player_no;
 
     hand_trim(gp->players[player_no].mycards);
