@@ -14,16 +14,16 @@ int card_compare(const void* a, const void* b)
         return 0;
 
     if(table_rank[card1->rank] < table_rank[card2->rank])
-        return -1;
+        return 1;
 
     if(table_rank[card1->rank] > table_rank[card2->rank])
-        return 1;
+        return -1;
 
     if(table_rank[card1->rank] == table_rank[card2->rank]){
         if(table_suit[card1->suit] < table_suit[card2->suit])
-            return -1;
-        if(table_suit[card1->suit] > table_suit[card2->suit])
             return 1;
+        if(table_suit[card1->suit] > table_suit[card2->suit])
+            return -1;
 
         return 0;
     }

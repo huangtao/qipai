@@ -58,3 +58,7 @@ libqp.gp_handtype(h,ht)
 libqp.hand_print(h,10)
 print libqp.gp_htype_name(ht)
 
+libqp.hand_from_string(h,"D3,S4,H6,H5,C7,S2,D8");
+libqp.gp_handtype(h,ht)
+libqp.hand_print(h,10)
+print libqp.gp_htype_name(ht)
