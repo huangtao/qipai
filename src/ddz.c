@@ -401,8 +401,8 @@ int ddz_play(ddz_t* ddz, int player_no, hand_t* hand)
     }
 
     /* player play these cards */
+    hand_zero(ddz->last_hand);
     plast = ddz->last_hand->cards;
-    ddz->last_hand->num = 0;
     for(i = 0; i < hand->num; ++i){
         card = hand->cards + i;
         card_player_play(&ddz->players[player_no], card);
@@ -436,6 +436,8 @@ int ddz_canplay(ddz_t* ddz, hand_t* hand, hand_type* htype)
         return 0;
 
     if(ddz->last_hand->num == 0)
+        return 1;
+    if(ddz->largest_player_no == ddz->curr_player_no)
         return 1;
     if(htype->type == DDZ_ERROR)
         return 0;
@@ -523,6 +525,10 @@ int ddz_pass(ddz_t* ddz, int player_no)
     if(player_no != ddz->curr_player_no)
         return 0;
     if(ddz->game_state == DDZ_GAME_END)
+        return 0;
+    if(ddz->last_hand->num == 0)
+        return 0;
+    if(ddz->largest_player_no == player_no)
         return 0;
 
     ddz_next_player(ddz);

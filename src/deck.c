@@ -73,6 +73,7 @@ void deck_shuffle(deck_t* deck)
     if(!deck || !deck->poker)
         return;
 
+    deck->deal_index = 0;
     n = 1000 + rand() % 50;
     for(i = 0; i < n; ++i){
         a = rand() % deck->poker->num;

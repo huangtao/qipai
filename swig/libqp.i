@@ -40,6 +40,12 @@ card_t* ddz_get_di(ddz_t* ddz, int index){
     else
         return 0;
 }
+int ddz_landlord_call(ddz_t* ddz){
+    if(ddz)
+        return ddz->call[ddz->landlord_no];
+    else
+        return 0;
+}
 %}
 
 
