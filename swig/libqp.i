@@ -22,6 +22,7 @@
 
 /* helper function */
 %inline %{
+/* ddz */
 card_player_t* ddz_get_player(ddz_t* ddz, int player_no){
     if(ddz && player_no >= 0 && player_no < 3)
         return &(ddz->players[player_no]);
@@ -43,6 +44,19 @@ card_t* ddz_get_di(ddz_t* ddz, int index){
 int ddz_landlord_call(ddz_t* ddz){
     if(ddz)
         return ddz->call[ddz->landlord_no];
+    else
+        return 0;
+}
+/* gp */
+card_player_t* gp_get_player(gp_t* gp, int player_no){
+    if(gp && player_no >= 0 && player_no < gp->player_num)
+        return &(gp->players[player_no]);
+    else
+        return 0;
+}
+hand_t* gp_get_player_hand(card_player_t* player){
+    if(player)
+        return player->mycards;
     else
         return 0;
 }

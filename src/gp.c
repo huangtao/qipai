@@ -107,6 +107,7 @@ void gp_start(gp_t* gp)
     }
     hand_zero(gp->last_hand);
     gp->last_htype.type = 0;
+    gp->last_htype.logic_value = 0;
 
     /* draw 15 cards for every player */
     d3.suit = cdSuitDiamond;
