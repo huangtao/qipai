@@ -2,12 +2,15 @@
 import wx
 import libqp
 
+USE_BUFFERED_DC = True
+
 class GameFrame(wx.Frame):
     """ Draw a line to a pannel."""
     
     def __init__(self, parent, title):
         wx.Frame.__init__(self, parent, title=title, size=(820,580))
         self.Bind(wx.EVT_PAINT, self.OnPaint)
+        self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
         self.Bind(wx.EVT_SIZE, self.OnSize)
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
         self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
@@ -61,6 +64,8 @@ class GameFrame(wx.Frame):
             player = libqp.ddz_get_player(self.ddz, i)
             hand = libqp.ddz_get_player_hand(player)
             libqp.cards_sort(hand)
+        # recalc all rect
+        self.CalcRect()
         self.Refresh()        
     
     def ButtonStartClick(self, e):
@@ -69,7 +74,10 @@ class GameFrame(wx.Frame):
     def OnPaint(self, e):
         width, height = self.GetClientSize()
         
-        dc = wx.PaintDC(self)
+        if USE_BUFFERED_DC:
+            dc = wx.BufferedPaintDC(self, self._Buffer)
+        else:
+            dc = wx.PaintDC(self)
         brBack = wx.Brush('#053154', wx.SOLID);
         dc.SetBackground(brBack)
         dc.Clear()
@@ -126,11 +134,19 @@ class GameFrame(wx.Frame):
         # info
         dz_no = self.ddz.landlord_no
         dz_call = libqp.ddz_landlord_call(self.ddz)
-        info = "landlord:player%d\ncall:%d\nstate:%d\nlast type:%d"%(dz_no,dz_call,self.ddz.game_state,self.ddz.last_htype.type)
+        info = "landlord:player%d\n" % (dz_no)
+        info += "call:%d\n" % (dz_call)
+        info += "state:%d\n" % (self.ddz.game_state)
+        info += "last hand:%d" % (self.ddz.last_htype.type)
+        info += ",%d\n" % (self.ddz.last_htype.logic_value)
         dc.DrawText(info, 0, 0)
         #dc.SetPen(wx.Pen('#007F0F', 4))
         #dc.DrawLine(0, 0, 50, 50)
-        
+    
+    def OnEraseBackground(self, e):
+        # Do nothing, to avoid flashing on MSW
+        pass
+
     def OnLeftDown(self, e):
         pokerW, pokerH = self.bmpPoker['0'].GetSize()
         pt = e.GetPosition()
@@ -218,14 +234,10 @@ class GameFrame(wx.Frame):
                     self.flag_up[i] = 0
             if flag > 0:
                 self.Refresh()
-                
-    # reponse window resize
-    def OnSize(self, e):
+    
+    def CalcRect(self):
         width, height = self.GetClientSize()
         pokerW, pokerH = self.bmpPoker['0'].GetSize()
-        
-        self.btn_start.MoveXY(width - 110, height - 50)
-        
         y = height
         for i in range(0, 3):
             self.rcHand[2-i].SetY(y - pokerH)
@@ -235,7 +247,14 @@ class GameFrame(wx.Frame):
             self.rcHand[2-i].SetWidth(pokerW + (num - 1) * self.pokerOffsetW)
             self.rcHand[2-i].SetHeight(pokerH)
             y = y - pokerH - self.blankH
+
+    # reponse window resize
+    def OnSize(self, e):
+        width, height = self.GetClientSize()
+        self._Buffer = wx.EmptyBitmap(width, height)
         
+        self.btn_start.MoveXY(width - 110, height - 50)
+        self.CalcRect()        
         self.Refresh()
         
 app = wx.App(False)

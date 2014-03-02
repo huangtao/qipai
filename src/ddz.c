@@ -89,6 +89,7 @@ void ddz_start(ddz_t* ddz)
     }
     hand_zero(ddz->last_hand);
     ddz->last_htype.type = 0;
+    ddz->last_htype.logic_value = 0;
 
     /* draw 17 cards for every player */
     for(i = 0; i < 17; ++i){
@@ -447,9 +448,9 @@ int ddz_canplay(ddz_t* ddz, hand_t* hand, hand_type* htype)
         return 1;
 
     if(ddz->last_htype.type == DDZ_BOMB && htype->type != DDZ_BOMB)
-        return 1;
-    if(ddz->last_htype.type != DDZ_BOMB && htype->type == DDZ_BOMB)
         return 0;
+    if(ddz->last_htype.type != DDZ_BOMB && htype->type == DDZ_BOMB)
+        return 1;
 
     if(ddz->last_htype.type != htype->type ||
         ddz->last_hand->num != hand->num)
