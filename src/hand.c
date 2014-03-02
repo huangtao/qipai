@@ -245,7 +245,7 @@ int hand_trim(hand_t* hand)
         
     byte_size = hand->max_size * sizeof(card_t);
     tmp_cards = (card_t*)malloc(byte_size);
-    if(!p1)
+    if(!tmp_cards)
         return HTERR_OUTOFMEMORY;
     memset((void*)tmp_cards, 0, byte_size);
 

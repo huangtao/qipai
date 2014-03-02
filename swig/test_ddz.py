@@ -6,7 +6,7 @@ class GameFrame(wx.Frame):
     """ Draw a line to a pannel."""
     
     def __init__(self, parent, title):
-        wx.Frame.__init__(self, parent, title=title, size=(800,500))
+        wx.Frame.__init__(self, parent, title=title, size=(820,580))
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_SIZE, self.OnSize)
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
@@ -39,10 +39,10 @@ class GameFrame(wx.Frame):
         bmp.LoadFile("../data/poker/JB.png", wx.BITMAP_TYPE_ANY)
         self.bmpPoker['*B'] = bmp
         
-        self.infoW = 60
+        self.infoW = 58
         self.blankH = 30
-        self.upH = 15
-        self.pokerOffsetW = 18
+        self.upH = 19
+        self.pokerOffsetW = 21
         self.rcHand = []
         self.rcHand.append(wx.Rect(self.infoW, 0, 0, 0))
         self.rcHand.append(wx.Rect(self.infoW, 0, 0, 0))
@@ -112,7 +112,7 @@ class GameFrame(wx.Frame):
             keyname = libqp.card_text(card)
             dc.DrawBitmap(self.bmpPoker[keyname],
                 x, self.rcHand[0].GetY(), 0)
-            x = x + pokerW + 2
+            x = x + pokerW + 1
         
         # draw last hand
         num = libqp.hand_num(self.ddz.last_hand)

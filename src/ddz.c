@@ -435,8 +435,10 @@ int ddz_canplay(ddz_t* ddz, hand_t* hand, hand_type* htype)
     if(!ddz || !hand || !htype)
         return 0;
 
-    if(ddz->last_hand->num == 0)
-        return 1;
+    if(ddz->last_hand->num == 0){
+        if(htype->type != DDZ_ERROR)
+            return 1;
+    }
     if(ddz->largest_player_no == ddz->curr_player_no)
         return 1;
     if(htype->type == DDZ_ERROR)
