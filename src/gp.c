@@ -265,6 +265,11 @@ void gp_handtype(hand_t* hand, hand_type* htype)
 
     /* for bomb */
     if(ar.n4 > 0){
+        if(ar.n4 == 1 && hand->num == 4){
+            htype->type = GP_FOUR;
+            htype->logic_value = ar.v4[0];
+            return;
+        }
         if(ar.n4 == 1 && hand->num == 5){
             htype->type = GP_BOMB;
             htype->logic_value = ar.v4[0];
@@ -292,6 +297,11 @@ void gp_handtype(hand_t* hand, hand_type* htype)
                 htype->type = GP_BOMB;
             else
                 htype->type = GP_THREE_P1;
+            htype->logic_value = ar.v3[0];
+            return;
+        }
+        if(ar.n3 == 1 && ar.n2 == 1 && hand->num == 5){
+            htype->type = GP_THREE_P2;
             htype->logic_value = ar.v3[0];
             return;
         }
@@ -334,7 +344,7 @@ void gp_handtype(hand_t* hand, hand_type* htype)
     }
 
     /* for 2 */
-    if(ar.n2 >= 3){
+    if(ar.n2 >= 2){
         flag = cards_have_rank(cdRank2, ar.v2, MAX_CARDS);
         if(flag)
             return;
@@ -451,18 +461,35 @@ int gp_play(gp_t* gp, int player_no, hand_t* hand)
 
 int gp_canplay(gp_t* gp, hand_t* hand, hand_type* htype)
 {
+    int remain_num;
+
     if(!gp || !hand || !htype)
         return 0;
 
-    if(gp->last_hand->num == 0)
-        return 1;
     if(htype->type == GP_ERROR)
         return 0;
+    if(gp->last_hand->num == 0){
+        /* first play */
+        if(htype->type == GP_THREE_P1)
+            return 0;
+        else
+            return 1;
+    }
+    if(gp->largest_player_no == gp->curr_player_no){
+        remain_num = hand_num(gp->players[gp->curr_player_no].mycards);
+        if((htype->type == GP_THREE_P1 || htype->type == GP_FOUR)){
+            if(remain_num == 4)
+                return 1;
+            else
+                return 0;
+        }
+        return 1;
+    }
 
     if(gp->last_htype.type == GP_BOMB && htype->type != GP_BOMB)
-        return 1;
-    if(gp->last_htype.type != GP_BOMB && htype->type == GP_BOMB)
         return 0;
+    if(gp->last_htype.type != GP_BOMB && htype->type == GP_BOMB)
+        return 1;
 
     if(gp->last_htype.type != htype->type ||
         gp->last_hand->num != hand->num)
@@ -490,6 +517,10 @@ int gp_pass(gp_t* gp, int player_no)
     if(player_no != gp->curr_player_no)
         return 0;
     if(gp->game_state == GP_GAME_END)
+        return 0;
+    if(gp->last_hand->num == 0)
+        return 0;
+    if(gp->largest_player_no == player_no)
         return 0;
 
     gp_next_player(gp);

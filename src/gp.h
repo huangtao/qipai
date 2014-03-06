@@ -26,6 +26,7 @@ typedef enum gp_type_e{
         GP_THREE_P1,    /* three plus single (last hand) */
         GP_THREE_P2,    /* three plus double (333+44) */
 		GP_PLANE,       /* three straight plus double straight (333444+7788) */
+        GP_FOUR,        /* four (6666) */
         GP_FOUR_P3,     /* four plus three (6666+883) */
         GP_BOMB         /* bomb (6666+3), (KKK+3)*/       
 }GP_TYPE;
