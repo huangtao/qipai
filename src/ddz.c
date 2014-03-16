@@ -402,8 +402,8 @@ int ddz_play(ddz_t* ddz, int player_no, hand_t* hand)
     }
 
     /* player play these cards */
-    hand_zero(ddz->last_hand);
     plast = ddz->last_hand->cards;
+    ddz->last_hand->num = 0;
     for(i = 0; i < hand->num; ++i){
         card = hand->cards + i;
         card_player_play(&ddz->players[player_no], card);

@@ -114,7 +114,7 @@ class GameFrame(wx.Frame):
                 x = x + self.pokerOffsetW
                
         # draw last hand
-        num = libqp.hand_num(self.gp.last_hand)
+        num = self.gp.last_hand.num
         x = (width - ((num - 1) * self.pokerOffsetW + pokerW)) / 2
         for i in range(0, num):
             card = libqp.hand_get(self.gp.last_hand, i)
