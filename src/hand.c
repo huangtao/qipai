@@ -78,6 +78,29 @@ int hand_num(hand_t* hand)
     return n;
 }
 
+void hand_copy(hand_t* src, hand_t* dest)
+{
+    int i,num;
+    card_t *p1,*p2;
+
+    if(!src || !dest)
+        return;
+
+    num = src->num;
+    if(num > dest->max_size)
+        num = dest->max_size;
+    dest->num = num;
+    p1 = src->cards;
+    p2 = dest->cards;
+    for(i = 0; i < num; i++)
+    {
+        p2->rank = p1->rank;
+        p2->suit = p1->suit;
+        p1++;
+        p2++;
+    }
+}
+
 hand_t* hand_clone(hand_t* hand)
 {
     hand_t* p;

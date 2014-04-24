@@ -14,6 +14,12 @@ extern "C" {
 
 #define GP_MAX_PLAYER   3
 
+/* gp rule */
+typedef enum gp_rule_e{
+    GP_RULE_DEFAULT,     /* like QQ game's gp */
+    GP_RULE_ZHUJI        /* zhejiang zhuji rule */
+}GP_RULE;
+
 /* gp card type */
 typedef enum gp_type_e{
         GP_ERROR = 0,
@@ -40,6 +46,7 @@ typedef struct gp_s{
     int debug;          /* output debug info */
     deck_t* deck;       /* deck */
     int game_state;     /* game state */
+    int game_rule;      /* rule */
     int turn_time;      /* turn time */
     int curr_turn_time; /* current turn left time */
     int round;
@@ -56,14 +63,14 @@ typedef struct gp_s{
     card_player_t players[GP_MAX_PLAYER];   /* three player */
 }gp_t;
 
-gp_t* gp_new();
+gp_t* gp_new(int rule);
 void gp_free(gp_t* gp);
 void gp_start(gp_t* gp);      /* start a new game */
 int gp_get_state(gp_t* gp);
 void gp_set_state(gp_t* gp, int state);
 void gp_sort(hand_t* hand);
 const char* gp_htype_name(hand_type* htype);
-void gp_handtype(hand_t* hand, hand_type* htype);
+void gp_handtype(gp_t* gp, hand_t* hand, hand_type* htype);
 int gp_play(gp_t* gp, int player_no, hand_t* hand);
 int gp_canplay(gp_t* gp, hand_t* hand, hand_type* cdtype);
 void gp_next_player(gp_t* gp);

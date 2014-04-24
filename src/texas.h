@@ -29,7 +29,7 @@ typedef enum texas_type_e{
         TEXAS_PAIR2,            /* two pair 66889 */
         TEXAS_THREE,            /* three of a kind 666+89*/
         TEXAS_STRAIGHT,         /* straight (56789) */
-        TEXAS_FLUSH,            /* double straight 3+ (S6,S8,S9,SA,SQ) */
+        TEXAS_FLUSH,            /* same suit (S6,S8,S9,SA,SQ) */
         TEXAS_FULLHOUSE,        /* three plus double (666+88) */
 		TEXAS_FOUR,             /* four of a kind (6666+8) */
         TEXAS_STRAIGHT_FLUSH,   /* strright flush (S6,S7,S8,S9,S10) */
@@ -73,14 +73,17 @@ void texas_start(texas_t* texas);      /* start a new game */
 void texas_set_burn(texas_t* texas, int burn);
 int texas_get_state(texas_t* texas);
 void texas_set_state(texas_t* texas, int state);
+int texas_compare(const void* a, const void* b);
 void texas_sort(hand_t* hand);
-void texas_handtype(hand_t* hand, hand_type* htype);
+void texas_handtype(hand_t* hand, hand_type* htype, hand_t* result);
 void texas_next_player(texas_t* texas);
 int texas_count_notfolded(texas_t* texas);
 void texas_get_folp(texas_t* texas, card_t* c1, card_t* c2, card_t* c3);
 void texas_get_turn(texas_t* texas, card_t* card);
 void texas_get_river(texas_t* texas, card_t* card);
 int texas_fold(texas_t* texas, int player_no);
+int texas_logicvalue(card_t* card);
+int texas_rankvalue(int logic_value);
 
 #ifdef __cplusplus
 }

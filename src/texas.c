@@ -7,16 +7,9 @@
 #define DECK_FU     1
 #define MAX_CARDS   5
 
-typedef struct analyse_r_s{
-    int n1;
-    int v1[MAX_CARDS];
-    int n2;
-    int v2[MAX_CARDS];
-    int n3;
-    int v3[MAX_CARDS];
-    int n4;
-    int v4[MAX_CARDS];
-}analyse_r;
+static int texas_table_rank[16] = { 0, 14, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 0, 0 };
+static int texas_table_logic[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 1, 0 };
+static int table_suit[6] = { 0, 1, 2, 3, 4, 5 };
 
 texas_t* texas_new()
 {
@@ -132,115 +125,394 @@ void texas_set_state(texas_t* texas, int state)
     }
 }
 
+int texas_compare(const void* a, const void* b)
+{
+    card_t *card1, *card2;
+
+    card1 = (card_t*)a;
+    card2 = (card_t*)b;
+    if(!card1 || !card2)
+        return 0;
+
+    if(texas_table_rank[card1->rank] < texas_table_rank[card2->rank])
+        return 1;
+
+    if(texas_table_rank[card1->rank] > texas_table_rank[card2->rank])
+        return -1;
+
+    if(texas_table_rank[card1->rank] == texas_table_rank[card2->rank]){
+        if(table_suit[card1->suit] < table_suit[card2->suit])
+            return 1;
+        if(table_suit[card1->suit] > table_suit[card2->suit])
+            return -1;
+
+        return 0;
+    }
+
+    return 0;
+}
+
 void texas_sort(hand_t* hand)
 {
-    cards_sort(hand);
-}
-
-void texas_analyse(hand_t* hand, analyse_r* ar)
-{
-    int x[16];
-    int i;
-
-    if(!hand || !ar)
+    if(!hand || !hand->cards)
         return;
 
-    memset(x, 0, sizeof(int)*16);
-    cards_bucket(hand, x);
-    ar->n1 = ar->n2 = ar->n3 = ar->n4 = 0;
-    for(i = 0; i < 16; i++){
-        switch(x[i]){
-        case 1:
-            ar->v1[ar->n1] = i;
-            ar->n1++;
-            break;
-        case 2:
-            ar->v2[ar->n2] = i;
-            ar->n2++;
-            break;
-        case 3:
-            ar->v3[ar->n3] = i;
-            ar->n3++;
-            break;
-        case 4:
-            ar->v4[ar->n4] = i;
-            ar->n4++;
-            break;
-        }
-    }
+    qsort(hand->cards, hand->num, sizeof(card_t), texas_compare);
 }
 
-void texas_handtype(hand_t* hand, hand_type* htype)
+void texas_handtype(hand_t* hand, hand_type* htype, hand_t* result)
 {
-    int flag,i;
-    int same_suit;
+    int flag,i,j,m,v;
     int suit;
-    analyse_r ar;
-    card_t *p;
+    card_t *p,*p1;
+    int x[20];    
+    card_t su_cards[4][7];
+    int su_num[4];
 
-    if(!hand || !htype)
+    if(!hand || !htype || !result)
         return;
     if(!hand->num < 2)
         return;
-    if(!hand->num > 5)
+    if(!hand->num > 7)
         return;
 
     htype->type = TEXAS_HIGHCARD;
 
-    memset(&ar, 0, sizeof(analyse_r));
-    texas_analyse(hand, &ar);
+    memset(su_cards, 0, sizeof(card_t) * 4 * 7);
+    memset(su_num, 0, sizeof(int) * 4);
+
+    p = hand->cards;
+    for(i = 0; i < hand->num; ++i){
+        su_cards[p->suit-1][su_num[p->suit-1]].rank = p->rank;
+        su_cards[p->suit-1][su_num[p->suit-1]].suit = p->suit;
+        su_num[p->suit-1]++;
+        p++;
+    }
+
+    /* Royal Straight Flush */
+    /* Straight Flush */
+    for(i = 0; i < 4; i++){
+        if(su_num[i] < 5) continue;
+        memset(x, 0, sizeof(int) * 20);
+        for(j = 0; j < su_num[i]; j++){
+            v = texas_logicvalue(&su_cards[i][j]);
+            x[v]++;
+        }
+        for(j = 14; j >= 6; j--){
+            if(x[j] && x[j-1] && x[j-2] && x[j-3] && x[j-4]){
+                if(j == 14)
+                    htype->type = TEXAS_ROYAL;
+                else
+                    htype->type = TEXAS_STRAIGHT_FLUSH;
+                htype->logic_value1 = j;
+                htype->logic_value2 = i;
+                if(hand->num >= 5){
+                    p = result->cards;
+                    for(m = 0; m < 5; m++){
+                        p->rank = texas_rankvalue(j-m);
+                        p->suit = i + 1;
+                        p++;
+                    }  
+                    result->num = 5;
+                }
+                return;
+            }
+        }
+    }
+
+    memset(x, 0, sizeof(int) * 20);
+    p = hand->cards; 
+    for(i = 0; i < hand->num; i++){
+        v = texas_logicvalue(p);
+        x[v]++;
+        p++;
+    }
 
     /* four of kind */
-    if(ar.n4){
-        htype->type = TEXAS_FOUR;
-        htype->logic_value = ar.v4[0];
+    for(i = 0; i < 20; i++){
+        if(x[i] == 4){
+            htype->type = TEXAS_FOUR;
+            htype->logic_value1 = i;
+            htype->logic_value2 = 0;
+            for(j = 19; j >= 0 && j != i; j--){
+                if(x[j] == 1){
+                    htype->logic_value2 = j;
+                    break;
+                }
+            }
+            if(hand->num >= 5){
+                p = result->cards;
+                for(m = cdSuitSpade; m >= cdSuitDiamond; m--){
+                    p->rank = texas_rankvalue(i);
+                    p->suit = m;
+                    p++;
+                }
+                result->num = 5;
+            }
+            return;
+        }
+    }
+
+    /* full house */
+    htype->logic_value1 = 0;
+    htype->logic_value2 = 0;
+    for(i = 19; i >= 0; i--){
+        if(x[i] == 3){
+            htype->logic_value1 = i;
+            break;
+        }
+    }
+    for(i = 19; i >= 0; i--){
+        if(x[i] == 2){
+            htype->logic_value2 = i;
+            break;
+        }
+    }
+    if(htype->logic_value1 && htype->logic_value2){
+        htype->type = TEXAS_FULLHOUSE;
+        if(hand->num >= 5){
+            p = hand->cards;
+            p1 = result->cards;
+            for(j = 0; j < hand->num; j++){
+                if(htype->logic_value1 == texas_logicvalue(p)){
+                    p1->rank = p->rank;
+                    p1->suit = p->suit;
+                    p1++;
+                }
+                p++;
+            }
+            p = hand->cards;
+            for(j = 0; j < hand->num; j++){
+                if(htype->logic_value2 == texas_logicvalue(p)){
+                    p1->rank = p->rank;
+                    p1->suit = p->suit;
+                    p1++;
+                }
+                p++;
+            }
+            result->num = 5;
+        }
         return;
+    }
+
+    /* flush(same suit) */
+    for(i = 0; i < 4; i++){
+        if(su_num[i] >= 5){
+            htype->type = TEXAS_FLUSH;
+            htype->logic_value1 = texas_logicvalue(&su_cards[i][su_num[i]-1]);
+            htype->logic_value2 = 
+                (texas_logicvalue(&su_cards[i][su_num[i]-2]) << 8) & 
+                texas_logicvalue(&su_cards[i][su_num[i]-3]);
+            htype->logic_value3 = 
+                (texas_logicvalue(&su_cards[i][su_num[i]-4]) << 8) &
+                texas_logicvalue(&su_cards[i][su_num[i]-5]);
+
+            if(hand->num >=5){
+                p = result->cards;
+                for(j = 1; j < 6; j++){
+                    p->rank = su_cards[i][su_num[i]-j].rank;
+                    p->suit = su_cards[i][su_num[i]-j].suit;
+                    p++;
+                }
+                result->num = 5;
+            }
+            return;
+        }
     }
 
     /* three */
-    if(ar.n3){
-        if(ar.n2)
-            htype->type = TEXAS_FULLHOUSE;
-        else
+    for(i = 19; i >= 0; i--){
+        if(x[i] == 3){
             htype->type = TEXAS_THREE;
-        htype->logic_value = ar.v3[0];
-    }
+            htype->logic_value1 = i;
+            htype->logic_value2 = 0;
+            htype->logic_value3 = 0;
+            for(j = 19; j >= 0 && j != i; j--){
+                if(x[j] == 1 && htype->logic_value2 == 0)
+                    htype->logic_value2 = j;
+                if(x[j] == 1 && htype->logic_value3 == 0)
+                    htype->logic_value3 = j;
+            }
+            if(hand->num >=5 ){
+                p = hand->cards;
+                p1 = result->cards;
+                m = 0;
+                for(j = 0; j < hand->num; j++){
+                    if(htype->logic_value1 == texas_logicvalue(p)){
+                        m++;
+                        p1->rank = p->rank;
+                        p1->suit = p->suit;
+                        p1++;
+                        if(m == 3) break;
+                    }
+                    p++;
+                }
+                p = hand->cards;
+                for(j = 0; j < hand->num; j++){
+                    if(htype->logic_value2 == texas_logicvalue(p)){
+                        p1->rank = p->rank;
+                        p1->suit = p->suit;
+                        p1++;
+                        break;
+                    }
+                    p++;
+                }
+                p = hand->cards;
+                for(j = 0; j < hand->num; j++){
+                    if(htype->logic_value3 == texas_logicvalue(p)){
+                        p1->rank = p->rank;
+                        p1->suit = p->suit;
+                        p1++;
+                        break;
+                    }
+                    p++;
+                }
+                result->num = 5;
+            }
+            return;
+        }
+    }    
 
     /* pair */
-    if(ar.n2 == 1){
-        htype->type = TEXAS_PAIR1;
-        htype->logic_value = TEXAS_PAIR1;
-    }
-    else if(ar.n2 == 2){
-        htype->type = TEXAS_PAIR2;
-        htype->logic_value = TEXAS_PAIR2;
-    }
-
-    /* straight */
-    same_suit = 1;
-    if(ar.n1 == 5){
-        flag = cards_have_rank(cdRank2, ar.v1, MAX_CARDS);
-        if(flag)
-            return;
-        for(i = 0; i < (ar.n1 - 1); ++i){
-            if((ar.v1[i+1] - ar.v1[i]) != 1)
-                return;
+    j = 0;
+    htype->logic_value1 = 0;
+    htype->logic_value2 = 0;
+    for(i = 19; i >= 0; i--){
+        if(x[i] == 2){
+            j++;
+            if(htype->logic_value1 == 0)
+                htype->logic_value1 = i;
+            if(htype->logic_value2 == 0)
+                htype->logic_value2 = i;
         }
-        p = hand->cards;
-        suit = p->suit;
-        for(i = 1; i < hand->num; ++i){
-            p++;
-            if(suit != p->suit){
-                same_suit = 0;
+    }
+    if(j == 2){
+        for(i = 19; i >= 0; i--){
+            if(x[i] == 1){
+                htype->logic_value3 = i;
                 break;
             }
         }
-        if(same_suit)
-            htype->type = TEXAS_ROYAL;
-        else
-            htype->type = TEXAS_STRAIGHT;
-        htype->logic_value = ar.v1[0];
+        htype->type = TEXAS_PAIR2;
+        if(hand->num >= 5){
+            p = hand->cards;
+            p1 = result->cards;
+            v = 0;
+            for(m = 0; m < hand->num; m++){
+                if(htype->logic_value1 == texas_logicvalue(p)){
+                    p1->rank = p->rank;
+                    p1->suit = p->suit;
+                    p1++;
+                    v++;
+                    if(v == 2) break;
+                }
+                p++;
+            }
+            p = hand->cards;
+            v = 0;
+            for(m = 0; m < hand->num; m++){
+                if(htype->logic_value2 == texas_logicvalue(p)){
+                    p1->rank = p->rank;
+                    p1->suit = p->suit;
+                    p1++;
+                    v++;
+                    if(v == 2) break;
+                }
+                p++;
+            }
+            p = hand->cards;
+            for(m = 0; m < hand->num; m++){
+                v = texas_logicvalue(p);
+                if(v != htype->logic_value1 && 
+                    v != htype->logic_value2){
+                    p1->rank = p->rank;
+                    p1->suit = p->suit;
+                    break;
+                }
+                p++;
+            }
+            result->num = 5;
+        }
         return;
+    }
+    if(j == 1){
+        htype->type = TEXAS_PAIR1;
+        m = 0;
+        for(i = 19; i >= 0; i--){
+            if(x[i] == 1){
+                m++;
+                if(m == 1)
+                    htype->logic_value2 = i;
+                else if(m == 2)
+                    htype->logic_value3 = i << 8;
+                else if(m == 3)
+                    htype->logic_value3 &= i;
+
+                if(m == 3)
+                    break;
+            }
+        }
+        if(hand->num >= 5){
+            p = hand->cards;
+            p1 = result->cards;
+            v = 0;
+            for(j = 0; j < hand->num; j++){
+                if(htype->logic_value1 == texas_logicvalue(p)){
+                    p1->rank = p->rank;
+                    p1->suit = p->suit;
+                    v++;
+                    p++;
+                    if(v == 2) break;
+                }
+            }
+            p = hand->cards;
+            v = 0;
+            for(j = 0; j < hand->num; j++){
+                if(htype->logic_value1 != texas_logicvalue(p)){
+                    p1->rank = p->rank;
+                    p1->suit = p->suit;
+                    p1++;
+                    v++;
+                    if(v == 3) break;
+                }
+            }
+            result->num = 5;
+        }
+        return;
+    }
+
+    m = 0;
+    for(i = 19; i >= 0; i--){
+        if(x[i] == 1){
+            m++;
+            if(m == 1)
+                htype->logic_value1 = i;
+            else if(m == 2)
+                htype->logic_value2 = i << 8;
+            else if(m == 3)
+                htype->logic_value2 &= i;
+            else if(m == 4)
+                htype->logic_value3 = i << 8;
+            else if(m == 5)
+                htype->logic_value3 &= i;
+            
+            if(m == 5)
+                break;
+        }
+    }
+    if(hand->num >= 5){
+        p = hand->cards;
+        p1 = result->cards;
+        m = 0;
+        for(i = 0; i < hand->num; i++){
+            p1->rank = p->rank;
+            p1->suit = p->suit;
+            p++;
+            p1++;
+            m++;
+            if(m == 5) break;
+        }
+        result->num = 5;
     }
 
     return;
@@ -255,7 +527,7 @@ void texas_next_player(texas_t* texas)
         texas->curr_player_no = 0;
 }
 
-int texas_count_notfoled(texas_t* texas)
+int texas_count_notfolded(texas_t* texas)
 {
     int i;
     int not_folded = 0;
@@ -312,4 +584,21 @@ int texas_fold(texas_t* texas, int player_no)
     
     /* check game over */
     return 1;
+}
+
+int texas_logicvalue(card_t* card)
+{
+    if(!card)
+        return 0;
+
+    if(card->rank > cdRankK) return 0;
+
+    return texas_table_rank[card->rank];
+}
+
+int texas_rankvalue(int logic_value)
+{
+    if(logic_value > 14 || logic_value < 0)
+        return 0;
+    return texas_table_logic[logic_value];
 }

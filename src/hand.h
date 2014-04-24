@@ -24,7 +24,9 @@ typedef struct hand_s{
 typedef struct hand_type_s{
     int type;           /* type enum */
     int num;            /* number */
-    int logic_value;    /* logic value */
+    int logic_value1;	/* logic value */
+    int logic_value2;
+    int logic_value3;
 }hand_type;
 
 hand_t* hand_new(int max_size);
@@ -32,6 +34,7 @@ void hand_free(hand_t* hand);
 void hand_zero(hand_t* hand);
 int hand_num(hand_t* hand);
 hand_t* hand_clone(hand_t* hand);
+void hand_copy(hand_t* src, hand_t* dest);
 /* initialize hand from a string */
 void hand_from_string(hand_t* hand, char* string);
 card_t* hand_get(hand_t* hand, int n);
