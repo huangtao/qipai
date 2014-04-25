@@ -160,21 +160,51 @@ void texas_sort(hand_t* hand)
     qsort(hand->cards, hand->num, sizeof(card_t), texas_compare);
 }
 
-void texas_handtype(hand_t* hand, hand_type* htype, hand_t* result)
+void texas_group(texas_t* texas, int player_no, hand_t* hand)
 {
-    int flag,i,j,m,v;
-    int suit;
-    card_t *p,*p1;
-    int x[20];    
-    card_t su_cards[4][7];
+    int i,num;
+    hand_t* h;
+    card_t* p;
+
+    if(!texas || !hand)
+        return;
+    if(player_no >= TEXAS_MAX_PLAYER)
+        return;
+
+    hand_zero(hand);
+    h = texas->players[player_no].mycards;
+    p = h->cards;
+    for(i = 0; i < 2; i++){
+        hand_push(hand, p);
+        p++;
+    }
+    num = 0;
+    if(texas->game_state == TEXAS_GAME_FLOP)
+        num = 3;
+    else if(texas->game_state == TEXAS_GAME_TURN)
+        num = 4;
+    else if(texas->game_state == TEXAS_GAME_RIVER)
+        num = 5;
+    for(i = 0; i < num; i++){
+        hand_push(hand, &texas->board[i]);
+    }
+    texas_sort(hand);
+}
+
+int texas_handtype(hand_t* hand, hand_type* htype, hand_t* result)
+{
+    int flag,i,j,m,v,suit;
+    int x[20];
     int su_num[4];
+    card_t *p,*p1;
+    card_t su_cards[4][7];
 
     if(!hand || !htype || !result)
-        return;
-    if(!hand->num < 2)
-        return;
-    if(!hand->num > 7)
-        return;
+        return -1;
+    if(hand->num < 2)
+        return -2;
+    if(hand->num > 7)
+        return -3;
 
     htype->type = TEXAS_HIGHCARD;
 
@@ -215,7 +245,7 @@ void texas_handtype(hand_t* hand, hand_type* htype, hand_t* result)
                     }  
                     result->num = 5;
                 }
-                return;
+                return TEXAS_ROYAL;
             }
         }
     }
@@ -234,22 +264,38 @@ void texas_handtype(hand_t* hand, hand_type* htype, hand_t* result)
             htype->type = TEXAS_FOUR;
             htype->logic_value1 = i;
             htype->logic_value2 = 0;
-            for(j = 19; j >= 0 && j != i; j--){
-                if(x[j] == 1){
+            for(j = 19; j >= 0; j--){
+                if(j != i && x[j] == 1){
                     htype->logic_value2 = j;
                     break;
                 }
             }
             if(hand->num >= 5){
-                p = result->cards;
-                for(m = cdSuitSpade; m >= cdSuitDiamond; m--){
-                    p->rank = texas_rankvalue(i);
-                    p->suit = m;
+                p = hand->cards;
+                p1 = result->cards;
+                m = 0;
+                for(j = 0; j < hand->num; j++){
+                    if(htype->logic_value1 == texas_logicvalue(p)){
+                        p1->rank = p->rank;
+                        p1->suit = p->suit;
+                        p1++;
+                        m++;
+                        if(m == 4) break;
+                    }
+                    p++;
+                }
+                p = hand->cards;
+                for(j = 0; j < hand->num; j++){
+                    if(htype->logic_value2 == texas_logicvalue(p)){
+                        p1->rank = p->rank;
+                        p1->suit = p->suit;
+                        break;
+                    }
                     p++;
                 }
                 result->num = 5;
             }
-            return;
+            return TEXAS_FOUR;
         }
     }
 
@@ -292,31 +338,54 @@ void texas_handtype(hand_t* hand, hand_type* htype, hand_t* result)
             }
             result->num = 5;
         }
-        return;
+        return TEXAS_FULLHOUSE;
     }
 
     /* flush(same suit) */
     for(i = 0; i < 4; i++){
         if(su_num[i] >= 5){
             htype->type = TEXAS_FLUSH;
-            htype->logic_value1 = texas_logicvalue(&su_cards[i][su_num[i]-1]);
+            htype->logic_value1 = texas_logicvalue(&su_cards[i][0]);
             htype->logic_value2 = 
-                (texas_logicvalue(&su_cards[i][su_num[i]-2]) << 8) & 
-                texas_logicvalue(&su_cards[i][su_num[i]-3]);
+                (texas_logicvalue(&su_cards[i][1]) << 8) & 
+                texas_logicvalue(&su_cards[i][2]);
             htype->logic_value3 = 
-                (texas_logicvalue(&su_cards[i][su_num[i]-4]) << 8) &
-                texas_logicvalue(&su_cards[i][su_num[i]-5]);
+                (texas_logicvalue(&su_cards[i][3]) << 8) &
+                texas_logicvalue(&su_cards[i][4]);
 
             if(hand->num >=5){
                 p = result->cards;
-                for(j = 1; j < 6; j++){
-                    p->rank = su_cards[i][su_num[i]-j].rank;
-                    p->suit = su_cards[i][su_num[i]-j].suit;
+                for(j = 0; j < 5; j++){
+                    p->rank = su_cards[i][j].rank;
+                    p->suit = su_cards[i][j].suit;
                     p++;
                 }
                 result->num = 5;
             }
-            return;
+            return TEXAS_FLUSH;
+        }
+    }
+
+    /* straight */
+    for(j = 14; j >= 6; j--){
+        if(x[j] && x[j-1] && x[j-2] && x[j-3] && x[j-4]){
+            htype->type = TEXAS_STRAIGHT;
+            htype->logic_value1 = j;
+            p1 = result->cards;
+            for(m = 0; m < 5; m++){
+                p = hand->cards;
+                for(i = 0; i < hand->num; i++){
+                    if((j-m) == texas_logicvalue(p)){
+                        p1->rank = p->rank;
+                        p1->suit = p->suit;
+                        p1++;
+                        break;
+                    }
+                    p++;
+                }
+            }
+            result->num = 5;
+            return TEXAS_STRAIGHT;
         }
     }
 
@@ -327,11 +396,13 @@ void texas_handtype(hand_t* hand, hand_type* htype, hand_t* result)
             htype->logic_value1 = i;
             htype->logic_value2 = 0;
             htype->logic_value3 = 0;
-            for(j = 19; j >= 0 && j != i; j--){
-                if(x[j] == 1 && htype->logic_value2 == 0)
-                    htype->logic_value2 = j;
-                if(x[j] == 1 && htype->logic_value3 == 0)
-                    htype->logic_value3 = j;
+            for(j = 19; j >= 0; j--){
+                if(j != i && x[j] == 1){
+                    if(htype->logic_value2 == 0)
+                        htype->logic_value2 = j;
+                    else if(htype->logic_value3 == 0)
+                        htype->logic_value3 = j;
+                }
             }
             if(hand->num >=5 ){
                 p = hand->cards;
@@ -369,7 +440,7 @@ void texas_handtype(hand_t* hand, hand_type* htype, hand_t* result)
                 }
                 result->num = 5;
             }
-            return;
+            return TEXAS_THREE;
         }
     }    
 
@@ -382,7 +453,7 @@ void texas_handtype(hand_t* hand, hand_type* htype, hand_t* result)
             j++;
             if(htype->logic_value1 == 0)
                 htype->logic_value1 = i;
-            if(htype->logic_value2 == 0)
+            else if(htype->logic_value2 == 0)
                 htype->logic_value2 = i;
         }
     }
@@ -433,7 +504,7 @@ void texas_handtype(hand_t* hand, hand_type* htype, hand_t* result)
             }
             result->num = 5;
         }
-        return;
+        return TEXAS_PAIR2;
     }
     if(j == 1){
         htype->type = TEXAS_PAIR1;
@@ -461,9 +532,10 @@ void texas_handtype(hand_t* hand, hand_type* htype, hand_t* result)
                     p1->rank = p->rank;
                     p1->suit = p->suit;
                     v++;
-                    p++;
+                    p1++;
                     if(v == 2) break;
                 }
+                p++;
             }
             p = hand->cards;
             v = 0;
@@ -475,10 +547,11 @@ void texas_handtype(hand_t* hand, hand_type* htype, hand_t* result)
                     v++;
                     if(v == 3) break;
                 }
+                p++;
             }
             result->num = 5;
         }
-        return;
+        return TEXAS_PAIR1;
     }
 
     m = 0;
@@ -515,7 +588,7 @@ void texas_handtype(hand_t* hand, hand_type* htype, hand_t* result)
         result->num = 5;
     }
 
-    return;
+    return TEXAS_HIGHCARD;
 }
 
 void texas_next_player(texas_t* texas)
