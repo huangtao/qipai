@@ -112,7 +112,10 @@ class GameFrame(wx.Frame):
         pokerW, pokerH = self.bmpPoker['0'].GetSize()
         x = 0
         y = 0
-           
+        
+        max_no = 0
+        max_handtype = libqp.hand_type()
+
         # draw player's hand cards
         dc.SetTextForeground(wx.WHITE)
         for i in range(0, 2):
@@ -145,12 +148,28 @@ class GameFrame(wx.Frame):
                 htresult = libqp.hand_new(5)
                 hand_all = libqp.hand_new(7)
                 libqp.texas_group(self.texas, 1-i, hand_all)
-                libqp.hand_dump(hand_all, 7)
+                #libqp.hand_dump(hand_all, 7)
                 htype = libqp.hand_type()
                 libqp.hand_zero(htresult)
                 r = libqp.texas_handtype(hand_all, htype, htresult)
-                print r,htype.logic_value1
-                libqp.hand_dump(htresult, 5)
+                #print r,htype.logic_value1
+                #libqp.hand_dump(htresult, 5)
+                if i == 0:
+                    max_handtype.type = htype.type
+                    max_handtype.logic_value1 = htype.logic_value1
+                    max_handtype.logic_value2 = htype.logic_value2
+                    max_handtype.logic_value3 = htype.logic_value3
+                    max_no = 1-i
+                else:
+                    #print "ht1=%d,ht2=%d" % (max_handtype.type,htype.type)
+                    mflag = libqp.texas_compare(max_handtype, htype)
+                    if mflag < 0:
+                        max_handtype.type = htype.type
+                        max_handtype.logic_value1 = htype.logic_value1
+                        max_handtype.logic_value2 = htype.logic_value2
+                        max_handtype.logic_value3 = htype.logic_value3
+                        max_no = 1-i
+
                 for j in range(0, libqp.hand_num(htresult)):
                     card = libqp.hand_get(htresult, j)
                     keyname = libqp.card_text(card)
@@ -201,6 +220,9 @@ class GameFrame(wx.Frame):
         
         # info
         info = "state:%d\n" % (self.texas.game_state)
+        if num >= 3:
+            info += "max player:%d\n" % max_no
+
         #info += "curr player:%d\n" % (self.texas.curr_player_no)
         dc.DrawText(info, 0, 0)
         #dc.SetPen(wx.Pen('#007F0F', 4))

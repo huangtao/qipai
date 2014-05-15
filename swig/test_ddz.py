@@ -138,7 +138,7 @@ class GameFrame(wx.Frame):
         info += "call:%d\n" % (dz_call)
         info += "state:%d\n" % (self.ddz.game_state)
         info += "last hand:%d" % (self.ddz.last_htype.type)
-        info += ",%d\n" % (self.ddz.last_htype.logic_value)
+        info += ",%d\n" % (self.ddz.last_htype.logic_value1)
         dc.DrawText(info, 0, 0)
         #dc.SetPen(wx.Pen('#007F0F', 4))
         #dc.DrawLine(0, 0, 50, 50)
@@ -220,7 +220,7 @@ class GameFrame(wx.Frame):
                         self.flag_up[i] = 0
                     self.Refresh()
                 else:
-                    print "can't play:",htype.type,htype.logic_value
+                    print "can't play:",htype.type,htype.logic_value1
             else:
                 # pass
                 libqp.ddz_pass(self.ddz, cp_no)

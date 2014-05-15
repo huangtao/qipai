@@ -13,7 +13,9 @@ extern "C" {
 
 /* sort,compare,etc... */
 void cards_sort(hand_t* hand);
-void cards_bucket(hand_t* hand, int x[]);
+//void rank_bucket(hand_t* hand, int x[]);
+int cards_bucket(hand_t* hand, int x[]);
+int get_bucket_number(int value, int suit);
 int cards_have_rank(int rank, int x[], int size);
 int card_compare(const void* a, const void* b);
 int card_logicvalue(card_t* card);

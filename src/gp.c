@@ -205,7 +205,7 @@ void gp_sort(hand_t* hand)
 void gp_analyse(gp_t* gp, hand_t* hand, analyse_r* ar)
 {
     int x[20];
-    int i;
+    int i,n,have_k,have_3;
 
     if(!hand || !ar)
         return;
@@ -214,7 +214,8 @@ void gp_analyse(gp_t* gp, hand_t* hand, analyse_r* ar)
     cards_bucket(hand, x);
     ar->n1 = ar->n2 = ar->n3 = ar->n4 = 0;
     for(i = 0; i < 20; i++){
-        switch(x[i]){
+        n = get_bucket_number(x[i], cdSuitNone);
+        switch(n){
         case 1:
             ar->v1[ar->n1] = i;
             ar->n1++;
@@ -393,12 +394,11 @@ void gp_handtype(gp_t* gp, hand_t* hand, hand_type* htype)
         if(gp->game_rule == GP_RULE_DEFAULT){
             have_k = cards_have_rank(cdRankK, ar.v1, MAX_CARDS);
             have_3 = cards_have_rank(cdRank3, ar.v1, MAX_CARDS);
-            if(have_3){
-                if(ar.v1[2] > 0) ar.v1[2] = 2;
-            }
             if(!have_k){
-                /* ace to 1 */
-                if(ar.v1[1] > 0) ar.v1[1] = 1;
+            /* ace to 1 */
+            }
+            if(have_3){
+            /* 2 to 2 */
             }
         }
         else{
@@ -413,8 +413,9 @@ void gp_handtype(gp_t* gp, hand_t* hand, hand_type* htype)
         if(flag)
             return;*/
         for(i = 0; i < (ar.n1 - 1); ++i){
-            if((ar.v1[i+1] - ar.v1[i]) != 1)
+            if((ar.v1[i+1] - ar.v1[i]) != 1){
                 return;
+            }
         }
         htype->type = GP_STRAIGHT;
         htype->logic_value1 = ar.v1[0];
@@ -517,12 +518,12 @@ int gp_canplay(gp_t* gp, hand_t* hand, hand_type* htype)
     }
     if(gp->largest_player_no == gp->curr_player_no){
         remain_num = hand_num(gp->players[gp->curr_player_no].mycards);
-        if((htype->type == GP_THREE_P1 || htype->type == GP_FOUR)){
+        /*if((htype->type == GP_THREE_P1 || htype->type == GP_FOUR)){
             if(remain_num == 4)
                 return 1;
             else
                 return 0;
-        }
+        }*/
         return 1;
     }
 

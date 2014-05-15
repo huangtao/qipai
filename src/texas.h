@@ -52,9 +52,12 @@ typedef struct texas_s{
     int curr_turn_time; /* current turn left time */
     int round;
     int inning;
+    int small_blind;    /* small blind */
     int b_burn;         /* is burn card */
 
     int dealer_player_no;   /* button(banker) player no. */
+    int small_blind_no;
+    int big_blind_no;
     int first_player_no;    /* first player no. */
     int curr_player_no;     /* current turn player no. */
     int largest_player_no;  /* current round largest player no. */
@@ -73,10 +76,11 @@ void texas_start(texas_t* texas);      /* start a new game */
 void texas_set_burn(texas_t* texas, int burn);
 int texas_get_state(texas_t* texas);
 void texas_set_state(texas_t* texas, int state);
-int texas_compare(const void* a, const void* b);
+int texas_card_compare(const void* a, const void* b);
 void texas_sort(hand_t* hand);
 void texas_group(texas_t* texas, int player_no, hand_t* hand);
 int texas_handtype(hand_t* hand, hand_type* htype, hand_t* result);
+int texas_compare(hand_type* a, hand_type* b);
 void texas_next_player(texas_t* texas);
 int texas_count_notfolded(texas_t* texas);
 void texas_get_folp(texas_t* texas, card_t* c1, card_t* c2, card_t* c3);

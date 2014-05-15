@@ -52,7 +52,7 @@ class GameFrame(wx.Frame):
         self.flag_up = [0] * 50
         
         # create game logic        
-        self.gp = libqp.gp_new()
+        self.gp = libqp.gp_new(0)
         self.gp.player_num = 2
         self.NewGame()
 
@@ -126,7 +126,7 @@ class GameFrame(wx.Frame):
         info = "state:%d\n" % (self.gp.game_state)
         info += "curr player:%d\n" % (self.gp.curr_player_no)
         info += "last hand:%d" % (self.gp.last_htype.type)
-        info += ",%d\n" % (self.gp.last_htype.logic_value)
+        info += ",%d\n" % (self.gp.last_htype.logic_value1)
         dc.DrawText(info, 0, 0)
         #dc.SetPen(wx.Pen('#007F0F', 4))
         #dc.DrawLine(0, 0, 50, 50)
@@ -197,7 +197,7 @@ class GameFrame(wx.Frame):
                     card = libqp.hand_get(hand_p, j)
                     libqp.hand_push(hand_out, card)
                 htype = libqp.hand_type()
-                libqp.gp_handtype(hand_out, htype)
+                libqp.gp_handtype(self.gp, hand_out, htype)
                 ret = libqp.gp_canplay(self.gp, hand_out, htype)
                 if ret > 0:
                     libqp.gp_play(self.gp, cp_no, hand_out)
@@ -208,7 +208,7 @@ class GameFrame(wx.Frame):
                         self.flag_up[i] = 0
                     self.Refresh()
                 else:
-                    print "can't play:",htype.type,htype.logic_value
+                    print "can't play:",htype.type,htype.logic_value1
             else:
                 # pass
                 libqp.gp_pass(self.gp, cp_no)

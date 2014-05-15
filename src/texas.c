@@ -20,6 +20,7 @@ texas_t* texas_new()
     if(!texas)
         return 0;
     texas->b_burn = 1;
+    texas->small_blind = 1;
     texas->deck = deck_new(DECK_FU, 0);
     if(!texas->deck){
         texas_free(texas);
@@ -53,10 +54,12 @@ void texas_free(texas_t* texas)
 
 void texas_start(texas_t* texas)
 {
-    int i,j;
+    int i,j,k;
     card_t card;
 
     if(!texas)
+        return;
+    if(!texas->player_num < 2)
         return;
     deck_shuffle(texas->deck);
     texas->round = 0;
@@ -65,11 +68,38 @@ void texas_start(texas_t* texas)
         card_player_reset(&(texas->players[i]));
     }
 
+    /* the button position */
+    if(!texas->inning)
+        texas->dealer_player_no = rand() % texas->player_num;
+    else{
+        texas->dealer_player_no++;
+        if(texas->dealer_player_no >= texas->player_num)
+            texas->dealer_player_no = 0;
+    }
+    if(texas->player_num > 2){
+        texas->small_blind_no = texas->dealer_player_no + 1;
+        if(texas->small_blind_no >= texas->player_num)
+            texas->small_blind_no = 0;
+    }
+    else{
+        /* heads-up(1v1) */
+        texas->small_blind_no = texas->dealer_player_no;
+    }
+    texas->big_blind_no = texas->small_blind_no + 1;
+    if(texas->big_blind_no >= texas->player_num)
+        texas->big_blind_no = 0;
+
     /* draw two cards for every player */
     for(i = 0; i < 2; ++i){
+        k = texas->dealer_player_no + 1;
+        if(k >= texas->player_num)
+            k = 0;
         for(j = 0; j < texas->player_num; ++j){
             deck_deal(texas->deck, &card);
-            card_player_draw(&(texas->players[j]), &card);
+            card_player_draw(&(texas->players[k]), &card);
+            k++;
+            if(k >= texas->player_num)
+                k = 0;
         }
     }
 
@@ -90,14 +120,6 @@ void texas_start(texas_t* texas)
         }
     }
 
-    /* the first player */
-    if(!texas->inning)
-        texas->dealer_player_no = rand() % texas->player_num;
-    else{
-        texas->dealer_player_no++;
-        if(texas->dealer_player_no >= texas->player_num)
-            texas->dealer_player_no = 0;
-    }
     texas->inning++;
     texas->curr_player_no = texas->first_player_no; 
 }
@@ -125,7 +147,7 @@ void texas_set_state(texas_t* texas, int state)
     }
 }
 
-int texas_compare(const void* a, const void* b)
+int texas_card_compare(const void* a, const void* b)
 {
     card_t *card1, *card2;
 
@@ -157,7 +179,7 @@ void texas_sort(hand_t* hand)
     if(!hand || !hand->cards)
         return;
 
-    qsort(hand->cards, hand->num, sizeof(card_t), texas_compare);
+    qsort(hand->cards, hand->num, sizeof(card_t), texas_card_compare);
 }
 
 void texas_group(texas_t* texas, int player_no, hand_t* hand)
@@ -589,6 +611,125 @@ int texas_handtype(hand_t* hand, hand_type* htype, hand_t* result)
     }
 
     return TEXAS_HIGHCARD;
+}
+
+int texas_compare(hand_type* a, hand_type* b)
+{
+    int x1,y1;
+
+    if(!a || !b)
+        return 0;
+
+    if(a->type > b->type)
+        return 1;
+    if(a->type < b->type)
+        return -1;
+
+    if(a->type == TEXAS_STRAIGHT_FLUSH || a->type == TEXAS_FLUSH ||
+        a->type == TEXAS_STRAIGHT){
+            if(a->logic_value1 > b->logic_value1)
+                return 1;
+            else if(a->logic_value1 < b->logic_value1)
+                return -1;
+            return 0;
+    }
+
+    if(a->type == TEXAS_FOUR || a->type == TEXAS_FULLHOUSE){
+        if(a->logic_value1 > b->logic_value1)
+            return 1;
+        else if(a->logic_value1 < b->logic_value1)
+            return -1;
+
+        if(a->logic_value2 > b->logic_value2)
+            return 1;
+        else if(a->logic_value2 > b->logic_value2)
+            return -1;
+        return 0;
+    }
+        
+    if(a->type == TEXAS_THREE || a->type == TEXAS_PAIR2){
+        if(a->logic_value1 > b->logic_value1)
+            return 1;
+        else if(a->logic_value1 < b->logic_value1)
+            return -1;
+
+        if(a->logic_value2 > b->logic_value2)
+            return 1;
+        else if(a->logic_value2 > b->logic_value2)
+            return -1;
+
+        if(a->logic_value3 > b->logic_value3)
+            return 1;
+        else if(a->logic_value3 > b->logic_value3)
+            return -1;
+        return 0;
+    }
+    
+    if(a->type == TEXAS_PAIR1){
+        if(a->logic_value1 > b->logic_value1)
+            return 1;
+        else if(a->logic_value1 < b->logic_value1)
+            return -1;
+
+        if(a->logic_value2 > b->logic_value2)
+            return 1;
+        else if(a->logic_value2 < b->logic_value2)
+            return -1;
+
+        x1 = a->logic_value3 >> 8;
+        y1 = b->logic_value3 >> 8;
+        if(x1 > y1)
+            return 1;
+        else if(x1 < y1)
+            return -1;
+
+        x1 = a->logic_value3 & 0xFF;
+        y1 = a->logic_value3 & 0xFF;
+        if(x1 > y1)
+            return 1;
+        else if(x1 < y1)
+            return -1;
+
+        return 0;
+    }
+    if(a->type == TEXAS_HIGHCARD){
+        if(a->logic_value1 > b->logic_value1)
+            return 1;
+        else if(a->logic_value1 < b->logic_value1)
+            return -1;
+
+        x1 = a->logic_value2 >> 8;
+        y1 = b->logic_value2 >> 8;
+        if(x1 > y1)
+            return 1;
+        else if(x1 < y1)
+            return -1;
+
+        x1 = a->logic_value2 & 0xFF;
+        y1 = a->logic_value2 & 0xFF;
+        if(x1 > y1)
+            return 1;
+        else if(x1 < y1)
+            return -1;
+
+        x1 = a->logic_value3 >> 8;
+        y1 = b->logic_value3 >> 8;
+        if(x1 > y1)
+            return 1;
+        else if(x1 < y1)
+            return -1;
+
+        x1 = a->logic_value3 & 0xFF;
+        y1 = a->logic_value3 & 0xFF;
+        if(x1 > y1)
+            return 1;
+        else if(x1 < y1)
+            return -1;
+
+        return 0;        
+    }
+
+    return 0;
 }
 
 void texas_next_player(texas_t* texas)

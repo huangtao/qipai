@@ -39,7 +39,8 @@ void cards_sort(hand_t* hand)
     qsort(hand->cards, hand->num, sizeof(card_t), card_compare); 
 }
 
-void cards_bucket(hand_t* hand, int x[])
+/*
+void rank_bucket(hand_t* hand, int x[])
 {
     int i,v;
     card_t* p;
@@ -51,6 +52,84 @@ void cards_bucket(hand_t* hand, int x[])
         v = card_logicvalue(p);
         x[v]++;
     }
+}
+*/
+
+/**
+ * bucket a hand
+ * return hand suit's number
+ */
+int cards_bucket(hand_t* hand, int x[])
+{
+    int i,v,n;
+    int ss,sh,sc,sd;
+    card_t* p;
+
+    if(!hand || !hand->cards)
+        return 0;
+    ss = sh = sc = sd = 0;
+    for(i = 0; i < hand->num; ++i){
+        p = hand->cards + i;
+        v = card_logicvalue(p);
+        if(p->suit == cdSuitSpade){
+            ss = 1;
+            n = (x[v] >> 12) & 0xF;
+            n++;
+            x[v] &= 0xFFF;
+            x[v] |= (n << 12);
+        }
+        else if(p->suit == cdSuitHeart){
+            sh = 1;
+            n = (x[v] >> 8) & 0xF;
+            n++;
+            x[v] &= 0xF0FF;
+            x[v] |= (n << 8);
+        }
+        else if(p->suit == cdSuitClub){
+            sc = 1;
+            n = (x[v] >> 4) & 0xF;
+            n++;
+            x[v] &= 0xFF0F;
+            x[v] |= (n << 4);
+        }
+        else if(p->suit == cdSuitDiamond){
+            sd = 1;
+            n = x[v] & 0xF;
+            n++;
+            x[v] &= 0xFFF0;
+            x[v] |= n;
+        }
+        else
+            x[v]++;
+    }
+
+    return (ss + sh + sc + sd);
+}
+
+int get_bucket_number(int value, int suit)
+{
+    int num_s,num_h,num_c,num_d;
+
+    if(value == 0){
+        return 0;
+    }
+
+    num_s = num_h = num_c = num_d = 0;
+    num_s = value >> 12;
+    num_h = (value >> 8) & 0xF;
+    num_c = (value >> 4) & 0xF;
+    num_d = value & 0xF;
+
+    if(suit == cdSuitSpade)
+        return num_s;
+    else if(suit == cdSuitHeart)
+        return num_h;
+    else if(suit == cdSuitClub)
+        return num_c;
+    else if(suit == cdSuitDiamond)
+        return num_d;
+
+    return (num_s + num_h + num_c + num_d);
 }
 
 int cards_have_rank(int rank, int x[], int size)
