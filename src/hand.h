@@ -15,9 +15,12 @@ extern "C" {
  * represent a hand or a deck
  */
 typedef struct hand_s{
-    int num;        /* current valid data number of array */
-    int max_size;   /* maximum number of array */
-    card_t* cards;  /* card array */
+    int num;        	/* current valid data number of array */
+    int max_size;   	/* maximum number of array */
+    card_t* cards;  	/* card array */
+    int type;			/* hand type */
+    card_t type_card;	/* max card */
+    int param;          /* user data */
 }hand_t;
 
 /* for hand type calc */
@@ -40,6 +43,8 @@ void hand_from_string(hand_t* hand, char* string);
 card_t* hand_get(hand_t* hand, int n);
 /* hand have this card */
 int hand_have(hand_t* hand, card_t* card);
+int hand_rank_num(hand_t* hand, int rank);
+int hand_suit_num(hand_t* hand, int suit);
 /* push/pop a card to hand and return card num */
 int hand_push(hand_t* hand, card_t* card);
 int hand_pop(hand_t* hand, card_t* card);

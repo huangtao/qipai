@@ -161,7 +161,7 @@ void ddz_analyse(hand_t* hand, analyse_r* ar)
     cards_bucket(hand, x);
     ar->n1 = ar->n2 = ar->n3 = ar->n4 = 0;
     for(i = 0; i < 20; i++){
-        n = get_bucket_number(x[i], cdSuitNone);
+        n = 0;//get_bucket_number(x[i], cdSuitNone);
         switch(n){
         case 1:
             ar->v1[ar->n1] = i;

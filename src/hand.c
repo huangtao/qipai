@@ -59,6 +59,9 @@ void hand_zero(hand_t* hand)
         p++;
     }
     hand->num = 0;
+    hand->type = 0;
+    hand->type_card.rank = 0;
+    hand->type_card.suit = 0;
 }
 
 int hand_num(hand_t* hand)
@@ -99,6 +102,9 @@ void hand_copy(hand_t* src, hand_t* dest)
         p1++;
         p2++;
     }
+    dest->type = src->type;
+    dest->type_card.rank = src->type_card.rank;
+    dest->type_card.suit = src->type_card.suit;
 }
 
 hand_t* hand_clone(hand_t* hand)
@@ -115,6 +121,9 @@ hand_t* hand_clone(hand_t* hand)
         p->cards = (card_t*)malloc(byte_size);
         p->max_size = hand->max_size;
         p->num = hand->num;
+        p->type = hand->type;
+        p->type_card.rank = hand->type_card.rank;
+        p->type_card.suit = hand->type_card.suit;
         memcpy(p->cards, hand->cards, byte_size);
     }
 
@@ -180,6 +189,42 @@ int hand_have(hand_t* hand, card_t* card)
     }
     
     return 0;
+}
+
+int hand_rank_num(hand_t* hand, int rank)
+{
+    int i,n;
+    card_t* p;
+    
+    if(!hand)
+        return 0;
+    
+    n = 0;
+    p = hand->cards;
+    for(i = 0; i < hand->num; i++,p++){
+        if(p->rank == rank)
+            n++;
+    }
+    
+    return n;
+}
+
+int hand_suit_num(hand_t* hand, int suit)
+{
+    int i,n;
+    card_t* p;
+    
+    if(!hand)
+        return 0;
+    
+    n = 0;
+    p = hand->cards;
+    for(i = 0; i < hand->num; i++,p++){
+        if(p->suit == suit)
+            n++;
+    }
+    
+    return n;
 }
 
 card_t* hand_get(hand_t* hand, int n)

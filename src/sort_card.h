@@ -11,14 +11,26 @@ extern "C" {
 
 #include "hand.h"
 
+/* bucket item */
+typedef struct cd_bucket_s{
+    int rank;
+    int num_spade;
+    int num_heart;
+    int num_club;
+    int num_diamond;
+    int num_joker;
+}cd_bucket;
+
 /* sort,compare,etc... */
 void cards_sort(hand_t* hand);
 //void rank_bucket(hand_t* hand, int x[]);
-int cards_bucket(hand_t* hand, int x[]);
-int get_bucket_number(int value, int suit);
+void cards_bucket(hand_t* hand, cd_bucket x[]);
+int get_bucket_suit(cd_bucket* item);
 int cards_have_rank(int rank, int x[], int size);
 int card_compare(const void* a, const void* b);
 int card_logicvalue(card_t* card);
+int rank2logic(int rank);
+int logic2rank(int logic);
 int card_interval(card_t* card1, card_t* card2);
 
 #ifdef __cplusplus

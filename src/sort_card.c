@@ -3,6 +3,7 @@
 
 static int table_suit[6] = { 0, 1, 2, 3, 4, 5 };
 static int table_rank[16] = { 0, 14, 15, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 16, 17 };
+static int table_logic[18] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 1, 2, 14, 15 };
 
 int card_compare(const void* a, const void* b)
 {
@@ -59,89 +60,58 @@ void rank_bucket(hand_t* hand, int x[])
  * bucket a hand
  * return hand suit's number
  */
-int cards_bucket(hand_t* hand, int x[])
+void cards_bucket(hand_t* hand, cd_bucket x[])
 {
-    int i,v,n;
-    int ss,sh,sc,sd;
+    int i,v;
     card_t* p;
 
     if(!hand || !hand->cards)
-        return 0;
-    ss = sh = sc = sd = 0;
+        return;
     for(i = 0; i < hand->num; ++i){
         p = hand->cards + i;
-        v = card_logicvalue(p);
+        v = rank2logic(p->rank);
+        x[v].rank = p->rank;
         if(p->suit == cdSuitSpade){
-            ss = 1;
-            n = (x[v] >> 12) & 0xF;
-            n++;
-            x[v] &= 0xFFF;
-            x[v] |= (n << 12);
+            x[v].num_spade++;
         }
         else if(p->suit == cdSuitHeart){
-            sh = 1;
-            n = (x[v] >> 8) & 0xF;
-            n++;
-            x[v] &= 0xF0FF;
-            x[v] |= (n << 8);
+            x[v].num_heart++;
         }
         else if(p->suit == cdSuitClub){
-            sc = 1;
-            n = (x[v] >> 4) & 0xF;
-            n++;
-            x[v] &= 0xFF0F;
-            x[v] |= (n << 4);
+            x[v].num_club++;
         }
         else if(p->suit == cdSuitDiamond){
-            sd = 1;
-            n = x[v] & 0xF;
-            n++;
-            x[v] &= 0xFFF0;
-            x[v] |= n;
+            x[v].num_diamond++;
         }
         else
-            x[v]++;
+            x[v].num_joker++;
     }
-
-    return (ss + sh + sc + sd);
 }
 
-int get_bucket_number(int value, int suit)
+int get_bucket_suit(cd_bucket* item)
 {
-    int num_s,num_h,num_c,num_d;
-
-    if(value == 0){
-        return 0;
+    if(item){
+        if(item->num_spade)
+            return cdSuitSpade;
+        else if(item->num_heart)
+            return cdSuitHeart;
+        else if(item->num_club)
+            return cdSuitClub;
+        else if(item->num_diamond)
+            return cdSuitDiamond;
+        else if(item->num_joker)
+            return cdSuitJoker;
     }
 
-    num_s = num_h = num_c = num_d = 0;
-    num_s = value >> 12;
-    num_h = (value >> 8) & 0xF;
-    num_c = (value >> 4) & 0xF;
-    num_d = value & 0xF;
-
-    if(suit == cdSuitSpade)
-        return num_s;
-    else if(suit == cdSuitHeart)
-        return num_h;
-    else if(suit == cdSuitClub)
-        return num_c;
-    else if(suit == cdSuitDiamond)
-        return num_d;
-
-    return (num_s + num_h + num_c + num_d);
+    return cdSuitNone;
 }
 
 int cards_have_rank(int rank, int x[], int size)
 {
-    int i,v;
-    card_t card;
+    int i;
 
-    card.rank = rank;
-    card.suit = cdSuitHeart;
-    v = card_logicvalue(&card);
     for(i = 0; i < size; ++i){
-        if(x[i] == v)
+        if(x[i] == rank)
             return 1;
     }
 
@@ -165,7 +135,20 @@ int card_logicvalue(card_t* card)
     if(!card)
         return 0;
 
-    if(card->rank > 15) return 0;
+    return rank2logic(card->rank);
+}
 
-    return table_rank[card->rank];
+int rank2logic(int rank)
+{
+    if(rank > 15) return 0;
+
+    return table_rank[rank];
+}
+
+int logic2rank(int logic)
+{
+    if(logic > 17)
+        return 0;
+
+    return table_logic[logic];
 }

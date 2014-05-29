@@ -57,7 +57,6 @@ typedef struct gp_s{
     int largest_player_no;  /* current round largest player no. */
 
     hand_t* last_hand;      /* last play out cards */
-    hand_type last_htype;   /* last play out cards type */
 
     int player_num;
     card_player_t players[GP_MAX_PLAYER];   /* three player */
@@ -69,10 +68,10 @@ void gp_start(gp_t* gp);      /* start a new game */
 int gp_get_state(gp_t* gp);
 void gp_set_state(gp_t* gp, int state);
 void gp_sort(hand_t* hand);
-const char* gp_htype_name(hand_type* htype);
-void gp_handtype(gp_t* gp, hand_t* hand, hand_type* htype);
+const char* gp_htype_name(int htype);
+void gp_handtype(gp_t* gp, hand_t* hand);
 int gp_play(gp_t* gp, int player_no, hand_t* hand);
-int gp_canplay(gp_t* gp, hand_t* hand, hand_type* cdtype);
+int gp_canplay(gp_t* gp, hand_t* hand);
 void gp_next_player(gp_t* gp);
 int gp_pass(gp_t* gp, int player_no);
 void gp_dump(gp_t* gp);

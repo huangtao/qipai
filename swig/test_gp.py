@@ -18,8 +18,15 @@ class GameFrame(wx.Frame):
         # control
         self.btn_start = wx.Button(self, id=-1, label='NewGame',
             pos=(0,0), size=(100,28))
-        self.btn_start.Bind(wx.EVT_BUTTON, self.ButtonStartClick)
+        self.btn_start.Bind(wx.EVT_BUTTON, self.ButtonStart)
         self.btn_start.SetToolTip(wx.ToolTip("start a new game"))
+        self.btn_estimate = wx.Button(self, id=-1, label='Estimate',
+            pos=(0,0), size=(100,28))
+        self.btn_estimate.Bind(wx.EVT_BUTTON, self.ButtonEstimate)
+        self.btn_estimate.SetToolTip(wx.ToolTip("estimate a hand type")) 
+        self.cb_rule = wx.CheckBox(self, id=-1, label='Zhuji rule',
+            pos=(0,0), size=(100, 20))
+        self.cb_rule.Bind(wx.EVT_CHECKBOX, self.CBRuleClick)
         
         # load all cards image
         suit = ['S','H','C','D']
@@ -51,7 +58,9 @@ class GameFrame(wx.Frame):
         self.rcHand.append(wx.Rect(self.infoW, 0, 0, 0))
         self.flag_up = [0] * 50
         
-        # create game logic        
+        # create game logic
+        self.sel_handtype = 0
+        self.sel_handparam = 0    
         self.gp = libqp.gp_new(0)
         self.gp.player_num = 2
         self.NewGame()
@@ -68,7 +77,35 @@ class GameFrame(wx.Frame):
         self.CalcRect()
         self.Refresh()        
     
-    def ButtonStartClick(self, e):
+    def ButtonStart(self, e):
+        self.NewGame()
+
+    def ButtonEstimate(self, e):
+        cp_no = self.gp.curr_player_no
+        outlist = []
+        for i in range(0, 50):
+            if self.flag_up[i] > 0:
+                outlist.append(i)
+        if len(outlist) > 0:
+            player = libqp.gp_get_player(self.gp, cp_no)
+            hand_p = libqp.gp_get_player_hand(player)
+            hand_out = libqp.hand_new(len(outlist))
+            for j in outlist:
+                card = libqp.hand_get(hand_p, j)
+                libqp.hand_push(hand_out, card)
+            libqp.gp_handtype(self.gp, hand_out)
+            self.sel_handtype = hand_out.type
+            self.sel_handparam = hand_out.param
+            self.Refresh()
+
+
+    def CBRuleClick(self, e):
+        if(self.gp.game_rule == 0):
+            rule = 1
+        else:
+            rule = 0
+        self.gp = libqp.gp_new(rule)
+        self.gp.player_num = 2
         self.NewGame()
                 
     def OnPaint(self, e):
@@ -123,10 +160,11 @@ class GameFrame(wx.Frame):
             x = x + self.pokerOffsetW
         
         # info
-        info = "state:%d\n" % (self.gp.game_state)
+        info = "rule:%d\n" % self.gp.game_rule
+        info += "state:%d\n" % (self.gp.game_state)
         info += "curr player:%d\n" % (self.gp.curr_player_no)
-        info += "last hand:%d" % (self.gp.last_htype.type)
-        info += ",%d\n" % (self.gp.last_htype.logic_value1)
+        info += "last hand:%d,%d\n" % (self.gp.last_hand.type,self.gp.last_hand.param)
+        info += "select:%d,%d" % (self.sel_handtype,self.sel_handparam)
         dc.DrawText(info, 0, 0)
         #dc.SetPen(wx.Pen('#007F0F', 4))
         #dc.DrawLine(0, 0, 50, 50)
@@ -242,6 +280,8 @@ class GameFrame(wx.Frame):
         self._Buffer = wx.EmptyBitmap(width, height)
         
         self.btn_start.MoveXY(width - 110, height - 50)
+        self.btn_estimate.MoveXY(width - 110, height - 90)
+        self.cb_rule.MoveXY(width - 100, height - 120)
         self.CalcRect()        
         self.Refresh()
         
