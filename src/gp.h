@@ -12,6 +12,7 @@ extern "C" {
 #include "deck.h"
 #include "card_player.h"
 
+#define GP_MIN_PLAYER   2
 #define GP_MAX_PLAYER   3
 
 /* gp rule */
