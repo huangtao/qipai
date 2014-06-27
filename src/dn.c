@@ -132,7 +132,8 @@ const char* dn_htype_name(int htype)
 
 void dn_handtype(dn_t* dn, hand_t* hand)
 {
-    int flag,i,n,have_k,have_3;
+    int flag,i,j,k,n;
+    int v1,v2,v3,sum;
     int rank;
     analyse_r ar;
     card_t *p;
@@ -215,6 +216,42 @@ void dn_handtype(dn_t* dn, hand_t* hand)
         hand->type_card.suit = get_bucket_suit(&x[ar.v3[0]]);
         hand->param = ar.v3[0];
         return;
+    }
+
+    /* niu x */
+    sum = 0;
+    flag = 0;
+    for(i = 0; i < 3; ++i){
+        v1 = dn_logicvalue(*(p+i));
+        if(v1 >= 10) v1 = 10;
+        for(j = i + 1; j < 5; ++j){
+            v2 = dn_logicvalue(*(p+j));
+            if(v2 >= 10) v2 =10;
+            for(k = j + 1; k < 5; ++k){
+                v3 = dn_logicvalue(*(p+k));
+                if(v3 >= 10) v3 = 10;
+                sum = v1 + v2 + v3;
+                if(sum % 10) == 0{
+                    flag = 1;
+                    break;
+                }
+            }
+        }
+    }
+    if(flag){
+        /* have niu */
+        hand->type = DN_NIUX;
+        hand->param = (i << 16) || (j << 8) || k;
+        sum = 0;
+        for(n = 0; n < 5; ++n){
+            if(n != i && n != j && n != k){
+                v1 = dn_logic_value(*(p+n));
+                if(v1 >= 10) v1 = 10;
+                sum += v1;
+            }
+        }
+        sum %= 10;
+        hand->type_card.rank = sum;
     }
 
     return;
