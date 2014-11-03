@@ -8,7 +8,7 @@
 #define DECK_FU     1
 #define MAX_CARDS   5
 
-static int table_rank[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 0, 0 };
+static int dn_table_rank[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 0, 0 };
 
 typedef struct analyse_r_s{
     int n1;
@@ -34,7 +34,7 @@ dn_t* dn_new(int rule)
     if(!dn->deck){
         dn_free(dn);
         return 0;
-    }
+    }/*
     dn->debug = 0;
     dn->game_state = DN_GAME_END;
     dn->game_rule = rule;
@@ -45,7 +45,7 @@ dn_t* dn_new(int rule)
     for(i = 0; i < GP_MAX_PLAYER; i++){
         card_player_init(&(dn->players[i]), MAX_CARDS);
         dn->players[i].position = i;
-    }
+    }*/
 
     return dn;
 }
@@ -57,7 +57,7 @@ void dn_free(dn_t* dn)
         return;
     if(dn->deck)
         deck_free(dn->deck);
-    for(i = 0; i < GP_MAX_PLAYER; i++){
+    for(i = 0; i < DN_MAX_PLAYER; i++){
         card_player_clear(&(dn->players[i]));
     }
     free(dn);
@@ -65,7 +65,7 @@ void dn_free(dn_t* dn)
 
 void dn_start(dn_t* dn)
 {
-    int i;
+    int i,j;
     int start_num;
     card_t card;
 
@@ -76,11 +76,11 @@ void dn_start(dn_t* dn)
     dn->game_state = DN_GAME_PLAY;
     for(i = 0; i < DN_MAX_PLAYER; ++i){
         card_player_reset(&(dn->players[i]));
-        pot_turn[i] = 0;
+        dn->pot_turn[i] = 0;
     }
 
     /* draw start cards for every player */
-    if(gp->game_rule == GP_RULE_SUOHA){
+    if(dn->game_rule == DN_RULE_SUOHA){
         start_num = 3;
     }
     else{
@@ -98,7 +98,7 @@ void dn_start(dn_t* dn)
     dn->curr_player_no = dn->first_player_no; 
 }
 
-int dn_get_state(dn_t* gp)
+int dn_get_state(dn_t* dn)
 {
     if(dn)
         return dn->game_state;
@@ -106,7 +106,7 @@ int dn_get_state(dn_t* gp)
     return 0;
 }
 
-void dn_set_state(dn_t* gp, int state)
+void dn_set_state(dn_t* dn, int state)
 {
     if(dn){
         dn->game_state = state;
@@ -202,7 +202,7 @@ void dn_handtype(dn_t* dn, hand_t* hand)
 
     /* for bomb */
     if(ar.n4 > 0){
-        hand->type = GP_BOMB;
+        hand->type = DN_BOMB;
         hand->type_card.rank = x[ar.v4[0]].rank;
         hand->type_card.suit = get_bucket_suit(&x[ar.v3[0]]);
         hand->param = ar.v4[0];
@@ -211,7 +211,7 @@ void dn_handtype(dn_t* dn, hand_t* hand)
 
     /* for three */
     if(ar.n3 == 1 && ar.n2 == 1){
-        hand->type = GP_THREE_P2;
+        hand->type = DN_THREE_P2;
         hand->type_card.rank = x[ar.v3[0]].rank;
         hand->type_card.suit = get_bucket_suit(&x[ar.v3[0]]);
         hand->param = ar.v3[0];
@@ -222,16 +222,16 @@ void dn_handtype(dn_t* dn, hand_t* hand)
     sum = 0;
     flag = 0;
     for(i = 0; i < 3; ++i){
-        v1 = dn_logicvalue(*(p+i));
+        v1 = dn_logicvalue((p+i));
         if(v1 >= 10) v1 = 10;
         for(j = i + 1; j < 5; ++j){
-            v2 = dn_logicvalue(*(p+j));
+            v2 = dn_logicvalue((p+j));
             if(v2 >= 10) v2 =10;
             for(k = j + 1; k < 5; ++k){
-                v3 = dn_logicvalue(*(p+k));
+                v3 = dn_logicvalue((p+k));
                 if(v3 >= 10) v3 = 10;
                 sum = v1 + v2 + v3;
-                if(sum % 10) == 0{
+                if((sum % 10) == 0){
                     flag = 1;
                     break;
                 }
@@ -245,7 +245,7 @@ void dn_handtype(dn_t* dn, hand_t* hand)
         sum = 0;
         for(n = 0; n < 5; ++n){
             if(n != i && n != j && n != k){
-                v1 = dn_logic_value(*(p+n));
+                v1 = dn_logicvalue((p+n));
                 if(v1 >= 10) v1 = 10;
                 sum += v1;
             }
@@ -253,8 +253,6 @@ void dn_handtype(dn_t* dn, hand_t* hand)
         sum %= 10;
         hand->type_card.rank = sum;
     }
-
-    return;
 }
 
 int dn_bet(dn_t* dn, int player_no, unsigned int chip)
@@ -314,5 +312,5 @@ int dn_logicvalue(card_t* card)
     if(!card)
         return 0;
 
-    return dn_table_rank[rank];
+    return dn_table_rank[card->rank];
 }

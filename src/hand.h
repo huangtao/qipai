@@ -27,9 +27,9 @@ typedef struct hand_s{
 typedef struct hand_type_s{
     int type;           /* type enum */
     int num;            /* number */
-    int logic_value1;	/* logic value */
-    int logic_value2;
-    int logic_value3;
+    int param1;	        /* logic value */
+    int param2;
+    int param3;
 }hand_type;
 
 hand_t* hand_new(int max_size);

@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+
 /* poker suit define */
 typedef enum card_suit
 {

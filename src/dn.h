@@ -9,6 +9,7 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
 #include "deck.h"
 #include "card_player.h"
 
@@ -25,9 +26,8 @@ typedef enum dn_rule_e{
 typedef enum dn_type_e{
         DN_NONIU = 0,   /* no niu */
         DN_NIUX,        /* have niu */
-        DN_BOMB,        /* bomb */
         DN_THREE_P2,    /* three plus double (333+44) */
-        DN_BOMB         /* bomb (6666+3), (KKK+3)*/       
+        DN_BOMB,        /* bomb (6666+3), (KKK+3)*/       
         DN_5HUA,        /* all > J (JJQQK) */        
         DN_5XIAO        /* all < 5 (21334) */
 }DN_TYPE;
@@ -60,18 +60,18 @@ typedef struct dn_s{
 }dn_t;
 
 dn_t* dn_new(int rule);
-void dn_free(dn_t* gp);
-void dn_start(dn_t* gp);      /* start a new game */
-int dn_get_state(dn_t* gp);
-void dn_set_state(dn_t* gp, int state);
+void dn_free(dn_t* dn);
+void dn_start(dn_t* dn);      /* start a new game */
+int dn_get_state(dn_t* dn);
+void dn_set_state(dn_t* dn, int state);
 const char* dn_htype_name(int htype);
-void dn_handtype(dn_t* gp, hand_t* hand);
+void dn_handtype(dn_t* dn, hand_t* hand);
 int dn_bet(dn_t* dn, int player_no, unsigned int chip);
 int dn_call(dn_t* dn, int player_no);
 int dn_fold(dn_t* dn, int player_no);
 int dn_allin(dn_t* dn, int player_no);
 void dn_next_player(dn_t* dn);
-void dn_dump(dn_t* gp);
+void dn_dump(dn_t* dn);
 int dn_logicvalue(card_t* card);
 
 #ifdef __cplusplus

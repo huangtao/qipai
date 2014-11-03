@@ -89,7 +89,7 @@ void ddz_start(ddz_t* ddz)
     }
     hand_zero(ddz->last_hand);
     ddz->last_htype.type = 0;
-    ddz->last_htype.logic_value1 = 0;
+    ddz->last_htype.param1 = 0;
 
     /* draw 17 cards for every player */
     for(i = 0; i < 17; ++i){
@@ -218,24 +218,24 @@ void ddz_handtype(hand_t* hand, hand_type* htype)
     if(!hand || !htype)
         return;
     htype->type = DDZ_ERROR;
-    htype->logic_value1 = 0;
+    htype->param1 = 0;
     p = hand->cards;
     switch(hand->num){
     case 0:
         return;
     case 1:
         htype->type = DDZ_SINGLE;
-        htype->logic_value1 = card_logicvalue(p);
+        htype->param1 = card_logicvalue(p);
         return;
     case 2:
         if(p->rank == (p + 1)->rank){
             htype->type = DDZ_DOUBLE;
-            htype->logic_value1 = card_logicvalue(p);
+            htype->param1 = card_logicvalue(p);
             return;
         }
         if(p->suit == cdSuitJoker && p->suit == (p + 1)->suit){
             htype->type = DDZ_ATOM;
-            htype->logic_value1 = card_logicvalue(p);
+            htype->param1 = card_logicvalue(p);
             return;
         }
         return;
@@ -248,17 +248,17 @@ void ddz_handtype(hand_t* hand, hand_type* htype)
     if(ar.n4 > 0){
         if(ar.n4 == 1 && hand->num == 4){
             htype->type = DDZ_BOMB;
-            htype->logic_value1 = ar.v4[0];
+            htype->param1 = ar.v4[0];
             return;
         }
         if(ar.n4 == 1 && hand->num == 6){
             htype->type = DDZ_FOUR_2S;
-            htype->logic_value1 = ar.v4[0];
+            htype->param1 = ar.v4[0];
             return;
         }
         if(ar.n4 == 1 && ar.n2 == 2 && hand->num == 8){
             htype->type = DDZ_FOUR_2D;
-            htype->logic_value1 = ar.v4[0];
+            htype->param1 = ar.v4[0];
             return;
         }
         return;
@@ -269,16 +269,16 @@ void ddz_handtype(hand_t* hand, hand_type* htype)
         if(ar.n3 == 1){
             if(hand->num == 3){
                 htype->type = DDZ_THREE;
-                htype->logic_value1 = ar.v3[0];
+                htype->param1 = ar.v3[0];
             }
             else if(hand->num == 4){
                 htype->type = DDZ_THREE_P1;
-                htype->logic_value1 = ar.v3[0];
+                htype->param1 = ar.v3[0];
             }
             else if(hand->num == 5){
                 if(ar.n2 == 1){
                     htype->type = DDZ_THREE_P2;
-                    htype->logic_value1 = ar.v3[0];
+                    htype->param1 = ar.v3[0];
                 }
             }
             return;
@@ -294,17 +294,17 @@ void ddz_handtype(hand_t* hand, hand_type* htype)
             }
             if(ar.n3 * 3 == hand->num){
                 htype->type = DDZ_T_STRAIGHT;
-                htype->logic_value1 = ar.v3[0];
+                htype->param1 = ar.v3[0];
                 return;
             }
             if(ar.n3 * 4 == hand->num){
                 htype->type = DDZ_THREE_P1;
-                htype->logic_value1 = ar.v3[0];
+                htype->param1 = ar.v3[0];
                 return;
             }
             if(ar.n3 * 5 == hand->num){
                 htype->type = DDZ_THREE_P2;
-                htype->logic_value1 = ar.v3[0];
+                htype->param1 = ar.v3[0];
                 return;
             }
         }
@@ -323,7 +323,7 @@ void ddz_handtype(hand_t* hand, hand_type* htype)
         }
         if(ar.n2 * 2 == hand->num){
             htype->type = DDZ_D_STRAIGHT;
-            htype->logic_value1 = ar.v2[0];
+            htype->param1 = ar.v2[0];
             return;
         }
 
@@ -346,7 +346,7 @@ void ddz_handtype(hand_t* hand, hand_type* htype)
                 return;
         }
         htype->type = DDZ_STRAIGHT;
-        htype->logic_value1 = ar.v1[ar.n1-1];
+        htype->param1 = ar.v1[ar.n1-1];
         return;
     }
 
@@ -414,7 +414,7 @@ int ddz_play(ddz_t* ddz, int player_no, hand_t* hand)
         ddz->last_hand->num++;
     }
     ddz->last_htype.type = htype.type;
-    ddz->last_htype.logic_value1 = htype.logic_value1;
+    ddz->last_htype.param1 = htype.param1;
     ddz->last_htype.num = htype.num;
     ddz->largest_player_no = player_no;
     
@@ -455,7 +455,7 @@ int ddz_canplay(ddz_t* ddz, hand_t* hand, hand_type* htype)
         ddz->last_hand->num != hand->num)
         return 0;
 
-    if(htype->logic_value1 > ddz->last_htype.logic_value1)
+    if(htype->param1 > ddz->last_htype.param1)
         return 1;
 
     return 0;

@@ -12,8 +12,15 @@ extern "C" {
 
 /* define a card player */
 typedef struct card_player_s{
+    int valid;
+    int level;
+    int state;
     int position;
-
+    uint64_t score;
+    uint64_t gold;
+    int param1;
+    int param2;
+   
     /* player's cards */
     hand_t* mycards;
     
