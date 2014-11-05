@@ -88,6 +88,8 @@ typedef struct texas_s{
 
 texas_t* texas_new();
 void texas_free(texas_t* texas);
+void texas_init(texas_t* texas);
+void texas_clear(texas_t* texas);
 void texas_start(texas_t* texas);      /* start a new game */
 void texas_end(texas_t* texas);
 void texas_set_burn(texas_t* texas, int burn);
@@ -96,6 +98,7 @@ uint64_t texas_get_chip(texas_t* texas, int player_no);
 int texas_fold(texas_t* texas, int player_no);
 int texas_bet(texas_t* texas, int player_no, unsigned int chip);
 int texas_call(texas_t* texas, int player_no);
+int texas_check(texas_t* texas, int player_no);
 int texas_raise(texas_t* texas, int player_no, unsigned int chip);
 int texas_allin(texas_t* texas, int player_no);
 int texas_get_state(texas_t* texas);

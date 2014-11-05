@@ -74,6 +74,62 @@ void texas_free(texas_t* texas)
     free(texas);
 }
 
+void texas_init(texas_t* texas)
+{
+    int i,j;
+
+    if(!texas)
+        return;
+    texas->b_burn = 1;
+    texas_set_blind(texas, 1);
+    texas->deck = deck_new(DECK_FU, 0);
+    if(!texas->deck){
+        return;
+    }
+    texas->debug = 0;
+    texas->game_state = TEXAS_GAME_END;
+    texas->inning = 0;
+    texas->turn_time = 30;
+    texas->curr_turn_time = 30;
+    texas->dealer_player_no = 0;
+    texas->small_blind_no = 0;
+    texas->big_blind_no = 0;
+    texas->first_player_no = 0;
+    texas->curr_player_no = 0;
+    texas->largest_player_no = 0;
+    texas->curr_poti = 0;
+
+    for(i = 0; i < TEXAS_MAX_PLAYER; i++){
+        card_player_init(&(texas->players[i]), MAX_CARDS);
+        texas->players[i].valid = 0;
+        texas->players[i].state = 0;
+        texas->players[i].position = i;
+        texas->players[i].gold = 0;
+        texas->players[i].level = 0;
+        texas->players[i].score = 0;
+        texas->players[i].param1 = 0;
+        texas->players[i].param2 = 0;
+        texas->pots[i].total_chip = 0;
+        texas->pots[i].locked = 0;
+        for(j = 0; j < TEXAS_MAX_PLAYER; j++){
+            texas->pots[i].player_chip[j] = 0;
+            texas->pots[i].win_flag[j] = 0;
+        }
+    }
+}
+
+void texas_clear(texas_t* texas)
+{
+    int i;
+    if(!texas)
+        return;
+    if(texas->deck)
+        deck_free(texas->deck);
+    for(i = 0; i < TEXAS_MAX_PLAYER; i++){
+        card_player_clear(&(texas->players[i]));
+    }
+}
+
 void texas_start(texas_t* texas)
 {
     int i,j,k;
@@ -1046,6 +1102,25 @@ int texas_call(texas_t* texas, int player_no)
     else
         texas->players[player_no].state = PLAYER_ACTION_CALL;
 
+    texas_next_step(texas);
+
+    return 1;
+}
+
+int texas_check(texas_t* texas, int player_no)
+{
+    if(!texas)
+        return 0;
+    if(player_no >= texas->player_num)
+        return 0;
+    if(player_no != texas->curr_player_no)
+        return 0;
+    if(texas->pots[texas->curr_poti].player_chip[player_no] !=
+        texas->turn_max_chip){
+            return 0;
+    }
+
+    texas->players[player_no].state = PLAYER_ACTION_CHECK;
     texas_next_step(texas);
 
     return 1;
