@@ -44,6 +44,31 @@ void card_decode(card_t* cd, char x)
         cd->rank = x & 0xf;
     }
 }
+
+const char* cards_print(card_t cards[], int len, int line_number)
+{
+    int i;
+    char buf[256];
+    static char readable[256];
+
+    if(!cards || len > 128)
+        return;
+
+    memset(readable, 0, 256 * sizeof(char));
+    for(i = 0; i < len; ++i){
+        if(cards[i].suit > 5 || cards[i].rank > 15)
+            sprintf(buf, "%c%c ", '-', '-');
+        else
+            sprintf(buf, "%c%c ", c_suit[cards[i].suit], c_rank[cards[i].rank]);
+        if((i+1) % line_number == 0){
+            strcat(buf, "\n");
+        }
+        strcat(readable, buf);
+    }
+
+    return readable;
+}
+
 /*
 card_coll* card_coll_new(int max_size)
 {

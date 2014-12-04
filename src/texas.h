@@ -1,6 +1,7 @@
 ﻿/*
 *
-* code: huangtao117@gmail.com
+* code:huangtao117@gmail.com
+* QQ:409577078
 *
 */
 #ifndef _TEXAS_H
@@ -9,11 +10,13 @@
 extern "C" {
 #endif
 
-#include "deck.h"
-#include "card_player.h"
+#include "card.h"
 
 /* 2+ usually 2-9 */
-#define TEXAS_MAX_PLAYER   8
+#define TEXAS_MAX_PLAYER    8
+/* deck card number */
+#define TEXAS_DECK_NUM      52
+#define TEXAS_MAX_CARDS     7
 
 typedef enum texas_player_action_e{
     PLAYER_ACTION_WAIT = 0,
@@ -48,6 +51,32 @@ typedef enum texas_gamestate_e{
     TEXAS_GAME_POST_RIVER
 }TEXAS_GAMESTATE;
 
+/* texas type */
+typedef struct texas_type_s{
+    int name;           /* type enum */
+    int num;            /* number */
+    int param1;	        /* logic value */
+    int param2;
+    int param3;
+}texas_type;
+
+/* define a texas player */
+typedef struct texas_player_s{
+    int state;
+    uint64_t score;
+    uint64_t gold;
+    int param1;
+    int param2;
+   
+    /* player's cards */
+    int card_num;
+    card_t mycards[TEXAS_MAX_CARDS];
+
+    /* result */
+    texas_type mytype;
+    card_t mybest[5];
+}texas_player_t;
+
 typedef struct texas_pot_s{
     int locked;
     uint64_t total_chip;
@@ -55,17 +84,25 @@ typedef struct texas_pot_s{
     int win_flag[TEXAS_MAX_PLAYER];
 }texas_pot_t;
 
+/**
+ * texas game core 
+ */
 typedef struct texas_s{
     int debug;          /* output debug info */
-    deck_t* deck;       /* deck */
     int game_state;     /* game state */
+    int last_state;     /* last game state */
     int turn_time;      /* turn time */
     int curr_turn_time; /* current turn left time */
     int round;
     int inning;
     int b_burn;         /* is burn card */
+    int b_jump_end;     /* live player all allin need jump to end */
     int player_num;
     int curr_poti;
+
+    /* texas not include joker */
+    int deal_index;
+    card_t deck[TEXAS_DECK_NUM];
 
     int dealer_player_no;   /* button(banker) player no. */
     int small_blind_no;
@@ -78,43 +115,128 @@ typedef struct texas_s{
     unsigned int small_blind;    /* small blind */
     unsigned int min_raise;      /* minimum raise(big blind or last bet) */
 
-    hand_type board_htype;  /* board hand type */
     card_t board[5];        /* five card of board */
 
     texas_pot_t pots[TEXAS_MAX_PLAYER];         /* pot and side-pot */
-    card_player_t players[TEXAS_MAX_PLAYER];
+    texas_player_t players[TEXAS_MAX_PLAYER];
     card_t best[TEXAS_MAX_PLAYER][5];
 }texas_t;
 
-texas_t* texas_new();
-void texas_free(texas_t* texas);
+/**
+ * initialize a texas game core
+ */
 void texas_init(texas_t* texas);
-void texas_clear(texas_t* texas);
-void texas_start(texas_t* texas);      /* start a new game */
+
+/**
+ * start game
+ */
+void texas_start(texas_t* texas);
+
+/**
+ * end game 
+ */
 void texas_end(texas_t* texas);
-void texas_set_burn(texas_t* texas, int burn);
+
+/**
+ * set game smalll blind
+ */
 void texas_set_blind(texas_t* texas, unsigned int chip);
+
+/**
+ * get player chip from current pot
+ */
 uint64_t texas_get_chip(texas_t* texas, int player_no);
+
+/**
+ * get player total win
+ * @texas The texas game handle
+ * @player_no The player no
+ */
+uint64_t texas_player_win(texas_t* texas, int player_no);
+
+/**
+ * get player win from special pot
+ * @texas The texas game handle
+ * @pot_index The chip pot index
+ * @player_no The player no
+ */
+uint64_t texas_pot_win(texas_t* texas, int pot_index, int player_no);
+
+/**
+ * get player call need chip
+ */
+uint64_t texas_call_need_chip(texas_t* texas, int player_no);
+
+/**
+ * fold action
+ */
 int texas_fold(texas_t* texas, int player_no);
-int texas_bet(texas_t* texas, int player_no, unsigned int chip);
-int texas_call(texas_t* texas, int player_no);
+
+/**
+ * bet action
+ * return bet chip
+ */
+uint64_t texas_bet(texas_t* texas, int player_no, unsigned int chip);
+
+/**
+ * call action
+ * return call chip
+ */
+uint64_t texas_call(texas_t* texas, int player_no);
+
+/**
+ * check action
+ */
 int texas_check(texas_t* texas, int player_no);
-int texas_raise(texas_t* texas, int player_no, unsigned int chip);
-int texas_allin(texas_t* texas, int player_no);
-int texas_get_state(texas_t* texas);
-void texas_set_state(texas_t* texas, int state);
-int texas_card_compare(const void* a, const void* b);
-void texas_sort(hand_t* hand);
-void texas_group(texas_t* texas, int player_no, hand_t* hand);
-int texas_handtype(hand_t* hand, hand_type* htype, hand_t* best_hand);
-int texas_compare(hand_type* a, hand_type* b);
+
+/**
+ * raiseto action
+ * return out chip (call+raise)
+ * @chip : raise to this value
+ */
+uint64_t texas_raiseto(texas_t* texas, int player_no, unsigned int chip);
+
+/**
+ * raise action
+ * return out chip (call+raise)
+ * @chip : raise value
+ */
+uint64_t texas_raise(texas_t* texas, int player_no, unsigned int chip);
+
+/**
+ * allin action
+ * return out chip
+ */
+uint64_t texas_allin(texas_t* texas, int player_no);
+
+/**
+ * calc player's texas type and best hand
+ */
+void texas_calc_type(texas_t* texas, int player_no);
+
+/**
+ * game process
+ */
 void texas_next_step(texas_t* texas);
-int texas_count_notfolded(texas_t* texas);
+
+/**
+ * get live player(not fold)
+ */
+int texas_live_num(texas_t* texas);
+
+/**
+ * split pot(if need)
+ */
 int texas_pot_split(texas_t* texas);
-void texas_get_folp(texas_t* texas, card_t* c1, card_t* c2, card_t* c3);
-void texas_get_turn(texas_t* texas, card_t* card);
-void texas_get_river(texas_t* texas, card_t* card);
+
+/**
+ * get card logic value
+ */
 int texas_logicvalue(card_t* card);
+
+/**
+ * get card rank from logic value
+ */
 int texas_rankvalue(int logic_value);
 
 #ifdef __cplusplus

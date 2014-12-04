@@ -71,25 +71,16 @@ typedef struct card_s{
     int rank;   /* card rank */
 }card_t;
 
-/* represent a collection of cards, for example a hand or a deck */
-//typedef struct card_coll_s{
-//    int num;        /* current valid data number of array */
-//    int max_size;   /* maximum number of array */
-//    card_t* cards;  /* card array */
-//}card_coll;
-
-/* for card type calc */
-//typedef struct card_type_s{
-//    int type;           /* type enum */
-//    int num;            /* number */
-//    int logic_value;    /* logic value */
-//}card_type;
-
 /* card oprate */
 void card_init(card_t* card, const char* sn);
 int card_equal(card_t* a, card_t* b);
 char card_encode(card_t* card);
 void card_decode(card_t* card, char x);
+
+/**
+ * print cards to a readable string
+ */
+const char* cards_print(card_t cards[], int len, int line_number);
 
 ///* card collection oprate */
 //card_coll* card_coll_new(int max_size);
@@ -103,7 +94,6 @@ void card_decode(card_t* card, char x);
 //int card_coll_del(card_coll* coll, card_t* card);
 //int card_cool_trim(card_coll* coll);
 ///* print readable format */
-//void card_cool_print(card_coll* coll, int line_number);
 //const char* card_text(card_t* card);
 
 #ifdef __cplusplus
