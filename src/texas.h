@@ -78,7 +78,6 @@ typedef struct texas_player_s{
 }texas_player_t;
 
 typedef struct texas_pot_s{
-    int locked;
     uint64_t total_chip;
     uint64_t player_chip[TEXAS_MAX_PLAYER];
     int win_flag[TEXAS_MAX_PLAYER];

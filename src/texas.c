@@ -115,7 +115,6 @@ void texas_init(texas_t* texas)
         }
 
         texas->pots[i].total_chip = 0;
-        texas->pots[i].locked = 0;
         for(j = 0; j < TEXAS_MAX_PLAYER; j++){
             texas->pots[i].player_chip[j] = 0;
             texas->pots[i].win_flag[j] = 0;
@@ -160,7 +159,6 @@ void texas_start(texas_t* texas)
         }
 
         texas->pots[i].total_chip = 0;
-        texas->pots[i].locked = 0;
         for(j = 0; j < TEXAS_MAX_PLAYER; ++j){
             texas->pots[i].player_chip[j] = 0;
             texas->pots[i].win_flag[j] = 0;
@@ -656,9 +654,9 @@ void texas_end(texas_t* texas)
             }
         }
 
-        ttmax.name = TEXAS_HIGHCARD;
-        ttmax.param1 = 0;
         for(i = 0; i <= texas->curr_poti; i++){
+            ttmax.name = TEXAS_HIGHCARD;
+            ttmax.param1 = 0;
             /* get this pot max hand */
             for(j = 0; j < texas->player_num; j++){
                 if(texas->pots[i].player_chip[j] > 0 &&
@@ -687,12 +685,13 @@ void texas_end(texas_t* texas)
                         }
                 }
             }
+            /* alloc this pot */
             for(j = 0; j < texas->player_num; j++){
                 if(texas->pots[i].win_flag[j] > 0){
                     texas->players[j].gold += texas->pots[i].total_chip / n;
                 }
             }
-        }
+        } // for pot
     }
     else{
         for(i = 0; i < texas->player_num; i++){
@@ -846,19 +845,29 @@ int texas_pot_split(texas_t* texas)
                 split = 1;
         }
     }
+    if(num == 1) split = 0;
+
     if(split){
         for(i = 0; i < TEXAS_MAX_PLAYER; i++){
-            temp[i] = texas->pots[texas->curr_poti].player_chip[i];
-            temp[i] -= min_chip;
-            if(texas->pots[texas->curr_poti].player_chip[i] > 0)
+            if(texas->pots[texas->curr_poti].player_chip[i] > 0){
+                temp[i] = texas->pots[texas->curr_poti].player_chip[i];
+                temp[i] -= min_chip;
                 texas->pots[texas->curr_poti].player_chip[i] = min_chip;
+            }
+            else
+                temp[i] = 0;
         }
         texas->pots[texas->curr_poti].total_chip = num * min_chip;
-        texas->pots[texas->curr_poti].locked = 1;
         texas->curr_poti++;
         if(texas->curr_poti >= TEXAS_MAX_PLAYER){
             printf("pot out of range when split!\n");
-            return split;
+            return 0;
+        }
+
+        texas->pots[texas->curr_poti].total_chip = 0;
+        for(i = 0; i < TEXAS_MAX_PLAYER; i++){
+            texas->pots[texas->curr_poti].player_chip[i] = temp[i];
+            texas->pots[texas->curr_poti].total_chip += temp[i];
         }
     }
 
