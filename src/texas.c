@@ -264,7 +264,7 @@ void texas_set_blind(texas_t* texas, unsigned int chip)
     texas->min_raise = 2 * texas->small_blind;
 }
 
-uint64_t texas_get_chip(texas_t* texas, int player_no)
+uint64_t texas_player_bet(texas_t* texas, int player_no)
 {
     int i;
     uint64_t chip;
@@ -273,7 +273,7 @@ uint64_t texas_get_chip(texas_t* texas, int player_no)
         return 0;
 
     chip = 0;
-    for(i = 0; i < texas->curr_poti; i++){
+    for(i = 0; i <= texas->curr_poti; i++){
         chip += texas->pots[i].player_chip[player_no];
     }
 

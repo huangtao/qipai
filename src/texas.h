@@ -142,9 +142,9 @@ void texas_end(texas_t* texas);
 void texas_set_blind(texas_t* texas, unsigned int chip);
 
 /**
- * get player chip from current pot
+ * get player's bet chip from pot
  */
-uint64_t texas_get_chip(texas_t* texas, int player_no);
+uint64_t texas_player_bet(texas_t* texas, int player_no);
 
 /**
  * get player total win

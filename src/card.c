@@ -51,8 +51,10 @@ const char* cards_print(card_t cards[], int len, int line_number)
     char buf[256];
     static char readable[256];
 
-    if(!cards || len > 128)
-        return;
+    if (!cards || len > 128) {
+        sprintf(buf, "");
+        return readable;
+    }
 
     memset(readable, 0, 256 * sizeof(char));
     for(i = 0; i < len; ++i){
