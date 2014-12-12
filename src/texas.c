@@ -765,26 +765,8 @@ void texas_next_step(texas_t* texas)
         }
         else{
             /* goto next game state */
-            texas->turn_max_chip = 0;
-            texas->min_raise = 2 * texas->small_blind;
-            texas->last_state = texas->game_state;
             texas->game_state++;
-            if(texas->player_num == 2)
-                texas->curr_player_no = texas->big_blind_no;
-            else
-                texas->curr_player_no = texas->small_blind_no;
-            for(i = 0; i < texas->player_num; i++){
-                if(texas->players[i].state != PLAYER_ACTION_FOLD &&
-                    texas->players[i].state != PLAYER_ACTION_ALLIN){
-                        texas->players[i].state = PLAYER_ACTION_WAIT;
-                }
-                if(texas->players[texas->curr_player_no].state == PLAYER_ACTION_FOLD ||
-                    texas->players[texas->curr_player_no].state == PLAYER_ACTION_ALLIN){
-                        texas->curr_player_no++;
-                        if(texas->curr_player_no >= texas->player_num)
-                            texas->curr_player_no = 0;
-                }
-            }
+            texas_step_init(texas);
         }
     }
     else{
@@ -801,6 +783,31 @@ void texas_next_step(texas_t* texas)
             break;
         }
     }    
+}
+
+void texas_step_init(texas_t* texas)
+{
+    int i;
+
+    texas->turn_max_chip = 0;
+    texas->min_raise = 2 * texas->small_blind;
+    texas->last_state = texas->game_state;
+    if(texas->player_num == 2)
+        texas->curr_player_no = texas->big_blind_no;
+    else
+        texas->curr_player_no = texas->small_blind_no;
+    for(i = 0; i < texas->player_num; i++){
+        if(texas->players[i].state != PLAYER_ACTION_FOLD &&
+            texas->players[i].state != PLAYER_ACTION_ALLIN){
+                texas->players[i].state = PLAYER_ACTION_WAIT;
+        }
+        if(texas->players[texas->curr_player_no].state == PLAYER_ACTION_FOLD ||
+            texas->players[texas->curr_player_no].state == PLAYER_ACTION_ALLIN){
+                texas->curr_player_no++;
+                if(texas->curr_player_no >= texas->player_num)
+                    texas->curr_player_no = 0;
+        }
+    }
 }
 
 int texas_live_num(texas_t* texas)
@@ -902,11 +909,10 @@ int texas_fold(texas_t* texas, int player_no)
         return 0;
     if(player_no >= texas->player_num)
         return 0;
-    if(player_no != texas->curr_player_no)
-        return 0;
 
     texas->players[player_no].state = PLAYER_ACTION_FOLD;
-    texas_next_step(texas);
+    if(player_no == texas->curr_player_no)
+        texas_next_step(texas);
     
     return 1;
 }

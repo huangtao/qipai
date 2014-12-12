@@ -219,6 +219,11 @@ void texas_calc_type(texas_t* texas, int player_no);
 void texas_next_step(texas_t* texas);
 
 /**
+ * when a step start, init some data
+ */
+void texas_step_init(texas_t* texas);
+
+/**
  * get live player(not fold)
  */
 int texas_live_num(texas_t* texas);
