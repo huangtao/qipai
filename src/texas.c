@@ -89,6 +89,8 @@ void texas_init(texas_t* texas)
     texas->largest_player_no = 0;
     texas->curr_poti = 0;
     texas->player_num = 0;
+    texas->turn_max_chip = 0;
+    texas->min_raise = 0;
 
     for(i = 0; i < 5; i++){
         texas->board[i].rank = 0;
@@ -108,6 +110,7 @@ void texas_init(texas_t* texas)
         }
         texas->players[i].mytype.name = 0;
         texas->players[i].mytype.param1 = 0;
+        texas->players[i].mytype.param2 = 0;
         for(j = 0; j < 5; j++){
             texas->players[i].mybest[j].rank = 0;
             texas->players[i].mybest[j].suit = 0;

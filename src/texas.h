@@ -54,10 +54,8 @@ typedef enum texas_gamestate_e{
 /* texas type */
 typedef struct texas_type_s{
     int name;           /* type enum */
-    int num;            /* number */
     int param1;	        /* logic value */
     int param2;
-    int param3;
 }texas_type;
 
 /* define a texas player */
@@ -118,7 +116,6 @@ typedef struct texas_s{
 
     texas_pot_t pots[TEXAS_MAX_PLAYER];         /* pot and side-pot */
     texas_player_t players[TEXAS_MAX_PLAYER];
-    card_t best[TEXAS_MAX_PLAYER][5];
 }texas_t;
 
 /**
