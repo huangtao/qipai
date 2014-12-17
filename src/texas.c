@@ -131,13 +131,19 @@ void texas_start(texas_t* texas)
 
     if(!texas)
         return;
-    if(texas->player_num < 2)
+    if(texas->player_num < 2) {
+        printf("texas must >= 2 player!\n");
         return;
-    if(texas->small_blind <= 0)
+    }
+    if(texas->small_blind <= 0) {
+        printf("small blind must > 0!\n");
         return;
+    }
     for(i = 0;i < texas->player_num; i++){
-        if(texas->players[i].gold < (texas->small_blind * 2))
+        if(texas->players[i].gold < (texas->small_blind * 2)) {
+            printf("player's gold < small blind!\n");
             return;
+        }
     }
 
     _deck_shuffle(texas);
@@ -200,6 +206,7 @@ void texas_start(texas_t* texas)
 
     /* about chip */
     texas->turn_max_chip = texas->small_blind * 2;
+    texas->min_raise = texas->small_blind * 2;
     texas->pots[0].total_chip = 3 * texas->small_blind;
     texas->pots[0].player_chip[texas->small_blind_no] = texas->small_blind;
     texas->pots[0].player_chip[texas->big_blind_no] = texas->small_blind * 2;
@@ -263,6 +270,8 @@ void texas_set_blind(texas_t* texas, unsigned int chip)
         return;
 
     texas->small_blind = chip;
+    if(texas->small_blind == 0)
+        texas->small_blind = 1;
     texas->min_raise = 2 * texas->small_blind;
 }
 
@@ -271,8 +280,10 @@ uint64_t texas_player_bet(texas_t* texas, int player_no)
     int i;
     uint64_t chip;
 
-    if(player_no >= texas->player_num)
+    if(player_no >= texas->player_num) {
+        printf("player_bet no error!\n");
         return 0;
+    }
 
     chip = 0;
     for(i = 0; i <= texas->curr_poti; i++){
@@ -289,8 +300,10 @@ uint64_t texas_player_win(texas_t* texas, int player_no)
 
     if(!texas)
         return 0;
-    if(player_no >= texas->player_num)
+    if(player_no >= texas->player_num) {
+        printf("player_win player no error!\n");
         return 0;
+    }
 
     chip = 0;
     for(i = 0; i <= texas->curr_poti; i++){
@@ -307,10 +320,14 @@ uint64_t texas_pot_win(texas_t* texas, int pot_index, int player_no)
 
     if(!texas)
         return 0;
-    if(pot_index > texas->curr_poti)
+    if(pot_index > texas->curr_poti) {
+        printf("pot index error!\n");
         return 0;
-    if(player_no >= texas->player_num)
+    }
+    if(player_no >= texas->player_num) {
+        printf("pot_win player no error!\n");
         return 0;
+    }
 
     if(texas->pots[pot_index].win_flag[player_no]){
         n = 0;
@@ -339,11 +356,15 @@ void texas_calc_type(texas_t* texas, int player_no)
 
     if(!texas)
         return;
-    if(player_no >= texas->player_num)
+    if(player_no >= texas->player_num) {
+        printf("calc type player no error!\n");
         return;
+    }
 
-    if(texas->players[player_no].card_num < 5)
+    if(texas->players[player_no].card_num < 5) {
+        printf("calc type card num must >= 5!\n");
         return;
+    }
 
     texas->players[player_no].mytype.name = TEXAS_HIGHCARD;
     texas->players[player_no].mytype.param1 = 0;
@@ -780,9 +801,6 @@ void texas_next_step(texas_t* texas)
             state = texas->players[texas->curr_player_no].state;
             if(state == PLAYER_ACTION_FOLD || state == PLAYER_ACTION_ALLIN)
                 continue;
-            if(state == PLAYER_ACTION_CHECK &&
-                texas->players[texas->curr_player_no].gold == 0)
-                continue;
             break;
         }
     }    
@@ -795,20 +813,23 @@ void texas_step_init(texas_t* texas)
     texas->turn_max_chip = 0;
     texas->min_raise = 2 * texas->small_blind;
     texas->last_state = texas->game_state;
-    if(texas->player_num == 2)
-        texas->curr_player_no = texas->big_blind_no;
-    else
-        texas->curr_player_no = texas->small_blind_no;
     for(i = 0; i < texas->player_num; i++){
         if(texas->players[i].state != PLAYER_ACTION_FOLD &&
             texas->players[i].state != PLAYER_ACTION_ALLIN){
                 texas->players[i].state = PLAYER_ACTION_WAIT;
         }
+    }
+    if(texas->player_num == 2)
+        texas->curr_player_no = texas->big_blind_no;
+    else
+        texas->curr_player_no = texas->small_blind_no;
+    for(i = 0; i < texas->player_num; i++){
         if(texas->players[texas->curr_player_no].state == PLAYER_ACTION_FOLD ||
             texas->players[texas->curr_player_no].state == PLAYER_ACTION_ALLIN){
                 texas->curr_player_no++;
                 if(texas->curr_player_no >= texas->player_num)
                     texas->curr_player_no = 0;
+                break;
         }
     }
 }
@@ -828,48 +849,63 @@ int texas_live_num(texas_t* texas)
 
 int texas_pot_split(texas_t* texas)
 {
-    int split,i,num;
+    int split,i,live_num,pot_num;
     uint64_t min_chip,max_chip;
     uint64_t temp[TEXAS_MAX_PLAYER];
 
-    /* get max chip from the pot */
+    split = 0;
+    /* get max chip and num from the pot */
     max_chip = min_chip = 0;
+    live_num = pot_num = 0;
     for(i = 0; i < texas->player_num; i++){
+        if(texas->players[i].state == PLAYER_ACTION_FOLD)
+            continue;
+        live_num++;
+        if(texas->pots[texas->curr_poti].player_chip[i] == 0)
+            continue;
+        pot_num++;
         if(texas->pots[texas->curr_poti].player_chip[i] > max_chip)
             max_chip = texas->pots[texas->curr_poti].player_chip[i];
     }
+    if(live_num <= 1)
+        return 0;
+    if(pot_num <= 1)
+        return 0;
 
-    /* need split? */
+    /* get min chip from the pot */
     min_chip = max_chip;
-    num = 0;
-    split = 0;
     for(i = 0; i < texas->player_num; i++){
-        if(texas->pots[texas->curr_poti].player_chip[i] > 0)
-            num++;
+        if(texas->players[i].state == PLAYER_ACTION_FOLD)
+            continue;
+        if(texas->pots[texas->curr_poti].player_chip[i] == 0)
+            continue;
         if(texas->pots[texas->curr_poti].player_chip[i] < min_chip)
             min_chip = texas->pots[texas->curr_poti].player_chip[i];
-        if(texas->pots[texas->curr_poti].player_chip[i] < max_chip &&
-            texas->players[i].state != PLAYER_ACTION_FOLD &&
-            texas->players[i].gold == 0){
-                split = 1;
-        }
     }
-    if(num == 1) split = 0;
+
+    /* need split? */
+    split = (min_chip == max_chip ? 0 : 1);
 
     if(split){
-        for(i = 0; i < TEXAS_MAX_PLAYER; i++){
+        memset(temp, 0, sizeof(uint64_t) * TEXAS_MAX_PLAYER);
+        for(i = 0; i < texas->player_num; i++){
             if(texas->pots[texas->curr_poti].player_chip[i] > 0){
-                temp[i] = texas->pots[texas->curr_poti].player_chip[i];
-                temp[i] -= min_chip;
-                texas->pots[texas->curr_poti].player_chip[i] = min_chip;
+                if(texas->pots[texas->curr_poti].player_chip[i] > min_chip){
+                    temp[i] = texas->pots[texas->curr_poti].player_chip[i];
+                    temp[i] -= min_chip;
+                    texas->pots[texas->curr_poti].player_chip[i] = min_chip;
+                }
             }
-            else
-                temp[i] = 0;
         }
-        texas->pots[texas->curr_poti].total_chip = num * min_chip;
+        texas->pots[texas->curr_poti].total_chip = 0;
+        for(i = 0; i < texas->player_num; i++){
+            texas->pots[texas->curr_poti].total_chip +=
+                texas->pots[texas->curr_poti].player_chip[i];
+        }
         texas->curr_poti++;
         if(texas->curr_poti >= TEXAS_MAX_PLAYER){
-            printf("pot out of range when split!\n");
+            texas->curr_poti = 0;
+            printf("!!!error:pot out of range when split!\n");
             return 0;
         }
 
@@ -890,8 +926,10 @@ uint64_t texas_call_need_chip(texas_t* texas, int player_no)
 
     if(!texas)
         return 0;
-    if(player_no >= texas->player_num)
+    if(player_no >= texas->player_num) {
+        printf("call_need_chip player no error!\n");
         return 0;
+    }
 
     chip = 0;
     for(i = 0; i < TEXAS_MAX_PLAYER; i++){
@@ -910,8 +948,10 @@ int texas_fold(texas_t* texas, int player_no)
 {
     if(!texas)
         return 0;
-    if(player_no >= texas->player_num)
+    if(player_no >= texas->player_num){
+        printf("fold player no error!\n");
         return 0;
+    }
 
     texas->players[player_no].state = PLAYER_ACTION_FOLD;
     if(player_no == texas->curr_player_no)
@@ -924,16 +964,26 @@ uint64_t texas_bet(texas_t* texas, int player_no, unsigned int chip)
 {
     if(!texas)
         return 0;
-    if(player_no >= texas->player_num)
+    if(player_no >= texas->player_num){
+        printf("bet player no error!\n");
         return 0;
-    if(player_no != texas->curr_player_no)
+    }
+    if(player_no != texas->curr_player_no){
+        printf("bet but not curr player no!\n");
         return 0;
-    if(texas->turn_max_chip > 0)
+    }
+    if(texas->turn_max_chip > 0){
+        printf("bet but turn_max_chip > 0!\n");
         return 0;
-    if(chip > texas->players[player_no].gold)
+    }
+    if(chip > texas->players[player_no].gold){
+        printf("bet but player not enough gold!\n");
         return 0;
-    if(chip < (texas->small_blind * 2))
+    }
+    if(chip < (texas->small_blind * 2)){
+        printf("bet but chip < small_blind * 2!\n");
         return 0;
+    }
 
     texas->turn_max_chip = chip;
     if(chip > texas->min_raise)
@@ -957,12 +1007,18 @@ uint64_t texas_call(texas_t* texas, int player_no)
 
     if(!texas)
         return 0;
-    if(player_no >= texas->player_num)
+    if(player_no >= texas->player_num){
+        printf("call player no error!\n");
         return 0;
-    if(player_no != texas->curr_player_no)
+    }
+    if(player_no != texas->curr_player_no){
+        printf("call but not curr player no!\n");
         return 0;
-    if(texas->players[player_no].gold == 0)
+    }
+    if(texas->players[player_no].gold == 0){
+        printf("call but player's gold is zero!\n");
         return 0;
+    }
 
     call_chip = texas_call_need_chip(texas, player_no);
     if(call_chip > texas->players[player_no].gold)
@@ -987,10 +1043,14 @@ int texas_check(texas_t* texas, int player_no)
 
     if(!texas)
         return 0;
-    if(player_no >= texas->player_num)
+    if(player_no >= texas->player_num){
+        printf("check player no error!\n");
         return 0;
-    if(player_no != texas->curr_player_no)
+    }
+    if(player_no != texas->curr_player_no){
+        printf("check but not curr player no!\n");
         return 0;
+    }
 
     if(texas->turn_max_chip > 0){
         call_chip = texas_call_need_chip(texas, player_no);
@@ -1011,21 +1071,33 @@ uint64_t texas_raiseto(texas_t* texas, int player_no, unsigned int chip)
 
     if(!texas)
         return 0;
-    if(player_no >= texas->player_num)
+    if(player_no >= texas->player_num){
+        printf("raiseto player no error!\n");
         return 0;
-    if(player_no != texas->curr_player_no)
+    }
+    if(player_no != texas->curr_player_no){
+        printf("raiseto but not curr player no!\n");
         return 0;
-    if(texas->turn_max_chip == 0)
+    }
+    if(texas->turn_max_chip == 0) {
+        printf("raiseto but turn_max_chip=0!\n");
         return 0;
-    if(chip > texas->players[player_no].gold)
+    }
+    if(chip > texas->players[player_no].gold) {
+        printf("raiseto but not enough gold!\n");
         return 0;
+    }
 
     call_chip = texas_call_need_chip(texas, player_no);
-    if(chip <= call_chip)
+    if(chip <= call_chip) {
+        printf("raiseto chip = call_chip!\n");
         return 0;
+    }
     raise_chip = chip - call_chip;
-    if(raise_chip < texas->min_raise)
+    if(raise_chip < texas->min_raise) {
+        printf("raiseto chip < min_raise!\n");
         return 0;
+    }
 
     if(raise_chip > texas->min_raise)
         texas->min_raise = raise_chip;
@@ -1049,19 +1121,29 @@ uint64_t texas_raise(texas_t* texas, int player_no, unsigned int chip)
 
     if(!texas)
         return 0;
-    if(player_no >= texas->player_num)
+    if(player_no >= texas->player_num){
+        printf("raise player no error!\n");
         return 0;
-    if(player_no != texas->curr_player_no)
+    }
+    if(player_no != texas->curr_player_no){
+        printf("raise but not curr player no!\n");
         return 0;
-    if(texas->turn_max_chip == 0)
+    }
+    if(texas->turn_max_chip == 0){
+        printf("raise but turn_max_chip > 0!\n");
         return 0;
-    if(chip < texas->min_raise)
+    }
+    if(chip < texas->min_raise){
+        printf("raise but chip < min raise!\n");
         return 0;
+    }
 
     out_chip = texas_call_need_chip(texas, player_no);
     out_chip += chip;
-    if(out_chip > texas->players[player_no].gold)
+    if(out_chip > texas->players[player_no].gold){
+        printf("raise but player not enough gold!\n");
         return 0;
+    }
 
     if(chip > texas->min_raise)
         texas->min_raise = chip;
@@ -1085,12 +1167,18 @@ uint64_t texas_allin(texas_t* texas, int player_no)
 
     if(!texas)
         return 0;
-    if(player_no >= texas->player_num)
+    if(player_no >= texas->player_num){
+        printf("allin player no error!\n");
         return 0;
-    if(player_no != texas->curr_player_no)
+    }
+    if(player_no != texas->curr_player_no){
+        printf("allin but not curr player no!\n");
         return 0;
-    if(texas->players[player_no].gold == 0)
+    }
+    if(texas->players[player_no].gold == 0){
+        printf("allin but player's gold is zero!\n");
         return 0;
+    }
 
     chip = texas_call_need_chip(texas, player_no);
     if(chip < texas->players[player_no].gold)
@@ -1112,14 +1200,19 @@ int texas_logicvalue(card_t* card)
     if(!card)
         return 0;
 
-    if(card->rank > cdRankK) return 0;
+    if(card->rank > cdRankK){
+        printf("logicvalue but rank > cdRankK!\n");
+        return 0;
+    }
 
     return texas_table_rank[card->rank];
 }
 
 int texas_rankvalue(int logic_value)
 {
-    if(logic_value > 14 || logic_value < 0)
+    if(logic_value > 14 || logic_value < 0){
+        printf("rankvalue error logic value!\n");
         return 0;
+    }
     return texas_table_logic[logic_value];
 }
