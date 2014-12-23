@@ -94,8 +94,8 @@ typedef struct texas_s{
     int inning;
     int b_burn;         /* is burn card */
     int b_jump_end;     /* live player all allin need jump to end */
-    int player_num;
     int curr_poti;
+    int player_num;    /* game players number */
 
     /* texas not include joker */
     int deal_index;
@@ -109,8 +109,8 @@ typedef struct texas_s{
     int largest_player_no;  /* current round largest player no. */
 
     uint64_t turn_max_chip;
-    unsigned int small_blind;    /* small blind */
-    unsigned int min_raise;      /* minimum raise(big blind or last bet) */
+    uint64_t min_raise;         /* minimum raise(big blind or last bet) */
+    unsigned int small_blind;   /* small blind */
 
     card_t board[5];        /* five card of board */
 

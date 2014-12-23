@@ -143,6 +143,10 @@ void texas_start(texas_t* texas)
         printf("texas must >= 2 player!\n");
         return;
     }
+    if(texas->player_num >= TEXAS_MAX_PLAYER) {
+        printf("texas must < %d player!\n", TEXAS_MAX_PLAYER);
+        return;
+    }
     if(texas->small_blind <= 0) {
         printf("small blind must > 0!\n");
         return;
@@ -288,7 +292,7 @@ uint64_t texas_player_bet(texas_t* texas, int player_no)
     int i;
     uint64_t chip;
 
-    if(player_no >= texas->player_num) {
+    if(player_no >= texas->player_num || player_no < 0) {
         printf("player_bet no error!\n");
         return 0;
     }
@@ -308,8 +312,8 @@ uint64_t texas_player_win(texas_t* texas, int player_no)
 
     if(!texas)
         return 0;
-    if(player_no >= texas->player_num) {
-        printf("player_win player no error!\n");
+    if(player_no >= texas->player_num || player_no < 0) {
+        printf("player_win no error!\n");
         return 0;
     }
 
@@ -328,11 +332,11 @@ uint64_t texas_pot_win(texas_t* texas, int pot_index, int player_no)
 
     if(!texas)
         return 0;
-    if(pot_index > texas->curr_poti) {
+    if(pot_index > texas->curr_poti || pot_index < 0) {
         printf("pot index error!\n");
         return 0;
     }
-    if(player_no >= texas->player_num) {
+    if(player_no >= texas->player_num || player_no < 0) {
         printf("pot_win player no error!\n");
         return 0;
     }
@@ -364,7 +368,7 @@ void texas_calc_type(texas_t* texas, int player_no)
 
     if(!texas)
         return;
-    if(player_no >= texas->player_num) {
+    if(player_no >= texas->player_num || player_no < 0) {
         printf("calc type player no error!\n");
         return;
     }
@@ -934,7 +938,7 @@ uint64_t texas_call_need_chip(texas_t* texas, int player_no)
 
     if(!texas)
         return 0;
-    if(player_no >= texas->player_num) {
+    if(player_no >= texas->player_num || player_no < 0) {
         printf("call_need_chip player no error!\n");
         return 0;
     }
@@ -956,7 +960,7 @@ int texas_fold(texas_t* texas, int player_no)
 {
     if(!texas)
         return 0;
-    if(player_no >= texas->player_num){
+    if(player_no >= texas->player_num || player_no < 0){
         printf("fold player no error!\n");
         return 0;
     }
@@ -972,7 +976,7 @@ uint64_t texas_bet(texas_t* texas, int player_no, unsigned int chip)
 {
     if(!texas)
         return 0;
-    if(player_no >= texas->player_num){
+    if(player_no >= texas->player_num || player_no < 0){
         printf("bet player no error!\n");
         return 0;
     }
@@ -1015,7 +1019,7 @@ uint64_t texas_call(texas_t* texas, int player_no)
 
     if(!texas)
         return 0;
-    if(player_no >= texas->player_num){
+    if(player_no >= texas->player_num || player_no < 0){
         printf("call player no error!\n");
         return 0;
     }
@@ -1051,7 +1055,7 @@ int texas_check(texas_t* texas, int player_no)
 
     if(!texas)
         return 0;
-    if(player_no >= texas->player_num){
+    if(player_no >= texas->player_num || player_no < 0){
         printf("check player no error!\n");
         return 0;
     }
@@ -1079,7 +1083,7 @@ uint64_t texas_raiseto(texas_t* texas, int player_no, unsigned int chip)
 
     if(!texas)
         return 0;
-    if(player_no >= texas->player_num){
+    if(player_no >= texas->player_num || player_no < 0){
         printf("raiseto player no error!\n");
         return 0;
     }
@@ -1129,7 +1133,7 @@ uint64_t texas_raise(texas_t* texas, int player_no, unsigned int chip)
 
     if(!texas)
         return 0;
-    if(player_no >= texas->player_num){
+    if(player_no >= texas->player_num || player_no < 0){
         printf("raise player no error!\n");
         return 0;
     }
@@ -1179,7 +1183,7 @@ uint64_t texas_allin(texas_t* texas, int player_no)
 
     if(!texas)
         return 0;
-    if(player_no >= texas->player_num){
+    if(player_no >= texas->player_num || player_no < 0){
         printf("allin player no error!\n");
         return 0;
     }
