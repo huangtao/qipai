@@ -10,7 +10,7 @@
  * 0 : chip 200 when p2 allin
  * 1 : chip 100 when p2 allin
  */
-static const int texas_allin_must = 1;
+static const int texas_allin_mode = 1;
 
 static int texas_table_rank[16] = { 0, 14, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 0, 0 };
 static int texas_table_logic[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 1, 0 };
@@ -956,6 +956,72 @@ uint64_t texas_call_need_chip(texas_t* texas, int player_no)
     return chip;
 }
 
+uint64_t texas_allin_can_chip(texas_t* texas, int player_no)
+{
+    int i;
+    uint64_t chip;
+    uint64_t call_chip;
+    uint64_t allin_chip;
+    uint64_t temp[TEXAS_MAX_PLAYER];
+
+    if(!texas)
+        return 0;
+    if(player_no >= texas->player_num || player_no < 0){
+        printf("call_need_chip player no error!\n");
+        return 0;
+    }
+
+    call_chip = texas_call_need_chip(texas, player_no);
+
+    if(texas_allin_mode){
+        memset(temp, 0, sizeof(uint64_t) * TEXAS_MAX_PLAYER);
+        for(i = 0; i < texas->player_num; i++){
+            temp[i] = texas->players[i].gold;
+        }
+        /* calc left gold after call */
+        for(i = 0; i < texas->player_num; i++){
+            chip = texas_call_need_chip(texas, i);
+            if(chip == 0)
+                continue;
+            if(temp[i] > chip)
+                temp[i] -= chip;
+            else
+                temp[i] = 0;
+        }
+        /* get max gold(after call) except me */
+        chip = 0;
+        for(i = 0; i < texas->player_num; i++){
+            if(i == player_no)
+                continue;
+            if(temp[i] > chip)
+                chip = temp[i];
+        }
+        if(temp[player_no] > chip){
+            /* my gold is max */
+            allin_chip = chip + call_chip;
+            if(call_chip < chip)
+                texas->turn_max_chip += chip;
+        }
+        else{
+            allin_chip = texas->players[player_no].gold;
+            if(call_chip < allin_chip)
+                texas->turn_max_chip += allin_chip;
+        }
+    }
+    else{
+        allin_chip = texas->players[player_no].gold;
+        if(call_chip < allin_chip)
+            texas->turn_max_chip += allin_chip;
+    }
+
+    if(allin_chip == 0){
+        printf("allin but player's gold is zero!\n");
+        return 0;
+    }
+
+    return allin_chip;
+}
+
 int texas_fold(texas_t* texas, int player_no)
 {
     if(!texas)
@@ -1175,11 +1241,7 @@ uint64_t texas_raise(texas_t* texas, int player_no, unsigned int chip)
 
 uint64_t texas_allin(texas_t* texas, int player_no)
 {
-    int i;
-    uint64_t chip;
-    uint64_t call_chip;
     uint64_t allin_chip;
-    uint64_t temp[TEXAS_MAX_PLAYER];
 
     if(!texas)
         return 0;
@@ -1192,53 +1254,7 @@ uint64_t texas_allin(texas_t* texas, int player_no)
         return 0;
     }
 
-    call_chip = texas_call_need_chip(texas, player_no);
-
-    if(texas_allin_must){
-        memset(temp, 0, sizeof(uint64_t) * TEXAS_MAX_PLAYER);
-        for(i = 0; i < texas->player_num; i++){
-            temp[i] = texas->players[i].gold;
-        }
-        /* calc left gold after call */
-        for(i = 0; i < texas->player_num; i++){
-            chip = texas_call_need_chip(texas, i);
-            if(chip == 0)
-                continue;
-            if(temp[i] > chip)
-                temp[i] -= chip;
-            else
-                temp[i] = 0;
-        }
-        /* get max gold(after call) except me */
-        chip = 0;
-        for(i = 0; i < texas->player_num; i++){
-            if(i == player_no)
-                continue;
-            if(temp[i] > chip)
-                chip = temp[i];
-        }
-        if(temp[player_no] > chip){
-            /* my gold is max */
-            allin_chip = chip + call_chip;
-            if(call_chip < chip)
-                texas->turn_max_chip += chip;
-        }
-        else{
-            allin_chip = texas->players[player_no].gold;
-            if(call_chip < allin_chip)
-                texas->turn_max_chip += allin_chip;
-        }
-    }
-    else{
-        allin_chip = texas->players[player_no].gold;
-        if(call_chip < allin_chip)
-            texas->turn_max_chip += allin_chip;
-    }
-
-    if(allin_chip == 0){
-        printf("allin but player's gold is zero!\n");
-        return 0;
-    }
+    allin_chip = texas_allin_can_chip(texas, player_no);
 
     texas->pots[texas->curr_poti].total_chip += allin_chip;
     texas->pots[texas->curr_poti].player_chip[player_no] += allin_chip;

@@ -164,6 +164,11 @@ uint64_t texas_pot_win(texas_t* texas, int pot_index, int player_no);
 uint64_t texas_call_need_chip(texas_t* texas, int player_no);
 
 /**
+ * calc allin can down chip
+ */
+uint64_t texas_allin_can_chip(texas_t* texas, int player_no);
+
+/**
  * fold action
  */
 int texas_fold(texas_t* texas, int player_no);
