@@ -993,30 +993,21 @@ uint64_t texas_allin_can_chip(texas_t* texas, int player_no)
         for(i = 0; i < texas->player_num; i++){
             if(i == player_no)
                 continue;
+            if(texas->players[i].state == PLAYER_ACTION_FOLD)
+                continue;
             if(temp[i] > chip)
                 chip = temp[i];
         }
         if(temp[player_no] > chip){
             /* my gold is max */
             allin_chip = chip + call_chip;
-            if(call_chip < chip)
-                texas->turn_max_chip += chip;
         }
         else{
             allin_chip = texas->players[player_no].gold;
-            if(call_chip < allin_chip)
-                texas->turn_max_chip += allin_chip;
         }
     }
     else{
         allin_chip = texas->players[player_no].gold;
-        if(call_chip < allin_chip)
-            texas->turn_max_chip += allin_chip;
-    }
-
-    if(allin_chip == 0){
-        printf("allin but player's gold is zero!\n");
-        return 0;
     }
 
     return allin_chip;
@@ -1255,6 +1246,11 @@ uint64_t texas_allin(texas_t* texas, int player_no)
     }
 
     allin_chip = texas_allin_can_chip(texas, player_no);
+
+    if(allin_chip == 0){
+        printf("allin but player's gold is zero!\n");
+        return 0;
+    }
 
     texas->pots[texas->curr_poti].total_chip += allin_chip;
     texas->pots[texas->curr_poti].player_chip[player_no] += allin_chip;
