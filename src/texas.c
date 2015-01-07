@@ -358,6 +358,7 @@ uint64_t texas_pot_win(texas_t* texas, int pot_index, int player_no)
 
 void texas_calc_type(texas_t* texas, int player_no)
 {
+    int flag;
     int i,j,m,v;
     int sub[5];
     int x[20];
@@ -402,12 +403,16 @@ void texas_calc_type(texas_t* texas, int player_no)
         for(j = 0; j < su_num[i]; ++j){
             v = texas_logicvalue(&su_cards[i][j]);
             x[v]++;
+            /* for A2345(min straight) */
+            if(su_cards[i][j].rank == cdRankAce){
+                x[1]++;
+            }
         }
-        for(j = 14; j >= 6; j--){
+        for(j = 14; j >= 5; j--){
             if(x[j] && x[j-1] && x[j-2] && x[j-3] && x[j-4]){
                 /* best hand */
                 for(m = 0; m < 5; m++){
-                    texas->players[player_no].mybest[m].rank = x[j+m];
+                    texas->players[player_no].mybest[m].rank = x[j-m];
                     texas->players[player_no].mybest[m].suit = i+1;
                 }
 
@@ -448,13 +453,16 @@ void texas_calc_type(texas_t* texas, int player_no)
         return;
     }
 
-    /* four of kind */
     memset(x, 0, sizeof(int) * 20);
     for(i = 0; i < texas->players[player_no].card_num; ++i){
         v = texas_logicvalue(&texas->players[player_no].mycards[i]);
         x[v]++;
+        if(texas->players[player_no].mycards[i].rank == cdRankAce)
+            x[1]++;
     }
-    for(i = 0; i < 15; i++){
+
+    /* four of kind */
+    for(i = 2; i < 15; i++){
         if(x[i] == 4){
             sub[0] = i;
             texas->players[player_no].mytype.name = TEXAS_FOUR;
@@ -481,14 +489,22 @@ void texas_calc_type(texas_t* texas, int player_no)
     }
 
     /* straight */
-    for(j = 14; j >= 6; j--){
+    for(j = 14; j >= 5; j--){
         if(x[j] && x[j-1] && x[j-2] && x[j-3] && x[j-4]){
             texas->players[player_no].mytype.name = TEXAS_STRAIGHT;
             texas->players[player_no].mytype.param1 = j;
 
             for(m = 0; m < 5; m++){
                 for(i = 0; i < texas->players[player_no].card_num; i++){
-                    if((j-m) == texas_logicvalue(&texas->players[player_no].mycards[i])){
+                    v = texas_logicvalue(&texas->players[player_no].mycards[i]);
+                    flag = 0;
+                    if((j-m) == v)
+                        flag = 1;
+                    if(j == 5 && (j-m) == 1 &&
+                        texas->players[player_no].mycards[i].rank == cdRankAce){
+                            flag = 1;
+                    }
+                    if(flag){
                         texas->players[player_no].mybest[m].rank = texas->players[player_no].mycards[i].rank;
                         texas->players[player_no].mybest[m].suit = texas->players[player_no].mycards[i].suit;
                         break;
@@ -498,6 +514,8 @@ void texas_calc_type(texas_t* texas, int player_no)
             return;
         }
     }
+    /* reset A(logic 1) number, it only used for straight(A2345)*/
+    x[1] = 0;
 
     /* full house,three */
     sub[0] = 0;
