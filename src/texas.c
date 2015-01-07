@@ -1232,6 +1232,7 @@ uint64_t texas_raise(texas_t* texas, int player_no, unsigned int chip)
 
 uint64_t texas_allin(texas_t* texas, int player_no)
 {
+    uint64_t call_chip;
     uint64_t allin_chip;
 
     if(!texas)
@@ -1244,13 +1245,17 @@ uint64_t texas_allin(texas_t* texas, int player_no)
         printf("allin but not curr player no!\n");
         return 0;
     }
-
+    
+    call_chip = texas_call_need_chip(texas, player_no);
     allin_chip = texas_allin_can_chip(texas, player_no);
 
     if(allin_chip == 0){
         printf("allin but player's gold is zero!\n");
         return 0;
     }
+
+    if(allin_chip > call_chip)
+        texas->turn_max_chip += allin_chip - call_chip;
 
     texas->pots[texas->curr_poti].total_chip += allin_chip;
     texas->pots[texas->curr_poti].player_chip[player_no] += allin_chip;
