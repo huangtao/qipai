@@ -60,8 +60,12 @@ const char* cards_print(card_t cards[], int len, int line_number)
     for(i = 0; i < len; ++i){
         if(cards[i].suit > 5 || cards[i].rank > 15)
             sprintf(buf, "%c%c ", '-', '-');
-        else
-            sprintf(buf, "%c%c ", c_suit[cards[i].suit], c_rank[cards[i].rank]);
+        else {
+            if (cards[i].rank == 10)
+                sprintf(buf, "%c10 ", c_suit[cards[i].suit]);
+            else
+                sprintf(buf, "%c%c ", c_suit[cards[i].suit], c_rank[cards[i].rank]);
+        }
         if((i+1) % line_number == 0){
             strcat(buf, "\n");
         }
@@ -71,210 +75,35 @@ const char* cards_print(card_t cards[], int len, int line_number)
     return readable;
 }
 
-/*
-card_coll* card_coll_new(int max_size)
+char card_suit_char(card_t* card)
 {
-    int byte_size;
-    card_coll* p;
+	char c;
 
-    if(max_size <= 0)
-        return 0;
+	c = c_suit[0];
+	if(card){
+		if(card->suit >=0 || card->suit <= 5){
+			c = c_suit[card->suit];
+		}
+	}
 
-    byte_size = sizeof(card_coll) + sizeof(card_t) * max_size;
-    p = (card_coll*)malloc(byte_size);
-    if(p){
-        memset(p, 0, byte_size);
-        p->max_size = max_size;
-    }
-
-    return p;
+	return c;
 }
 
-void card_coll_free(card_coll* coll)
+const char* card_rank_str(card_t* card)
 {
-    free(coll);
-}
+    static char str[4];
 
-void card_coll_zero(card_coll* coll)
-{
-    int i;
-    card_t *p;
-
-    if(!coll || !coll->cards)
-        return;
-
-    p = coll->cards;
-    for(i = 0; i < coll->max_size; ++i){
-        p->rank = 0;
-        p->suit = 0;
-        p++;
-    }
-    coll->num = 0;
-}
-
-int card_coll_num(card_coll* coll)
-{
-    int i,n;
-    card_t* p;
-
-    n = 0;
-    if(coll){
-        for(i = 0; i < coll->max_size; ++i){
-            p = coll->cards + i;
-            if(p->rank || p->suit)
-                n++;
+    if(card){
+        if(card->rank >=0 || card->rank <= 15){
+            if (card->rank == 10)
+                strcpy(str, "10");
+            else
+                sprintf(str, "%c", c_rank[card->rank]);
         }
     }
-
-    return n;
-}
-
-card_coll* card_coll_clone(card_coll* coll)
-{
-    card_coll* p;
-    int byte_size;
-
-    if(!coll)
-        return 0;
-
-    byte_size = sizeof(card_coll) + coll->max_size * sizeof(card_t);
-    p = (card_coll*)malloc(byte_size);
-    if(p){
-        memcpy(p, coll, byte_size);
+    else {
+        strcpy(str, "?");
     }
 
-    return p;
+    return str;
 }
-
-card_t* card_coll_get(card_coll* coll, int n)
-{
-    card_t* p;
-
-    if(!coll)
-        return 0;
-
-    if(n >= coll->max_size)
-        return 0;
-
-    p = coll->cards + n;
-
-    return p;
-}
-
-int card_coll_push(card_coll* coll, card_t* card)
-{
-    card_t* p;
-
-    if(!coll || !card)
-        return HTERR_PARAM;
-
-    if(coll->num == coll->max_size)
-        return HTERR_OUTOFRANGE;
-
-    p = coll->cards + coll->num;
-    p->rank = card->rank;
-    p->suit = card->suit;
-    coll->num++;
-
-    return 0;
-}
-
-int card_coll_pop(card_coll* coll, card_t* card)
-{
-    card_t* p;
-
-    if(!coll || !card)
-        return HTERR_PARAM;
-
-    if(coll->num < 1)
-        return HTERR_OUTOFRANGE;
-
-    p = coll->cards + (coll->num - 1);
-    card->suit = p->suit;
-    card->rank = p->rank;
-    coll->num--;
-
-    return 0;
-}
-
-int card_coll_del(card_coll* coll, card_t* card)
-{
-    int i;
-    card_t* p;
-
-    if(!coll || !card)
-        return HTERR_PARAM;
-
-    for(i = 0; i < coll->num; i++){
-        p = coll->cards + i;
-        if(p->suit == card->suit && p->rank == card->rank){
-            p->suit = 0;
-            p->rank = 0;
-        }
-    }
-
-    return 0;
-}
-
-int card_coll_trim(card_coll* coll)
-{
-    int i,j,num;
-    card_t *p1,*p2;
-
-    if(!coll)
-        return HTERR_PARAM;
-    if(coll->num < 1)
-        return 0;
-
-    num = 0;
-    for(i = 0; i < coll->num; ++i){
-        p1 = coll->cards + i;
-        if(p1->suit == 0 && p1->rank == 0){
-            for(j = i + 1; j < coll->num; ++j){
-                p2 = coll->cards + j;
-                if(p2->suit || p2->rank){
-                    p1->rank = p2->rank;
-                    p1->suit = p2->suit;
-                    num++;
-                    p2->rank = p2->suit = 0;
-                    break;
-                }
-            }
-        }
-        else
-            num++;
-    }
-
-    return 0;
-}
-
-void card_cool_print(card_coll* coll, int line_number)
-{
-    int i;
-    card_t* p;
-
-    if(!coll || !coll->cards)
-        return;
-
-    for(i = 0; i < coll->num; ++i){
-        p = coll->cards + i;
-        printf("%c%c ", c_suit[p->suit], c_rank[p->rank]);
-        if((i+1) % line_number == 0){
-            printf("\n");
-        }
-    }
-    if(coll->num % line_number != 0)
-		printf("\n");
-}
-
-const char* card_text(card_t* card)
-{
-    static char readable[3];
-    if(!card)
-        return 0;
-
-    readable[2] = 0;
-    sprintf(readable, "%c%c", c_suit[card->suit], c_rank[card->rank]);
-
-    return readable;
-}*/

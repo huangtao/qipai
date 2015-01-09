@@ -82,19 +82,9 @@ void card_decode(card_t* card, char x);
  */
 const char* cards_print(card_t cards[], int len, int line_number);
 
-///* card collection oprate */
-//card_coll* card_coll_new(int max_size);
-//void card_coll_free(card_coll* coll);
-//void card_coll_zero(card_coll* coll);
-//int card_coll_num(card_coll* coll);
-//card_coll* card_coll_clone(card_coll* coll);
-//card_t* card_coll_get(card_coll* coll, int n);
-//int card_coll_push(card_coll* coll, card_t* card);
-//int card_coll_pop(card_coll* coll, card_t* card);
-//int card_coll_del(card_coll* coll, card_t* card);
-//int card_cool_trim(card_coll* coll);
-///* print readable format */
-//const char* card_text(card_t* card);
+char card_suit_char(card_t* card);
+const char* card_rank_str(card_t* card);
+const char* card_string(card_t* card);
 
 #ifdef __cplusplus
 }
