@@ -1,9 +1,8 @@
 ﻿/*
-*
-* code:huangtao117@gmail.com
-* QQ:409577078
-*
-*/
+ * Poker game algorithm library
+ * This file is distributed under the BSD License. 
+ * Copyright (C) 2014-2015 Huang Tao(huangtao117@gmail.com)
+ */
 #ifndef _TEXAS_H
 #define _TEXAS_H
 #ifdef __cplusplus

@@ -1,4 +1,8 @@
-/* code: huangtao117@gmail.com */
+/*
+ * Poker game algorithm library
+ * This file is distributed under the BSD License. 
+ * Copyright (C) 2014-2015 Huang Tao(huangtao117@gmail.com)
+ */
 #ifndef _CARD_H
 #define _CARD_H
 #ifdef __cplusplus
