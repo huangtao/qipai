@@ -1,11 +1,42 @@
-libcard:card.o deck.o
-	g++ -g -o libcard card.o deck.o
+# Copyright (c) 2015, Tom Huang <huangtao117@gmail.com>
+#
 
-card.o:card.cpp card.h
-	g++ -g -o card.cpp
+CC = gcc
 
-deck.o:deck.cpp deck.h
-	g++ -g -o deck.cpp
+CFLAGS = -Wall -g \
+		 -Wno-unused-parameter \
+		 -lstdc++ \
+		 -Isrc \
+		 -Iinclude \
+		 -I../libuv/include
 
+INCLUDES = include/ht_comm.h \
+		   include/ht_log.h \
+		   include/ldcore.h \
+		   include/LDTcpClient.h \
+		   src/biostream.h \
+		   src/ARACrypt.h
+
+OBJS = src/ldcore.o \
+	   src/ht_log.o \
+	   src/ARACrypt.o \
+	   src/LDTcpClient.o \
+
+TEST_OBJS = test/test.o
+
+# build library and test app
+all: libqp.a mytest
+.PHONY: all
+
+libqp.a: $(OBJS)
+	$(AR) crs $@ $^
+
+mytest: $(TEST_OBJS) $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $^
+
+%.o: %.c $(INCLUDES)
+	$(CC) $(CFLAGS) -c -o $@ $<
+ 
+.PHONY: clean	
 clean:
-	rm libcard card.o deck.o
+	-$(RM) $(OBJS) libqp.a
