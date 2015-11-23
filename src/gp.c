@@ -175,9 +175,28 @@ void gp_start(gp_t* gp)
         gp->first_player_no = rand() % gp->player_num;
     else
         gp->first_player_no = first_no;
+    gp->inning++;
+    gp->curr_player_no = gp->first_player_no;
+}
+
+void gp_zero(gp_t* gp)
+{
+    int i;
+
+    if(!gp)
+        return;
+    gp->round = 0;
+    for(i = 0; i < GP_MAX_PLAYER; ++i){
+        card_player_reset(&(gp->players[i]));
+    }
+    hand_zero(gp->last_hand);
+    for (i = 0; i < GP_MAX_PLAYER; i++) {
+        hand_zero(gp->players[i].mycards);
+    }
     gp->game_state = GP_GAME_PLAY;
     gp->inning++;
-    gp->curr_player_no = gp->first_player_no; 
+    gp->first_player_no = 0;
+    gp->curr_player_no = 0;
 }
 
 int gp_get_state(gp_t* gp)
@@ -216,10 +235,10 @@ const char* gp_htype_name(int htype)
         "GP_FOUR_P3",
         "GP_BOMB"
         };
-    
+
     if(htype <= 11)
         return htype_name[htype];
-   
+
     return htype_name[0];
 }
 
@@ -640,9 +659,9 @@ void gp_dump(gp_t* gp)
 {
     if(!gp)
         return;
-    
+
     printf("player number:%d\n", gp->player_num);
-        
+
     /* dump player's cards */
     printf("players cards:\n");
     hand_dump(gp->players[0].mycards, 10);
@@ -653,11 +672,10 @@ void gp_dump(gp_t* gp)
         hand_dump(gp->players[2].mycards, 10);
         printf("\n");
     }
-    
+
     printf("last hand:\n");
     hand_dump(gp->last_hand, 10);
     printf("\n");
-    
+
     printf("current player no is %d\n", gp->curr_player_no);
 }
-

@@ -35,7 +35,7 @@ typedef enum gp_type_e{
 		GP_PLANE,       /* three straight plus double straight (333444+7788) */
         GP_FOUR,        /* four (6666) */
         GP_FOUR_P3,     /* four plus three (6666+883) */
-        GP_BOMB         /* bomb (6666+3), (KKK+3)*/       
+        GP_BOMB         /* bomb (6666+3), (KKK+3)*/
 }GP_TYPE;
 
 typedef enum gp_gamestate_e{
@@ -66,6 +66,7 @@ typedef struct gp_s{
 gp_t* gp_new(int rule);
 void gp_free(gp_t* gp);
 void gp_start(gp_t* gp);      /* start a new game */
+void gp_zero(gp_t* gp);
 int gp_get_state(gp_t* gp);
 void gp_set_state(gp_t* gp, int state);
 void gp_sort(hand_t* hand);
