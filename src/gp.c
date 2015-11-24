@@ -190,10 +190,7 @@ void gp_zero(gp_t* gp)
         card_player_reset(&(gp->players[i]));
     }
     hand_zero(gp->last_hand);
-    for (i = 0; i < GP_MAX_PLAYER; i++) {
-        hand_zero(gp->players[i].mycards);
-    }
-    gp->game_state = GP_GAME_PLAY;
+    gp->game_state = 0;
     gp->inning++;
     gp->first_player_no = 0;
     gp->curr_player_no = 0;
