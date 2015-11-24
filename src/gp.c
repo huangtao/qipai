@@ -589,7 +589,7 @@ int gp_canplay(gp_t* gp, hand_t* hand)
 
     if(!gp || !hand)
         return 0;
-
+    gp_handtype(gp, hand);
     if(hand->type == GP_ERROR)
         return 0;
     if(gp->last_hand->num == 0){
