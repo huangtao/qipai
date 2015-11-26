@@ -43,8 +43,14 @@ typedef enum gp_gamestate_e{
     GP_GAME_PLAY       /* playing card */
 }GP_GAMESTATE;
 
+typedef enum gp_mode_e {
+    GP_MODE_SERVER = 0,
+    GP_MODE_CLIENT
+}GP_MODE;
+
 typedef struct gp_s{
     int debug;          /* output debug info */
+    int mode;           /* client or server mode */
     deck_t* deck;       /* deck */
     int game_state;     /* game state */
     int game_rule;      /* rule */
@@ -63,10 +69,9 @@ typedef struct gp_s{
     card_player_t players[GP_MAX_PLAYER];   /* three player */
 }gp_t;
 
-gp_t* gp_new(int rule);
+gp_t* gp_new(int rule, int mode);
 void gp_free(gp_t* gp);
 void gp_start(gp_t* gp);      /* start a new game */
-void gp_zero(gp_t* gp);
 int gp_get_state(gp_t* gp);
 void gp_set_state(gp_t* gp, int state);
 void gp_sort(hand_t* hand);

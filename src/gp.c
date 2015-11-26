@@ -19,7 +19,7 @@ typedef struct analyse_r_s{
     int v4[MAX_CARDS/4];
 }analyse_r;
 
-gp_t* gp_new(int rule)
+gp_t* gp_new(int rule, int mode)
 {
     int i;
     card_t card;
@@ -34,6 +34,10 @@ gp_t* gp_new(int rule)
         return 0;
     }
     gp->debug = 0;
+    if (mode == GP_MODE_SERVER)
+        gp->mode = GP_MODE_SERVER;
+    else
+        gp->mode = GP_MODE_CLIENT;
     gp->game_state = GP_GAME_END;
     gp->game_rule = rule;
     gp->inning = 0;
@@ -118,82 +122,70 @@ void gp_start(gp_t* gp)
 
     if(!gp)
         return;
-    deck_shuffle(gp->deck);
     gp->round = 0;
     gp->game_state = GP_GAME_PLAY;
+    gp->inning++;
     for(i = 0; i < GP_MAX_PLAYER; ++i){
         card_player_reset(&(gp->players[i]));
     }
     hand_zero(gp->last_hand);
 
-    /* draw start cards for every player */
-    if(gp->game_rule == GP_RULE_DEFAULT){
-        start_num = 16;
-        first_cd.suit = cdSuitSpade;
-        first_cd.rank = cdRankAce;
-    }
-    else{
-        start_num = 15;
-        first_cd.suit = cdSuitDiamond;
-        first_cd.rank = cdRankAce;
-    }
-    first_no = -1;
-    for(i = 0; i < start_num; ++i){
-        deck_deal(gp->deck, &card);
-        card_player_draw(&(gp->players[0]), &card);
-        if(card.suit == first_cd.suit){
-            if(card_compare((void*)&first_cd, (void*)&card) >= 0){
-                first_cd.rank = card.rank;
-                first_no = 0;
-            }
+    if (gp->mode == GP_MODE_SERVER) {
+        deck_shuffle(gp->deck);
+        /* draw start cards for every player */
+        if(gp->game_rule == GP_RULE_DEFAULT){
+            start_num = 16;
+            first_cd.suit = cdSuitSpade;
+            first_cd.rank = cdRankAce;
         }
-
-        deck_deal(gp->deck, &card);
-        card_player_draw(&(gp->players[1]), &card);
-        if(card.suit == first_cd.suit){
-            if(card_compare((void*)&first_cd, (void*)&card) >= 0){
-                first_cd.rank = card.rank;
-                first_no = 1;
-            }
+        else{
+            start_num = 15;
+            first_cd.suit = cdSuitDiamond;
+            first_cd.rank = cdRankAce;
         }
-        if(gp->player_num > 2){
+        first_no = -1;
+        for(i = 0; i < start_num; ++i){
             deck_deal(gp->deck, &card);
-            card_player_draw(&(gp->players[2]), &card);
+            card_player_draw(&(gp->players[0]), &card);
             if(card.suit == first_cd.suit){
                 if(card_compare((void*)&first_cd, (void*)&card) >= 0){
                     first_cd.rank = card.rank;
-                    first_no = 2;
+                    first_no = 0;
                 }
             }
+
+            deck_deal(gp->deck, &card);
+            card_player_draw(&(gp->players[1]), &card);
+            if(card.suit == first_cd.suit){
+                if(card_compare((void*)&first_cd, (void*)&card) >= 0){
+                    first_cd.rank = card.rank;
+                    first_no = 1;
+                }
+            }
+            if(gp->player_num > 2){
+                deck_deal(gp->deck, &card);
+                card_player_draw(&(gp->players[2]), &card);
+                if(card.suit == first_cd.suit){
+                    if(card_compare((void*)&first_cd, (void*)&card) >= 0){
+                        first_cd.rank = card.rank;
+                        first_no = 2;
+                    }
+                }
+            }
+            else
+                hand_zero(gp->players[2].mycards);
         }
+
+        /* the first player */
+        if(first_no == -1)
+            gp->first_player_no = rand() % gp->player_num;
         else
-            hand_zero(gp->players[2].mycards);
+            gp->first_player_no = first_no;
+        gp->curr_player_no = gp->first_player_no;
+    } else {
+        gp->first_player_no = 0;
+        gp->curr_player_no = 0;
     }
-
-    /* the first player */
-    if(first_no == -1)
-        gp->first_player_no = rand() % gp->player_num;
-    else
-        gp->first_player_no = first_no;
-    gp->inning++;
-    gp->curr_player_no = gp->first_player_no;
-}
-
-void gp_zero(gp_t* gp)
-{
-    int i;
-
-    if(!gp)
-        return;
-    gp->round = 0;
-    for(i = 0; i < GP_MAX_PLAYER; ++i){
-        card_player_reset(&(gp->players[i]));
-    }
-    hand_zero(gp->last_hand);
-    gp->game_state = 0;
-    gp->inning++;
-    gp->first_player_no = 0;
-    gp->curr_player_no = 0;
 }
 
 int gp_get_state(gp_t* gp)
@@ -253,23 +245,23 @@ void gp_handtype(gp_t* gp, hand_t* hand)
     hand->type = GP_ERROR;
     p = hand->cards;
     switch(hand->num){
-        case 0:
-            return;
-        case 1:
-            hand->type = GP_SINGLE;
+    case 0:
+        return;
+    case 1:
+        hand->type = GP_SINGLE;
+        hand->type_card.rank = p->rank;
+        hand->type_card.suit = p->suit;
+        hand->param = card_logicvalue(p);
+        return;
+    case 2:
+        if(p->rank == (p + 1)->rank){
+            hand->type = GP_DOUBLE;
             hand->type_card.rank = p->rank;
             hand->type_card.suit = p->suit;
             hand->param = card_logicvalue(p);
             return;
-        case 2:
-            if(p->rank == (p + 1)->rank){
-                hand->type = GP_DOUBLE;
-                hand->type_card.rank = p->rank;
-                hand->type_card.suit = p->suit;
-                hand->param = card_logicvalue(p);
-                return;
-            }
-            return;
+        }
+        return;
     }
 
     memset(&ar, 0, sizeof(analyse_r));
@@ -279,22 +271,22 @@ void gp_handtype(gp_t* gp, hand_t* hand)
     for(i = 19; i >= 0; i--){
         n = x[i].num_spade + x[i].num_heart + x[i].num_club + x[i].num_diamond;
         switch(n){
-            case 1:
-                ar.v1[ar.n1] = i;
-                ar.n1++;
-                break;
-            case 2:
-                ar.v2[ar.n2] = i;
-                ar.n2++;
-                break;
-            case 3:
-                ar.v3[ar.n3] = i;
-                ar.n3++;
-                break;
-            case 4:
-                ar.v4[ar.n4] = i;
-                ar.n4++;
-                break;
+        case 1:
+            ar.v1[ar.n1] = i;
+            ar.n1++;
+            break;
+        case 2:
+            ar.v2[ar.n2] = i;
+            ar.n2++;
+            break;
+        case 3:
+            ar.v3[ar.n3] = i;
+            ar.n3++;
+            break;
+        case 4:
+            ar.v4[ar.n4] = i;
+            ar.n4++;
+            break;
         }
     }
 
@@ -463,22 +455,22 @@ void gp_handtype(gp_t* gp, hand_t* hand)
                     for(i = 19; i >= 0; i--){
                         n = x[i].num_spade + x[i].num_heart + x[i].num_club + x[i].num_diamond;
                         switch(n){
-                            case 1:
-                                ar.v1[ar.n1] = i;
-                                ar.n1++;
-                                break;
-                            case 2:
-                                ar.v2[ar.n2] = i;
-                                ar.n2++;
-                                break;
-                            case 3:
-                                ar.v3[ar.n3] = i;
-                                ar.n3++;
-                                break;
-                            case 4:
-                                ar.v4[ar.n4] = i;
-                                ar.n4++;
-                                break;
+                        case 1:
+                            ar.v1[ar.n1] = i;
+                            ar.n1++;
+                            break;
+                        case 2:
+                            ar.v2[ar.n2] = i;
+                            ar.n2++;
+                            break;
+                        case 3:
+                            ar.v3[ar.n3] = i;
+                            ar.n3++;
+                            break;
+                        case 4:
+                            ar.v4[ar.n4] = i;
+                            ar.n4++;
+                            break;
                         }
                     }
                 }
@@ -542,14 +534,16 @@ int gp_play(gp_t* gp, int player_no, hand_t* hand)
         return HTERR_PARAM;
     }
 
-    for(i = 0; i < hand->num; ++i){
-        card = hand->cards + i;
-        if(!card_player_have(&gp->players[player_no], card)){
-            if(gp->debug){
-                printf("play cards but player hasn't this card(%s).\n",
-                        card_text(card));
+    if (gp->mode == GP_MODE_SERVER) {
+        for(i = 0; i < hand->num; ++i){
+            card = hand->cards + i;
+            if(!card_player_have(&gp->players[player_no], card)){
+                if(gp->debug){
+                    printf("play cards but player hasn't this card(%s).\n",
+                           card_text(card));
+                }
+                return HTERR_NOCARD;
             }
-            return HTERR_NOCARD;
         }
     }
 
@@ -578,7 +572,8 @@ int gp_play(gp_t* gp, int player_no, hand_t* hand)
     if(hand_num(gp->players[player_no].mycards))
         gp_next_player(gp);
     else{
-        gp->game_state = GP_GAME_END;
+        if (gp->mode == GP_MODE_SERVER)
+            gp->game_state = GP_GAME_END;
     }
 
     return 1;

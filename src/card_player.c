@@ -5,8 +5,6 @@
 
 int card_player_init(card_player_t* player, int max_card_num)
 {
-    int size;
-
     if (!player)
         return HTERR_PARAM;
     if (max_card_num <= 0)

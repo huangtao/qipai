@@ -282,18 +282,30 @@ int hand_pop(hand_t* hand, card_t* card)
 
 int hand_del(hand_t* hand, card_t* card)
 {
-    int i;
+    int i,uflag;
     card_t* p;
 
     if(!hand || !card)
         return HTERR_PARAM;
 
+    uflag = 0;
     for(i = 0; i < hand->num; i++){
         p = hand->cards + i;
         if(p->suit == card->suit && p->rank == card->rank){
             p->suit = 0;
             p->rank = 0;
             break;
+        }
+        if (p->rank == cdRankUnknow)
+            uflag = 1;
+    }
+    if (i >= hand->num && uflag > 0) {
+        for (i = 0; i < hand->num; i++) {
+            if (p->rank == cdRankUnknow) {
+                p->rank = 0;
+                p->suit = 0;
+                break;
+            }
         }
     }
 
