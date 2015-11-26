@@ -231,7 +231,7 @@ const char* gp_htype_name(int htype)
         "GP_PLANE",
         "GP_FOUR_P3",
         "GP_BOMB"
-        };
+    };
 
     if(htype <= 11)
         return htype_name[htype];
@@ -253,23 +253,23 @@ void gp_handtype(gp_t* gp, hand_t* hand)
     hand->type = GP_ERROR;
     p = hand->cards;
     switch(hand->num){
-    case 0:
-        return;
-    case 1:
-        hand->type = GP_SINGLE;
-        hand->type_card.rank = p->rank;
-        hand->type_card.suit = p->suit;
-        hand->param = card_logicvalue(p);
-        return;
-    case 2:
-        if(p->rank == (p + 1)->rank){
-            hand->type = GP_DOUBLE;
+        case 0:
+            return;
+        case 1:
+            hand->type = GP_SINGLE;
             hand->type_card.rank = p->rank;
             hand->type_card.suit = p->suit;
             hand->param = card_logicvalue(p);
             return;
-        }
-        return;
+        case 2:
+            if(p->rank == (p + 1)->rank){
+                hand->type = GP_DOUBLE;
+                hand->type_card.rank = p->rank;
+                hand->type_card.suit = p->suit;
+                hand->param = card_logicvalue(p);
+                return;
+            }
+            return;
     }
 
     memset(&ar, 0, sizeof(analyse_r));
@@ -279,22 +279,22 @@ void gp_handtype(gp_t* gp, hand_t* hand)
     for(i = 19; i >= 0; i--){
         n = x[i].num_spade + x[i].num_heart + x[i].num_club + x[i].num_diamond;
         switch(n){
-        case 1:
-            ar.v1[ar.n1] = i;
-            ar.n1++;
-            break;
-        case 2:
-            ar.v2[ar.n2] = i;
-            ar.n2++;
-            break;
-        case 3:
-            ar.v3[ar.n3] = i;
-            ar.n3++;
-            break;
-        case 4:
-            ar.v4[ar.n4] = i;
-            ar.n4++;
-            break;
+            case 1:
+                ar.v1[ar.n1] = i;
+                ar.n1++;
+                break;
+            case 2:
+                ar.v2[ar.n2] = i;
+                ar.n2++;
+                break;
+            case 3:
+                ar.v3[ar.n3] = i;
+                ar.n3++;
+                break;
+            case 4:
+                ar.v4[ar.n4] = i;
+                ar.n4++;
+                break;
         }
     }
 
@@ -392,10 +392,10 @@ void gp_handtype(gp_t* gp, hand_t* hand)
                 return;
             }
             if(ar.n3 * 5 == hand->num &&
-                ar.n3 == ar.n2){
+                    ar.n3 == ar.n2){
                 for(i = 0; i < (ar.n2 - 1); ++i){
                     if((ar.v2[i] - ar.v2[i+1]) != 1)
-                    return;
+                        return;
                 }
                 hand->type = GP_PLANE;
                 hand->type_card.rank = x[ar.v3[0]].rank;
@@ -463,22 +463,22 @@ void gp_handtype(gp_t* gp, hand_t* hand)
                     for(i = 19; i >= 0; i--){
                         n = x[i].num_spade + x[i].num_heart + x[i].num_club + x[i].num_diamond;
                         switch(n){
-                        case 1:
-                            ar.v1[ar.n1] = i;
-                            ar.n1++;
-                            break;
-                        case 2:
-                            ar.v2[ar.n2] = i;
-                            ar.n2++;
-                            break;
-                        case 3:
-                            ar.v3[ar.n3] = i;
-                            ar.n3++;
-                            break;
-                        case 4:
-                            ar.v4[ar.n4] = i;
-                            ar.n4++;
-                            break;
+                            case 1:
+                                ar.v1[ar.n1] = i;
+                                ar.n1++;
+                                break;
+                            case 2:
+                                ar.v2[ar.n2] = i;
+                                ar.n2++;
+                                break;
+                            case 3:
+                                ar.v3[ar.n3] = i;
+                                ar.n3++;
+                                break;
+                            case 4:
+                                ar.v4[ar.n4] = i;
+                                ar.n4++;
+                                break;
                         }
                     }
                 }
@@ -495,11 +495,11 @@ void gp_handtype(gp_t* gp, hand_t* hand)
                 return;
         }
         /*flag = cards_have_rank(cdRankZJoker, ar.v1, MAX_CARDS);
-        if(flag)
-            return;
-        flag = cards_have_rank(cdRankFJoker, ar.v1, MAX_CARDS);
-        if(flag)
-            return;*/
+          if(flag)
+          return;
+          flag = cards_have_rank(cdRankFJoker, ar.v1, MAX_CARDS);
+          if(flag)
+          return;*/
         for(i = 0; i < (ar.n1 - 1); ++i){
             if((ar.v1[i] - ar.v1[i+1]) != 1){
                 return;
@@ -547,7 +547,7 @@ int gp_play(gp_t* gp, int player_no, hand_t* hand)
         if(!card_player_have(&gp->players[player_no], card)){
             if(gp->debug){
                 printf("play cards but player hasn't this card(%s).\n",
-                    card_text(card));
+                        card_text(card));
             }
             return HTERR_NOCARD;
         }
@@ -570,6 +570,7 @@ int gp_play(gp_t* gp, int player_no, hand_t* hand)
         card = hand->cards + i;
         card_player_play(&gp->players[player_no], card);
     }
+    hand_copy(hand, gp->players[player_no].played_cards);
     hand_copy(hand, gp->last_hand);
     gp->largest_player_no = player_no;
 
@@ -602,11 +603,11 @@ int gp_canplay(gp_t* gp, hand_t* hand)
     if(gp->largest_player_no == gp->curr_player_no){
         remain_num = hand_num(gp->players[gp->curr_player_no].mycards);
         /*if((htype->type == GP_THREE_P1 || htype->type == GP_FOUR)){
-            if(remain_num == 4)
-                return 1;
-            else
-                return 0;
-        }*/
+          if(remain_num == 4)
+          return 1;
+          else
+          return 0;
+          }*/
         return 1;
     }
 
@@ -616,7 +617,7 @@ int gp_canplay(gp_t* gp, hand_t* hand)
         return 1;
 
     if(gp->last_hand->type != hand->type ||
-        gp->last_hand->num != hand->num)
+            gp->last_hand->num != hand->num)
         return 0;
 
     if(card_logicvalue(&(hand->type_card)) > card_logicvalue(&(gp->last_hand->type_card)))

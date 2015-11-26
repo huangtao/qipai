@@ -7,28 +7,28 @@ int card_player_init(card_player_t* player, int max_card_num)
 {
     int size;
 
-    if(!player)
+    if (!player)
         return HTERR_PARAM;
-
-    if(max_card_num <= 0)
+    if (max_card_num <= 0)
         max_card_num = 54;
-
     player->mycards = hand_new(max_card_num);
-
-    if(!player->mycards)
+    if (!player->mycards)
         return HTERR_OUTOFMEMORY;
-
+    player->played_cards = hand_new(max_card_num);
+    if (!player->played_cards)
+        return HTERR_OUTOFMEMORY;
     player->position = -1;
     player->data = 0;
-
     return HT_OK;
 }
 
 void card_player_clear(card_player_t* player)
 {
-    if(player){
-        if(player->mycards)
+    if (player) {
+        if (player->mycards)
             hand_free(player->mycards);
+        if (player->played_cards)
+            hand_free(player->played_cards);
     }
 }
 

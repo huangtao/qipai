@@ -23,7 +23,10 @@ typedef struct card_player_s{
    
     /* player's cards */
     hand_t* mycards;
-    
+
+    /* player's played cards */
+    hand_t* played_cards;
+
     /* player's private data */
     void* data;
 }card_player_t;
