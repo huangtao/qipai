@@ -15,17 +15,19 @@
 LOCAL_PATH := $(call my-dir)
 
 #
-# libldcore.so for android
+# libqp.so for android
 #
 include $(CLEAR_VARS)
 LOCAL_MODULE := qp
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../include \
 					$(LOCAL_PATH)/../src
 LOCAL_SRC_FILES := com_gameld_core_libqp.cpp \
-				   ../src/ld_core.cpp \
-				   ../src/ht_log.cpp \
-				   ../src/ht_socket.cpp \
-				   ../src/ld_client.cpp \
-				   ../src/ARACrypt.cpp
+				   ../src/card.c \
+				   ../src/card_player.c \
+				   ../src/hand.c \
+				   ../src/deck.c \
+				   ../src/sort_card.c \
+				   ../src/ht_str.c \
+				   ../src/gp.c
 LOCAL_LDLIBS += -llog
 include $(BUILD_SHARED_LIBRARY)

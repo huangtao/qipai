@@ -33,7 +33,7 @@ char card_encode(card_t* cd)
         x = (cd->suit << 4) | cd->rank;
     else
         x = 0;
-    
+
     return x;
 }
 
@@ -52,7 +52,7 @@ const char* cards_print(card_t cards[], int len, int line_number)
     static char readable[256];
 
     if (!cards || len > 128) {
-        sprintf(buf, "");
+        strcpy(buf, "");
         return readable;
     }
 
