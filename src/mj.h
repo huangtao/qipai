@@ -1,94 +1,103 @@
 /*
- * Mojang game algorithm library
+ * Majang game algorithm library
  * This file is distributed under the BSD License.
- * Copyright (C) 2014-2015 Huang Tao(huangtao117@gmail.com)
+ * Copyright (C) 2015 Huang Tao(huangtao117@gmail.com)
  */
-#ifndef _MOJANG_H
-#define _MOJANG_H
+#ifndef _MAJANG_H
+#define _MAJANG_H
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include <stdint.h>
 
-/* mojang suit define */
-typedef enum mj_suit
-{
-    mjSuitNone,     /* none */
-    mjSuitWord,     /* 字牌 */
-    mjSuitOrdinal,  /* 序数牌 */
-    mjSuitFlower,   /* 花牌 */
-    mjSuitAny,      /* 百搭牌 */
-    mjSuitUnknow    /* unknow suit(ob) */
-}cdSuit;
-
-/* mojiang rank define */
-typedef enum mj_rank
-{
-    mjRankNone = 0,
-    mjRank1,
-    mjRank2,
-    mjRank3,
-    mjRank4,
-    mjRank5,
-    mjRank6,
-    mjRank7,
-    mjRank8,
-    mjRank9,
-    mjRankEast,
-    mjRankSouth,
-    mjRankWeat,
-    mjRankNorth,
-    mjRankZhong,
-    mjRankFa,
-    mjRankBai,
-    mjRankUnknow
-}cdRank;
-
 /* majiang suit */
 typedef enum majiang_suit{
-    mjSuitNone,
-    mjSuitWan,      /* wanzi pai */
-    mjSuitTiao,     /* tiaozi pai */
-    mjSuitTong,     /* tongzi pai */
-    mjSuitZi,       /* zi pai */
-    mjSuitHua       /* hua pai */
+    mjSuitAny,
+    mjSuitBamboo,               /* tiaozi pai */
+    mjSuitTiao = mjBamboo,
+    mjSuitSuo = mjBamboo,
+    mjSuitCharacter,            /* wanzi pai */
+    mjSuitWan = mjCharacter,
+    mjSuitCircle,               /* tongzi pai */
+    mjSuitTong = mjSuitCircle,
+    mjSuitWind,                 /* feng pai */
+    mjSuitDragon,
+    mjSuitFlower,               /* hua pai */
+    mjSuitSeason
 }mjSuit;
 
-/* majiang rank */
-typedef enum majiang_rank{
-    mjRankNone,
-    mjRank1,
-    mjRank2,
-    mjRank3,
-    mjRank4,
-    mjRank5,
-    mjRank6,
-    mjRank7,
-    mjRank8,
-    mjRank9
-}mjRank;
+/* majiang ordinal */
+typedef enum majiang_ordinal{
+    mj1,
+    mj2,
+    mj3,
+    mj4,
+    mj5,
+    mj6,
+    mj7,
+    mj8,
+    mj9
+}mjOrdinal;
 
-/* a card */
-typedef struct card_s{
-    int suit;   /* card suit */
-    int rank;   /* card rank */
-}card_t;
+typedef enum majiang_wind{
+    mjEast,
+    mjSouth,
+    mjWest,
+    mjNorth
+}mjWind;
 
-/* card oprate */
-void card_init(card_t* card, const char* sn);
-int card_equal(card_t* a, card_t* b);
-char card_encode(card_t* card);
-void card_decode(card_t* card, char x);
+typedef enum majiang_dragon{
+    mjRed,
+    mjZhong = mjRed,
+    mjGreen,
+    mjFa = mjGreen,
+    mjWhite,
+    mjBai = mjWhite
+}mjDragon;
+
+typedef enum majiang_flower{
+    mjPlum,
+    mjMei = mjPlum,
+    mjOrchid,
+    mjLan = mjOrchid,
+    mjChrysan,
+    mjJu = mjChrysan,
+    mjBamboo,
+    mjZhu = mjBamboo
+}mjFlower;
+
+typedef enum majiang_season{
+    mjSpring,
+    mjCun = mjSpring,
+    mjSummer,
+    mjXia = mjSummer,
+    mjAutumn,
+    mjQiu = mjAutumn,
+    mjWinter,
+    mjDong = mjWinter
+}
+
+/* a mj card */
+typedef struct mj_s{
+    int suit;   /* suit */
+    int sign;   /* sign */
+}mj_t;
+
+/* mj oprate */
+void mj_init(mj_t* card, const char* sn);
+int mj_equal(mj_t* a, mj_t* b);
+char mj_encode(mj_t* card);
+void mj_decode(mj_t* card, char x);
 
 /**
  * print cards to a readable string
  */
-const char* cards_print(card_t cards[], int len, int line_number);
+const char* mj_print(mj_t cards[], int len, int line_number);
 
-char card_suit_char(card_t* card);
-const char* card_rank_str(card_t* card);
-const char* card_string(card_t* card);
+char mj_suit_char(mj_t* card);
+const char* mj_rank_str(mj_t* card);
+const char* mj_string(mj_t* card);
 
 #ifdef __cplusplus
 }
