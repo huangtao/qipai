@@ -14,6 +14,8 @@ extern "C" {
 
 #define GP_MIN_PLAYER   2
 #define GP_MAX_PLAYER   3
+#define GP_MAX_CARDS    20
+#define GP_DECK_FU      1
 
 /* gp rule */
 typedef enum gp_rule_e{
@@ -48,30 +50,41 @@ typedef enum gp_mode_e {
     GP_MODE_CLIENT
 }GP_MODE;
 
+typedef struct gp_player_s {
+    card_player_t data;
+    card_t cards[GP_MAX_CARDS];
+    int num_valid_card;
+}GP_PLAYER;
+
 typedef struct gp_s{
     int debug;          /* output debug info */
     int mode;           /* client or server mode */
-    deck_t* deck;       /* deck */
     int game_state;     /* game state */
     int game_rule;      /* rule */
     int turn_time;      /* turn time */
     int curr_turn_time; /* current turn left time */
     int round;
     int inning;
-
+    int player_num;
     int first_player_no;    /* first player no. */
     int curr_player_no;     /* current turn player no. */
     int largest_player_no;  /* current round largest player no. */
 
-    hand_t* last_hand;      /* last play out cards */
+    card_t deck[54];        /* deck */
+    int deck_all_num;
+    int deck_deal_index;    /* current deal card index */
+    int deck_valid_num;     /* valid number card */
 
-    int player_num;
-    card_player_t players[GP_MAX_PLAYER];   /* three player */
+    card_t last_hand[GP_MAX_CARDS];     /* last play out cards */
+    GP_PLAYER players[GP_MAX_PLAYER];   /* three player */
 }gp_t;
 
-gp_t* gp_new(int rule, int mode);
-void gp_free(gp_t* gp);
-void gp_start(gp_t* gp);      /* start a new game */
+/* init a guanpai game object */
+void gp_init(gp_t* gp, int rule, int mode, int player_num);
+
+/* start a new game */
+void gp_start(gp_t* gp);
+
 int gp_get_state(gp_t* gp);
 void gp_set_state(gp_t* gp, int state);
 void gp_sort(hand_t* hand);

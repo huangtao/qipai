@@ -20,7 +20,7 @@ int card_player_init(card_player_t* player, int max_card_num)
     return HT_OK;
 }
 
-void card_player_clear(card_player_t* player)
+void card_player_clear(qp_player_t* player)
 {
     if (player) {
         if (player->mycards)
@@ -30,7 +30,7 @@ void card_player_clear(card_player_t* player)
     }
 }
 
-void card_player_reset(card_player_t* player)
+void card_player_reset(qp_player_t* player)
 {
     int size;
 

@@ -62,7 +62,7 @@ void deck_free(deck_t* deck)
         free(deck);
     }
 }
-
+/*
 void deck_shuffle(deck_t* deck)
 {
     int i,n;
@@ -89,7 +89,7 @@ void deck_shuffle(deck_t* deck)
             pb->suit = temp.suit;
         }
     }
-}
+}*/
 
 int deck_deal(deck_t* deck, card_t* card)
 {

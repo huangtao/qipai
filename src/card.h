@@ -76,12 +76,11 @@ typedef struct card_s{
 }card_t;
 
 /* card oprate */
-void card_init(card_t* card, const char* sn);
 int card_equal(card_t* a, card_t* b);
 char card_encode(card_t* card);
 void card_decode(card_t* card, char x);
 
-/**
+/*
  * print cards to a readable string
  */
 const char* cards_print(card_t cards[], int len, int line_number);

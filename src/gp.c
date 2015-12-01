@@ -5,111 +5,117 @@
 #include "ht_lch.h"
 #include "sort_card.h"
 
-#define DECK_FU     1
-#define MAX_CARDS   20
-
 typedef struct analyse_r_s{
     int n1;
-    int v1[MAX_CARDS];
+    int v1[GP_MAX_CARDS];
     int n2;
-    int v2[MAX_CARDS/2];
+    int v2[GP_MAX_CARDS/2];
     int n3;
-    int v3[MAX_CARDS/3];
+    int v3[GP_MAX_CARDS/3];
     int n4;
-    int v4[MAX_CARDS/4];
+    int v4[GP_MAX_CARDS/4];
 }analyse_r;
 
-gp_t* gp_new(int rule, int mode)
+void gp_init(gp_t* gp, int rule, int mode, int player_num)
 {
-    int i;
+    int i,n;
     card_t card;
-    gp_t* gp;
 
-    gp = (gp_t*)malloc(sizeof(gp_t));
     if(!gp)
-        return 0;
-    gp->deck = deck_new(DECK_FU, 0);
-    if(!gp->deck){
-        gp_free(gp);
-        return 0;
-    }
-    gp->debug = 0;
+        return;
+    memset(gp, 0, sizeof(gp_t));
+
     if (mode == GP_MODE_SERVER)
         gp->mode = GP_MODE_SERVER;
     else
         gp->mode = GP_MODE_CLIENT;
+    gp->player_num = player_num;
     gp->game_state = GP_GAME_END;
     gp->game_rule = rule;
     gp->inning = 0;
     gp->turn_time = 30;
-    gp->player_num = 3;
 
+    n = 54;
+    deck_init(gp->deck, n);
+
+    card.suit = cdSuitJoker;
+    card.rank = cdRankSJoker;
+    hand_del(gp->deck, n, &card);
+    card.rank = cdRankBJoker;
+    hand_del(gp->deck, n, &card);
     if(gp->game_rule == GP_RULE_DEFAULT){
         /* del three 2 and one A */
         card.suit = cdSuitDiamond;
         card.rank = cdRank2;
-        deck_remove(gp->deck, &card);
+        hand_del(gp->deck, n, &card);
         card.rank = cdRankAce;
-        deck_remove(gp->deck, &card);
+        hand_del(gp->deck, n, &card);
 
         card.suit = cdSuitClub;
         card.rank = cdRank2;
-        deck_remove(gp->deck, &card);
+        hand_del(gp->deck, n, &card);
 
         card.suit = cdSuitHeart;
         card.rank = cdRank2;
-        deck_remove(gp->deck, &card);
+        hand_del(gp->deck, n, &card);
+        n -= 6;
     }
     else if(gp->game_rule == GP_RULE_ZHUJI){
         /* del three 2 and three A and one K */
         card.suit = cdSuitDiamond;
         card.rank = cdRank2;
-        deck_remove(gp->deck, &card);
+        hand_del(gp->deck, n, &card);
         card.rank = cdRankAce;
-        deck_remove(gp->deck, &card);
+        hand_del(gp->deck, n, &card);
         card.rank = cdRankK;
-        deck_remove(gp->deck, &card);
+        hand_del(gp->deck, n, &card);
 
         card.suit = cdSuitClub;
         card.rank = cdRank2;
-        deck_remove(gp->deck, &card);
+        hand_del(gp->deck, n, &card);
         card.rank = cdRankAce;
-        deck_remove(gp->deck, &card);
+        hand_del(gp->deck, n, &card);
 
         card.suit = cdSuitHeart;
         card.rank = cdRank2;
-        deck_remove(gp->deck, &card);
+        hand_del(gp->deck, n, &card);
         card.rank = cdRankAce;
-        deck_remove(gp->deck, &card);
+        hand_del(gp->deck, n, &card);
+        n -= 9;
     }
-
-    gp->last_hand = hand_new(MAX_CARDS);
-    if(!gp->last_hand){
-        gp_free(gp);
-        return 0;
-    }
+    gp->deck_all_num = hand_trim(gp->deck, 54);
+    deck_shuffle(gp->deck, gp->deck_all_num);
+    gp->deck_deal_index = 0;
+    gp->deck_valid_num = gp->deck_all_num;
 
     for(i = 0; i < GP_MAX_PLAYER; i++){
-        card_player_init(&(gp->players[i]), MAX_CARDS);
-        gp->players[i].position = i;
+        gp->players[i].data.position = i;
     }
-
-    return gp;
 }
 
-void gp_free(gp_t* gp)
+int gp_deal(gp_t* gp, card_t* card)
 {
     int i;
-    if(!gp)
-        return;
-    if(gp->last_hand)
-        hand_free(gp->last_hand);
-    if(gp->deck)
-        deck_free(gp->deck);
-    for(i = 0; i < GP_MAX_PLAYER; i++){
-        card_player_clear(&(gp->players[i]));
+    card_t* p;
+
+    if(!gp || !card)
+        return HTERR_PARAM;
+
+    if(gp->deck_deal_index >= gp->deck_valid_num)
+        return HTERR_NOCARD;
+
+    for(i = gp->deck_deal_index; i < gp->deck_valid_num; ++i){
+        p = gp->deck + i;
+        if(p->rank || p->suit){
+            card->rank = p->rank;
+            card->suit = p->suit;
+            gp->deck_deal_index++;
+            return HT_OK;
+        }
+        gp->deck_deal_index++;
     }
-    free(gp);
+
+    return HTERR_NOCARD;
 }
 
 void gp_start(gp_t* gp)
@@ -117,72 +123,47 @@ void gp_start(gp_t* gp)
     int i;
     int start_num;
     card_t card;
-    card_t first_cd;
-    int first_no;
 
     if(!gp)
         return;
     gp->round = 0;
     gp->game_state = GP_GAME_PLAY;
     gp->inning++;
-    for(i = 0; i < GP_MAX_PLAYER; ++i){
-        card_player_reset(&(gp->players[i]));
-    }
-    hand_zero(gp->last_hand);
+
+    memset(gp->last_hand, 0, sizeof(card_t) * GP_MAX_CARDS);
 
     if (gp->mode == GP_MODE_SERVER) {
-        deck_shuffle(gp->deck);
+        deck_shuffle(gp->deck, gp->deck_all_num);
+        gp->deck_deal_index = 0;
+        gp->deck_valid_num = gp->deck_all_num;
+
         /* draw start cards for every player */
         if(gp->game_rule == GP_RULE_DEFAULT){
             start_num = 16;
-            first_cd.suit = cdSuitSpade;
-            first_cd.rank = cdRankAce;
-        }
-        else{
+        } else {
             start_num = 15;
-            first_cd.suit = cdSuitDiamond;
-            first_cd.rank = cdRankAce;
         }
-        first_no = -1;
-        for(i = 0; i < start_num; ++i){
-            deck_deal(gp->deck, &card);
-            card_player_draw(&(gp->players[0]), &card);
-            if(card.suit == first_cd.suit){
-                if(card_compare((void*)&first_cd, (void*)&card) >= 0){
-                    first_cd.rank = card.rank;
-                    first_no = 0;
-                }
-            }
+        for (i = 0; i < start_num; ++i) {
+            gp_deal(gp, &card);
+            hand_add(gp->players[0].cards, GP_MAX_CARDS, &card);
 
-            deck_deal(gp->deck, &card);
-            card_player_draw(&(gp->players[1]), &card);
-            if(card.suit == first_cd.suit){
-                if(card_compare((void*)&first_cd, (void*)&card) >= 0){
-                    first_cd.rank = card.rank;
-                    first_no = 1;
-                }
+            gp_deal(gp, &card);
+            hand_add(gp->players[1].cards, GP_MAX_CARDS, &card);
+
+            if (gp->player_num > 2) {
+                gp_deal(gp, &card);
+                hand_add(gp->players[2].cards, GP_MAX_CARDS, &card);
             }
-            if(gp->player_num > 2){
-                deck_deal(gp->deck, &card);
-                card_player_draw(&(gp->players[2]), &card);
-                if(card.suit == first_cd.suit){
-                    if(card_compare((void*)&first_cd, (void*)&card) >= 0){
-                        first_cd.rank = card.rank;
-                        first_no = 2;
-                    }
-                }
-            }
-            else
-                hand_zero(gp->players[2].mycards);
         }
 
         /* the first player */
-        if(first_no == -1)
-            gp->first_player_no = rand() % gp->player_num;
-        else
-            gp->first_player_no = first_no;
+        gp->first_player_no = rand() % gp->player_num;
         gp->curr_player_no = gp->first_player_no;
     } else {
+        for (i = 0; i < 3; i++) {
+            memset(gp->players[i].cards, 0, sizeof(card_t) * GP_MAX_PLAYER);
+            gp->players[i].num_valid_card = 0;
+        }
         gp->first_player_no = 0;
         gp->curr_player_no = 0;
     }

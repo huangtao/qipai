@@ -22,7 +22,7 @@ typedef struct deck_s{
 
 deck_t* deck_new(int number, int have_joker);
 void deck_free(deck_t* deck);
-void deck_shuffle(deck_t* deck);
+//void deck_shuffle(deck_t* deck);
 int deck_deal(deck_t* deck, card_t* card);
 int deck_get(deck_t* deck, int index, card_t* card);
 int deck_num(deck_t* deck);

@@ -49,7 +49,7 @@ void hand_zero(hand_t* hand)
     int i;
     card_t *p;
 
-    if(!hand || !hand->cards)
+    if(!hand)
         return;
 
     p = hand->cards;
@@ -280,17 +280,37 @@ int hand_pop(hand_t* hand, card_t* card)
     return hand->num;
 }
 
-int hand_del(hand_t* hand, card_t* card)
+int hand_add(card_t* cards, int len, card_t* card)
+{
+    int i;
+    card_t* p;
+
+    if(!cards || len <= 0 || !card)
+        return HTERR_PARAM;
+
+    p = cards;
+    for (i = 0; i < len; ++i) {
+        if (cards->rank == 0 && cards->suit == 0) {
+            cards->rank = card->rank;
+            cards->suit = cards->suit;
+        }
+        cards++;
+    }
+
+    return HT_OK;
+}
+
+int hand_del(card_t* cards, int len, card_t* card)
 {
     int i,uflag;
     card_t* p;
 
-    if(!hand || !card)
+    if(!cards || len <= 0 || !card)
         return HTERR_PARAM;
 
     uflag = 0;
-    for(i = 0; i < hand->num; i++){
-        p = hand->cards + i;
+    p = cards;
+    for(i = 0; i < len; i++){
         if(p->suit == card->suit && p->rank == card->rank){
             p->suit = 0;
             p->rank = 0;
@@ -298,32 +318,33 @@ int hand_del(hand_t* hand, card_t* card)
         }
         if (p->rank == cdRankUnknow)
             uflag = 1;
+        p++;
     }
-    if (i >= hand->num && uflag > 0) {
-        for (i = 0; i < hand->num; i++) {
+    if (i >= len && uflag > 0) {
+        p = cards;
+        for (i = 0; i < len; i++) {
             if (p->rank == cdRankUnknow) {
                 p->rank = 0;
                 p->suit = 0;
                 break;
             }
+            p++;
         }
     }
 
     return 0;
 }
 
-int hand_trim(hand_t* hand)
+int hand_trim(card_t* cards, int len)
 {
     int i,num;
     int byte_size;
     card_t *tmp_cards,*p1,*p2;
 
-    if(!hand)
+    if(!cards || len <= 1)
         return HTERR_PARAM;
-    if(hand->num < 1)
-        return 0;
         
-    byte_size = hand->max_size * sizeof(card_t);
+    byte_size = len * sizeof(card_t);
     tmp_cards = (card_t*)malloc(byte_size);
     if(!tmp_cards)
         return HTERR_OUTOFMEMORY;
@@ -331,8 +352,8 @@ int hand_trim(hand_t* hand)
 
     num = 0;
     p1 = tmp_cards;
-    p2 = hand->cards;
-    for(i = 0; i < hand->max_size; ++i){
+    p2 = cards;
+    for(i = 0; i < len; ++i){
         if(p2->suit || p2->rank){
             p1->suit = p2->suit;
             p1->rank = p2->rank;
@@ -341,9 +362,8 @@ int hand_trim(hand_t* hand)
         }
         p2++;
     }
-    memcpy((void*)hand->cards, (const void*)tmp_cards, byte_size);
+    memcpy((void*)cards, (const void*)tmp_cards, byte_size);
     free((void*)tmp_cards);
-    hand->num = num;
 
     return num;
 }
@@ -398,4 +418,100 @@ const char* card_text(card_t* card)
     sprintf(readable, "%c%c", c_suit[card->suit], c_rank[card->rank]);
 
     return readable;
+}
+
+
+void hand_remove_rank(card_t* cards, int len, int rank)
+{
+    int i;
+
+    if (!cards || len == 0)
+        return;
+    for (i = 0; i < len; ++i) {
+        if (cards->rank == rank) {
+            cards->rank = 0;
+            cards->suit = 0;
+        }
+        cards++;
+    }
+}
+
+void hand_remove_suit(card_t* cards, int len, int suit)
+{
+    int i;
+
+    if (!cards || len == 0)
+        return;
+    for (i = 0; i < len; ++i) {
+        if(cards->suit == suit) {
+            cards->rank = 0;
+            cards->suit = 0;
+        }
+        cards++;
+    }
+}
+
+/*
+ * for deck operation
+ */
+int deck_init(card_t* cards, int len)
+{
+    int fu;
+    card_t* p;
+    int n,i,j,k;
+
+    if (!cards || len <= 0)
+        return 0;
+
+    fu = len / 54;
+    if (fu == 0)
+        return 0;
+
+    n = 0;
+    p = cards;
+    for(i = 0; i < fu; ++i){
+        for(j = cdSuitDiamond; j <= cdSuitSpade; ++j){
+            for(k = cdRankAce; k <= cdRankK; ++k){
+                p->rank = k;
+                p->suit = j;
+                p++;
+            }
+        }
+        p->rank = cdRankSJoker;
+        p->suit = cdSuitJoker;
+        p++;
+        p->rank = cdRankBJoker;
+        p->suit = cdSuitJoker;
+        p++;
+    }
+
+    return n;
+}
+
+void deck_shuffle(card_t* cards, int num)
+{
+    int i,n;
+    int a,b;
+    card_t* pa;
+    card_t* pb;
+    card_t temp;
+
+    if (!cards || num == 0)
+        return;
+
+    n = 1000 + rand() % 50;
+    for(i = 0; i < n; ++i){
+        a = rand() % num;
+        b = rand() % num;
+        if(a != b){
+            pa = cards + a;
+            pb = cards + b;
+            temp.rank = pa->rank;
+            temp.suit = pa->suit;
+            pa->rank = pb->rank;
+            pa->suit = pb->suit;
+            pb->rank = temp.rank;
+            pb->suit = temp.suit;
+        }
+    }
 }

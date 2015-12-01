@@ -7,17 +7,13 @@
 static char c_suit[] = {'?','D','C','H','S','*'};
 static char c_rank[] = {'?','A','2','3','4','5','6','7','8','9','T','J','Q','K','F','Z'};
 
-void card_init(card_t* card, const char* sn)
-{
-}
-
 int card_equal(card_t* a, card_t* b)
 {
     if(!a || !b)
         return 0;
 
     if(a->suit == b->suit &&
-        a->rank == b->rank)
+            a->rank == b->rank)
     {
         return 1;
     }
@@ -77,16 +73,16 @@ const char* cards_print(card_t cards[], int len, int line_number)
 
 char card_suit_char(card_t* card)
 {
-	char c;
+    char c;
 
-	c = c_suit[0];
-	if(card){
-		if(card->suit >=0 || card->suit <= 5){
-			c = c_suit[card->suit];
-		}
-	}
+    c = c_suit[0];
+    if(card){
+        if(card->suit >=0 || card->suit <= 5){
+            c = c_suit[card->suit];
+        }
+    }
 
-	return c;
+    return c;
 }
 
 const char* card_rank_str(card_t* card)

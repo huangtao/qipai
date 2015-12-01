@@ -34,7 +34,7 @@ typedef struct hand_type_s{
 
 hand_t* hand_new(int max_size);
 void hand_free(hand_t* hand);
-void hand_zero(hand_t* hand);
+void hand_zero(hand_t* cards);
 int hand_num(hand_t* hand);
 hand_t* hand_clone(hand_t* hand);
 void hand_copy(hand_t* src, hand_t* dest);
@@ -48,13 +48,24 @@ int hand_suit_num(hand_t* hand, int suit);
 /* push/pop a card to hand and return card num */
 int hand_push(hand_t* hand, card_t* card);
 int hand_pop(hand_t* hand, card_t* card);
+/* add a card to hand */
+int hand_add(card_t* cards, int len, card_t* card);
 /* delete a card from hand */
-int hand_del(hand_t* hand, card_t* card);
-int hand_trim(hand_t* hand);
+int hand_del(card_t* cards, int len, card_t* card);
+int hand_trim(card_t* cards, int len);
 /* print readable format */
 void hand_print(hand_t* hand, int line_number);
 void hand_dump(hand_t* hand, int line_number);
 const char* card_text(card_t* card);
+
+void hand_remove_rank(card_t* cards, int len, int rank);
+void hand_remove_suit(card_t* cards, int len, int suit);
+
+/*
+ * deck function
+ */
+int deck_init(card_t* cards, int len);
+void deck_shuffle(card_t* cards, int num);
 
 #ifdef __cplusplus
 }

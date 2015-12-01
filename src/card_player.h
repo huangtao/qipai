@@ -2,15 +2,15 @@
 * code:huangtao117@gmail.com
 */
 
-#ifndef _CARD_PLAYER_H
-#define _CARD_PLAYER_H
+#ifndef _QP_PLAYER_H
+#define _QP_PLAYER_H
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include "hand.h"
 
-/* define a card player */
+/* define a qipai player */
 typedef struct card_player_s{
     int valid;
     int level;

@@ -11,7 +11,6 @@ TEMPLATE = lib
 CONFIG += staticlib
 
 SOURCES += ../src/card.c \
-    ../src/card_player.c \
     ../src/ddz.c \
     ../src/deck.c \
     ../src/dn.c \
@@ -19,10 +18,10 @@ SOURCES += ../src/card.c \
     ../src/hand.c \
     ../src/ht_str.c \
     ../src/sort_card.c \
-    ../src/texas.c
+    ../src/texas.c \
+    ../src/card_player.c
 
 HEADERS += ../src/card.h \
-    ../src/card_player.h \
     ../src/ddz.h \
     ../src/deck.h \
     ../src/dn.h \
@@ -33,7 +32,8 @@ HEADERS += ../src/card.h \
     ../src/mj.h \
     ../src/qipai.h \
     ../src/sort_card.h \
-    ../src/texas.h
+    ../src/texas.h \
+    ../src/card_player.h
 unix {
     target.path = /usr/lib
     INSTALLS += target
