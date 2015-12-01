@@ -4,17 +4,16 @@
 #include <string.h>
 #include "ht_lch.h"
 
-static char c_suit[] = {'?','D','C','H','S','*'};
-static char c_rank[] = {'?','A','2','3','4','5','6','7','8','9','T','J','Q','K','F','Z'};
+static char c_suit[] = {'0','D','C','H','S','*','?'};
+static char c_rank[] = {'0','A','2','3','4','5','6','7','8','9','T','J','Q','K','S','B','?'};
 
 int card_equal(card_t* a, card_t* b)
 {
-    if(!a || !b)
+    if (!a || !b)
         return 0;
 
-    if(a->suit == b->suit &&
-            a->rank == b->rank)
-    {
+    if (a->suit == b->suit &&
+            a->rank == b->rank) {
         return 1;
     }
 
@@ -25,7 +24,7 @@ char card_encode(card_t* cd)
 {
     char x;
 
-    if(cd)
+    if (cd)
         x = (cd->suit << 4) | cd->rank;
     else
         x = 0;
@@ -35,71 +34,48 @@ char card_encode(card_t* cd)
 
 void card_decode(card_t* cd, char x)
 {
-    if(cd){
+    if (cd) {
         cd->suit = x >> 4;
         cd->rank = x & 0xf;
     }
 }
 
-const char* cards_print(card_t cards[], int len, int line_number)
+const char* card_to_string(card_t* card)
 {
-    int i;
-    char buf[256];
-    static char readable[256];
+    static char readable[8];
 
-    if (!cards || len > 128) {
-        strcpy(buf, "");
-        return readable;
-    }
+    memset(readable, 0, 8);
+    if(!card)
+        return 0;
 
-    memset(readable, 0, 256 * sizeof(char));
-    for(i = 0; i < len; ++i){
-        if(cards[i].suit > 5 || cards[i].rank > 15)
-            sprintf(buf, "%c%c ", '-', '-');
-        else {
-            if (cards[i].rank == 10)
-                sprintf(buf, "%c10 ", c_suit[cards[i].suit]);
-            else
-                sprintf(buf, "%c%c ", c_suit[cards[i].suit], c_rank[cards[i].rank]);
-        }
-        if((i+1) % line_number == 0){
-            strcat(buf, "\n");
-        }
-        strcat(readable, buf);
-    }
+    readable[2] = 0;
+    sprintf(readable, "%c%c", c_suit[card->suit], c_rank[card->rank]);
 
     return readable;
 }
 
-char card_suit_char(card_t* card)
+/* string's format must be "DA","D2",... */
+void card_from_string(card_t* card, const char* str)
 {
-    char c;
+    int i;
 
-    c = c_suit[0];
-    if(card){
-        if(card->suit >=0 || card->suit <= 5){
-            c = c_suit[card->suit];
+    if (!card || !str)
+        return;
+    if (strlen(str) < 2)
+        return;
+
+    card->rank = card->suit = 0;
+    for (i = 0; i < 7; i++) {
+        if (*str == c_suit[i]) {
+            card->suit = i;
+            break;
         }
     }
-
-    return c;
-}
-
-const char* card_rank_str(card_t* card)
-{
-    static char str[4];
-
-    if(card){
-        if(card->rank >=0 || card->rank <= 15){
-            if (card->rank == 10)
-                strcpy(str, "10");
-            else
-                sprintf(str, "%c", c_rank[card->rank]);
+    for (i = 0; i < 17; i++) {
+        if (*(str+1) == c_rank[i]) {
+            card->rank = i;
+            break;
         }
     }
-    else {
-        strcpy(str, "?");
-    }
-
-    return str;
 }
+

@@ -79,15 +79,8 @@ typedef struct card_s{
 int card_equal(card_t* a, card_t* b);
 char card_encode(card_t* card);
 void card_decode(card_t* card, char x);
-
-/*
- * print cards to a readable string
- */
-const char* cards_print(card_t cards[], int len, int line_number);
-
-char card_suit_char(card_t* card);
-const char* card_rank_str(card_t* card);
-const char* card_string(card_t* card);
+const char* card_to_string(card_t* card);
+void card_from_string(card_t* card, const char* string);
 
 #ifdef __cplusplus
 }

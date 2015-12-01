@@ -40,6 +40,15 @@ typedef enum gp_type_e{
         GP_BOMB         /* bomb (6666+3), (KKK+3)*/
 }GP_TYPE;
 
+/* for hand type calc */
+typedef struct hand_type_s{
+    int type;           /* type enum */
+    int num;            /* number */
+    int param1;	        /* logic value */
+    int param2;
+    int param3;
+}hand_type;
+
 typedef enum gp_gamestate_e{
     GP_GAME_END = 0,   /* game end */
     GP_GAME_PLAY       /* playing card */
@@ -51,7 +60,11 @@ typedef enum gp_mode_e {
 }GP_MODE;
 
 typedef struct gp_player_s {
-    card_player_t data;
+    int level;
+    int state;
+    int position;
+    int64_t score;
+    uint64_t gold;
     card_t cards[GP_MAX_CARDS];
     int num_valid_card;
 }GP_PLAYER;
