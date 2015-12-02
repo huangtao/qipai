@@ -10,10 +10,10 @@ CFLAGS = -Wall -g \
 		 -Iinclude
 
 INCLUDES = src/card.h \
-		   src/hand.h
+		   src/card_player.h
 
 OBJS = src/card.o \
-	   src/hand.o
+	   src/gp.o
 
 TEST_OBJS = test/test.o
 
@@ -24,7 +24,7 @@ all: libqp.a test
 libqp.a: $(OBJS)
 	$(AR) crs $@ $^
 
-test: $(TEST_OBJS) $(OBJS)
+test: $(TEST_OBJS)
 	$(CC) $(CFLAGS) -o $@ $^
 
 %.o: %.c $(INCLUDES)

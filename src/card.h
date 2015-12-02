@@ -75,12 +75,48 @@ typedef struct card_s{
     int rank;   /* card rank */
 }card_t;
 
-/* card oprate */
+/* one card function */
 int card_equal(card_t* a, card_t* b);
 char card_encode(card_t* card);
 void card_decode(card_t* card, char x);
 const char* card_to_string(card_t* card);
 void card_from_string(card_t* card, const char* string);
+
+/*
+ * cards(hand or deck) function
+ */
+
+/* return valid number card form cards */
+int cards_num(card_t* cards, int len);
+
+/* hand have this card */
+int cards_have(card_t* cards, int len, card_t* card);
+
+int cards_rank_num(card_t* cards, int len, int rank);
+
+int cards_suit_num(card_t* cards, int len, int suit);
+
+/* add a card to hand */
+int cards_add(card_t* cards, int len, card_t* card);
+
+/* delete a card from hand */
+int cards_del(card_t* cards, int len, card_t* card);
+
+/* trim a card array */
+int cards_trim(card_t* cards, int len);
+
+/* print readable format */
+void cards_print(card_t* cards, int len, int line_number);
+void cards_dump(card_t* cards, int len, int line_number);
+
+void cards_remove_rank(card_t* cards, int len, int rank);
+void cards_remove_suit(card_t* cards, int len, int suit);
+
+/*
+ * deck function
+ */
+int deck_init(card_t* cards, int len);
+void deck_shuffle(card_t* cards, int num);
 
 #ifdef __cplusplus
 }

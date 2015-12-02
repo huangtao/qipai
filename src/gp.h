@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#include "deck.h"
+#include "card.h"
 #include "card_player.h"
 
 #define GP_MIN_PLAYER   2

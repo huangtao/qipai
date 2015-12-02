@@ -1,11 +1,8 @@
 ﻿#include <stdio.h>
 #include <time.h>
-#include "card.h"
-
 
 int main(int argc, char** argv)
 {
-	srand((unsigned int)time(NULL));
-
+	printf("hello world!\n");
 	return 0;
 }
