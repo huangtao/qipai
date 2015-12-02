@@ -10,10 +10,12 @@ CFLAGS = -Wall -g \
 		 -Iinclude
 
 INCLUDES = src/card.h \
-		   src/card_player.h
+		   src/card_player.h \
+           src/card_sort.h
 
 OBJS = src/card.o \
-	   src/gp.o
+	   src/gp.o \
+       src/card_sort.o
 
 TEST_OBJS = test/test.o
 

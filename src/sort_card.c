@@ -32,12 +32,12 @@ int card_compare(const void* a, const void* b)
     return 0;
 }
 
-void cards_sort(hand_t* hand)
+void cards_sort(card_t* cards, int len)
 {
-    if(!hand || !hand->cards)
+    if(!cards || len <= 0)
         return;
 
-    qsort(hand->cards, hand->num, sizeof(card_t), card_compare); 
+    qsort(cards, len, sizeof(card_t), card_compare); 
 }
 
 /*
@@ -60,46 +60,45 @@ void rank_bucket(hand_t* hand, int x[])
  * bucket a hand
  * return hand suit's number
  */
-void cards_bucket(hand_t* hand, cd_bucket x[])
+void cards_bucket(card_t* cards, int len, cd_bucket x[])
 {
     int i,v;
-    card_t* p;
 
-    if(!hand || !hand->cards)
+    if (!cards || len <= 0)
         return;
-    for(i = 0; i < hand->num; ++i){
-        p = hand->cards + i;
-        v = rank2logic(p->rank);
-        x[v].rank = p->rank;
-        if(p->suit == cdSuitSpade){
+    for (i = 0; i < len; ++i) {
+        v = rank2logic(cards->rank);
+        x[v].rank = cards->rank;
+        if (cards->suit == cdSuitSpade) {
             x[v].num_spade++;
         }
-        else if(p->suit == cdSuitHeart){
+        else if (cards->suit == cdSuitHeart) {
             x[v].num_heart++;
         }
-        else if(p->suit == cdSuitClub){
+        else if (cards->suit == cdSuitClub) {
             x[v].num_club++;
         }
-        else if(p->suit == cdSuitDiamond){
+        else if (cards->suit == cdSuitDiamond) {
             x[v].num_diamond++;
-        }
-        else
+        } else {
             x[v].num_joker++;
+        }
+        cards++;
     }
 }
 
 int get_bucket_suit(cd_bucket* item)
 {
-    if(item){
-        if(item->num_spade)
+    if (item) {
+        if (item->num_spade)
             return cdSuitSpade;
-        else if(item->num_heart)
+        else if (item->num_heart)
             return cdSuitHeart;
-        else if(item->num_club)
+        else if (item->num_club)
             return cdSuitClub;
-        else if(item->num_diamond)
+        else if (item->num_diamond)
             return cdSuitDiamond;
-        else if(item->num_joker)
+        else if (item->num_joker)
             return cdSuitJoker;
     }
 
@@ -110,8 +109,8 @@ int cards_have_rank(int rank, int x[], int size)
 {
     int i;
 
-    for(i = 0; i < size; ++i){
-        if(x[i] == rank)
+    for (i = 0; i < size; ++i) {
+        if (x[i] == rank)
             return 1;
     }
 
@@ -122,7 +121,7 @@ int card_interval(card_t* card1, card_t* card2)
 {
     int r;
 
-    if(!card1 || !card2)
+    if (!card1 || !card2)
         return 0;
 
 	r = (table_rank[card1->rank] - table_rank[card2->rank]) / 10;
@@ -132,7 +131,7 @@ int card_interval(card_t* card1, card_t* card2)
 
 int card_logicvalue(card_t* card)
 {
-    if(!card)
+    if (!card)
         return 0;
 
     return rank2logic(card->rank);
@@ -140,14 +139,14 @@ int card_logicvalue(card_t* card)
 
 int rank2logic(int rank)
 {
-    if(rank > 15) return 0;
+    if (rank > 15) return 0;
 
     return table_rank[rank];
 }
 
 int logic2rank(int logic)
 {
-    if(logic > 17)
+    if (logic > 17)
         return 0;
 
     return table_logic[logic];

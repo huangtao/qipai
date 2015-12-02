@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#include "hand.h"
+#include "card.h"
 
 /* bucket item */
 typedef struct cd_bucket_s{
@@ -22,9 +22,9 @@ typedef struct cd_bucket_s{
 }cd_bucket;
 
 /* sort,compare,etc... */
-void cards_sort(hand_t* hand);
+void cards_sort(card_t* cards, int len);
 //void rank_bucket(hand_t* hand, int x[]);
-void cards_bucket(hand_t* hand, cd_bucket x[]);
+void cards_bucket(card_t* cards, int len, cd_bucket x[]);
 int get_bucket_suit(cd_bucket* item);
 int cards_have_rank(int rank, int x[], int size);
 int card_compare(const void* a, const void* b);

@@ -43,7 +43,9 @@ typedef enum gp_type_e{
 /* for hand type calc */
 typedef struct hand_type_s{
     int type;           /* type enum */
+    card_t type_card;   /* type card */
     int num;            /* number */
+    int param;
     int param1;	        /* logic value */
     int param2;
     int param3;
@@ -88,6 +90,8 @@ typedef struct gp_s{
     int deck_deal_index;    /* current deal card index */
     int deck_valid_num;     /* valid number card */
 
+    int last_hand_num;
+    hand_type last_hand_type;
     card_t last_hand[GP_MAX_CARDS];     /* last play out cards */
     GP_PLAYER players[GP_MAX_PLAYER];   /* three player */
 }gp_t;
@@ -98,13 +102,11 @@ void gp_init(gp_t* gp, int rule, int mode, int player_num);
 /* start a new game */
 void gp_start(gp_t* gp);
 
-int gp_get_state(gp_t* gp);
-void gp_set_state(gp_t* gp, int state);
-void gp_sort(hand_t* hand);
+void gp_sort(card_t* cards, int len);
 const char* gp_htype_name(int htype);
-void gp_handtype(gp_t* gp, hand_t* hand);
-int gp_play(gp_t* gp, int player_no, hand_t* hand);
-int gp_canplay(gp_t* gp, hand_t* hand);
+void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht);
+int gp_play(gp_t* gp, int player_no, card_t* cards, int len);
+int gp_canplay(gp_t* gp, card_t* cards, int len);
 void gp_next_player(gp_t* gp);
 int gp_pass(gp_t* gp, int player_no);
 void gp_dump(gp_t* gp);
