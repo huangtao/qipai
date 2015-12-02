@@ -251,7 +251,7 @@ void cards_print(card_t* cards, int len, int line_number)
 		}
 		cards++;
     }
-    if(n % line_number != 0)
+    if (n % line_number != 0)
 		printf("\n");
 }
 
@@ -271,6 +271,8 @@ void cards_dump(card_t* cards, int len, int line_number)
         }
 		cards++;
     }
+    if ((i+1) % line_number != 0)
+        printf("\n");
 }
 
 void cards_remove_rank(card_t* cards, int len, int rank)

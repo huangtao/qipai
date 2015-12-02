@@ -5,7 +5,6 @@
 CC = gcc
 
 CFLAGS = -Wall -g \
-		 -Wno-unused-parameter \
 		 -Isrc \
 		 -Iinclude
 
@@ -20,13 +19,13 @@ OBJS = src/card.o \
 TEST_OBJS = test/test.o
 
 # build library and test app
-all: libqp.a test
+all: libqp.a mytest
 .PHONY: all
 
 libqp.a: $(OBJS)
 	$(AR) crs $@ $^
 
-test: $(TEST_OBJS)
+mytest: $(TEST_OBJS) $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^
 
 %.o: %.c $(INCLUDES)
