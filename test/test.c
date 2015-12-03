@@ -28,4 +28,12 @@ void test_gp()
 
     gp_sort(gp.players[0].cards, GP_MAX_CARDS);
     cards_dump(gp.players[0].cards, GP_MAX_CARDS, 10);
+
+	/* 牌型判断 */
+	card_t cards[GP_MAX_CARDS];
+	cards_from_string(cards, GP_MAX_CARDS,
+			"D3,H3");
+	hand_type ht;
+	gp_handtype(cards, GP_MAX_CARDS, &ht);
+	printf("hand type is %s.\n", gp_htype_name(ht.type));
 }
