@@ -305,6 +305,42 @@ void cards_remove_suit(card_t* cards, int len, int suit)
     }
 }
 
+/* string's format must be "DA,D2,..." */
+int cards_from_string(card_t* cards, int len, const char* str)
+{
+    int len_str,n;
+	int idx,k;
+	const char* c;
+
+    if (!cards || !str)
+        return 0;
+    len_str = strlen(str);
+	if (len_str < 2)
+        return 0;
+    memset(cards, 0, sizeof(card_t) * len);
+	idx = 0;
+	n = len_str;
+	c = str;
+	k = 0;
+	do {
+		card_from_string(cards, c);
+		k++;
+		idx += 2;
+		if (idx < len_str)
+			idx++;
+		else
+			break;
+		c = str + idx;
+		cards++;
+		if (k >= len)
+			break;
+		n--;
+	} while (n);
+	
+	return k;
+}
+
+
 /*
  * for deck operation
  */

@@ -112,6 +112,9 @@ void cards_dump(card_t* cards, int len, int line_number);
 void cards_remove_rank(card_t* cards, int len, int rank);
 void cards_remove_suit(card_t* cards, int len, int suit);
 
+/* parse a string like "D2,H3,..." to a cards */
+int cards_from_string(card_t* cards, int len, const char* string);
+
 /*
  * deck function
  */

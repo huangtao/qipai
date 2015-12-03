@@ -188,11 +188,12 @@ const char* gp_htype_name(int htype)
         "GP_THREE_P1",
         "GP_THREE_P2",
         "GP_PLANE",
+		"GP_FOUR",
         "GP_FOUR_P3",
         "GP_BOMB"
     };
 
-    if (htype <= 11)
+    if (htype <= 12)
         return htype_name[htype];
     else
         return htype_name[0];
