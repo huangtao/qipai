@@ -13,6 +13,10 @@ int card_compare(const void* a, const void* b)
     card2 = (card_t*)b;
     if(!card1 || !card2)
         return 0;
+    if (card1->rank >= 16 || card1->suit >= 6)
+        return 0;
+    if (card2->rank >= 16 || card2->suit >= 6)
+        return 0;
 
     if(table_rank[card1->rank] < table_rank[card2->rank])
         return 1;

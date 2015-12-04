@@ -129,7 +129,6 @@ void gp_start(gp_t* gp)
     gp->game_state = GP_GAME_PLAY;
     gp->inning++;
 
-    gp->last_hand_num = 0;
     memset(&gp->last_hand_type, 0, sizeof(hand_type));
     memset(gp->last_hand, 0, sizeof(card_t) * GP_MAX_CARDS);
 
@@ -163,6 +162,7 @@ void gp_start(gp_t* gp)
     } else {
         for (i = 0; i < 3; i++) {
             memset(gp->players[i].cards, 0, sizeof(card_t) * GP_MAX_PLAYER);
+            memset(gp->players[i].cards_played, 0, sizeof(card_t) * GP_MAX_PLAYER);
             gp->players[i].num_valid_card = 0;
         }
         gp->first_player_no = 0;
@@ -202,7 +202,6 @@ const char* gp_htype_name(int htype)
 void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
 {
     int flag,i,n,have_k,have_3;
-    int valid_num;
     analyse_r ar;
     card_t *p;
     cd_bucket x[20];
@@ -211,8 +210,8 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
         return;
     ht->type = GP_ERROR;
     p = cards;
-    valid_num = cards_num(cards, len);
-    switch (valid_num) {
+    ht->num = cards_num(cards, len);
+    switch (ht->num) {
         case 0:
             return;
         case 1:
@@ -262,7 +261,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
 
     /* for bomb */
     if (ar.n4 > 0) {
-        if (ar.n4 == 1 && valid_num == 4) {
+        if (ar.n4 == 1 && ht->num == 4) {
             if(gp->game_rule == GP_RULE_DEFAULT)
                 ht->type = GP_BOMB;
             else
@@ -272,7 +271,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
             ht->param = ar.v4[0];
             return;
         }
-        if (ar.n4 == 1 && valid_num == 5) {
+        if (ar.n4 == 1 && ht->num == 5) {
             ht->type = GP_BOMB;
             ht->type_card.rank = x[ar.v4[0]].rank;
             ht->type_card.suit = get_bucket_suit(&x[ar.v3[0]]);
@@ -280,7 +279,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
             return;
         }
         if (gp->game_rule == GP_RULE_ZHUJI) {
-            if (ar.n4 == 1 && valid_num == 7){
+            if (ar.n4 == 1 && ht->num == 7){
                 ht->type = GP_FOUR_P3;
                 ht->type_card.rank = x[ar.v4[0]].rank;
                 ht->type_card.suit = get_bucket_suit(&x[ar.v3[0]]);
@@ -293,7 +292,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
 
     /* for three */
     if (ar.n3 > 0) {
-        if (ar.n3 == 1 && valid_num == 3) {
+        if (ar.n3 == 1 && ht->num == 3) {
             if (gp->game_rule == GP_RULE_DEFAULT) {
                 if (x[ar.v3[0]].rank == cdRankAce)
                     ht->type = GP_BOMB;
@@ -305,7 +304,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
             ht->param = ar.v3[0];
             return;
         }
-        if (ar.n3 == 1 && valid_num == 4) {
+        if (ar.n3 == 1 && ht->num == 4) {
             if (gp->game_rule == GP_RULE_DEFAULT) {
                 if(x[ar.v3[0]].rank == cdRankAce)
                     ht->type = GP_BOMB;
@@ -320,14 +319,14 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
             ht->param = ar.v3[0];
             return;
         }
-        if (ar.n3 == 1 && ar.n2 == 1 && valid_num == 5) {
+        if (ar.n3 == 1 && ar.n2 == 1 && ht->num == 5) {
             ht->type = GP_THREE_P2;
             ht->type_card.rank = x[ar.v3[0]].rank;
             ht->type_card.suit = get_bucket_suit(&x[ar.v3[0]]);
             ht->param = ar.v3[0];
             return;
         }
-        if (ar.n3 == 1 && valid_num == 6) {
+        if (ar.n3 == 1 && ht->num == 6) {
             if (x[ar.v3[0]].rank == cdRankK) {
                 ht->type = GP_FOUR_P3;
                 ht->type_card.rank = x[ar.v3[0]].rank;
@@ -345,14 +344,14 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
                 if((ar.v3[i] - (ar.v3[i+1])) != 1)
                     return;
             }
-            if (ar.n3 * 3 == valid_num) {
+            if (ar.n3 * 3 == ht->num) {
                 ht->type = GP_T_STRAIGHT;
                 ht->type_card.rank = x[ar.v3[0]].rank;
                 ht->type_card.suit = get_bucket_suit(&x[ar.v3[0]]);
                 ht->param = ar.v3[0];
                 return;
             }
-            if (ar.n3 * 5 == valid_num &&
+            if (ar.n3 * 5 == ht->num &&
                     ar.n3 == ar.n2) {
                 for (i = 0; i < (ar.n2 - 1); ++i) {
                     if ((ar.v2[i] - ar.v2[i+1]) != 1)
@@ -377,7 +376,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
             if ((ar.v2[i] - ar.v2[i+1]) != 1)
                 return;
         }
-        if (ar.n2 * 2 == valid_num) {
+        if (ar.n2 * 2 == ht->num) {
             ht->type = GP_D_STRAIGHT;
             ht->type_card.rank = x[ar.v2[0]].rank;
             ht->type_card.suit = get_bucket_suit(&x[ar.v2[0]]);
@@ -388,7 +387,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
     }
 
     /* for straight */
-    if (ar.n1 >= 5 && ar.n1 == valid_num) {
+    if (ar.n1 >= 5 && ar.n1 == ht->num) {
         if (gp->game_rule == GP_RULE_DEFAULT) {
             have_k = cards_rank_num(cards, len, cdRankK);
             have_3 = cards_rank_num(cards, len, cdRank3);
@@ -528,8 +527,9 @@ int gp_play(gp_t* gp, int player_no, card_t* cards, int len)
         cards_del(gp->players[player_no].cards, GP_MAX_CARDS, card);
         cards_add(gp->last_hand, GP_MAX_CARDS, card);
     }
-    gp->last_hand_num = valid_num;
     memcpy(&gp->last_hand_type, &htype, sizeof(hand_type));
+    memcpy(&gp->players[player_no].cards_played, gp->last_hand,
+           sizeof(card_t) * GP_MAX_CARDS);
     gp->largest_player_no = player_no;
     cards_trim(gp->players[player_no].cards, GP_MAX_CARDS);
     if (cards_num(gp->players[player_no].cards, GP_MAX_CARDS))
@@ -552,7 +552,7 @@ int gp_canplay(gp_t* gp, card_t* cards, int len)
     gp_handtype(gp, cards, len, &ht);
     if(ht.type == GP_ERROR)
         return 0;
-    if (gp->last_hand_num == 0) {
+    if (gp->last_hand_type.num == 0) {
         /* first play */
         if (ht.type == GP_THREE_P1)
             return 0;

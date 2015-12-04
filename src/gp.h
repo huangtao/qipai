@@ -10,7 +10,6 @@ extern "C" {
 #endif
 
 #include "card.h"
-#include "card_player.h"
 
 #define GP_MIN_PLAYER   2
 #define GP_MAX_PLAYER   3
@@ -68,6 +67,7 @@ typedef struct gp_player_s {
     int64_t score;
     uint64_t gold;
     card_t cards[GP_MAX_CARDS];
+    card_t cards_played[GP_MAX_CARDS];
     int num_valid_card;
 }GP_PLAYER;
 
@@ -90,7 +90,6 @@ typedef struct gp_s{
     int deck_deal_index;    /* current deal card index */
     int deck_valid_num;     /* valid number card */
 
-    int last_hand_num;
     hand_type last_hand_type;
     card_t last_hand[GP_MAX_CARDS];     /* last play out cards */
     GP_PLAYER players[GP_MAX_PLAYER];   /* three player */

@@ -8,8 +8,6 @@
 #define _QIPAI_H
 
 #include "card.h"
-#include "deck.h"
-#include "ddz.h"
 #include "gp.h"
 
 #endif
