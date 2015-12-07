@@ -23,11 +23,7 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/../include \
 					$(LOCAL_PATH)/../src
 LOCAL_SRC_FILES := com_gameld_core_libqp.cpp \
 				   ../src/card.c \
-				   ../src/card_player.c \
-				   ../src/hand.c \
-				   ../src/deck.c \
-				   ../src/sort_card.c \
-				   ../src/ht_str.c \
+				   ../src/card_sort.c \
 				   ../src/gp.c
 LOCAL_LDLIBS += -llog
 include $(BUILD_SHARED_LIBRARY)

@@ -39,6 +39,32 @@ void card_decode(card_t* cd, char x)
     }
 }
 
+void n55_to_card(unsigned char cd, card_t* card)
+{
+    if (card && cd > 0) {
+        if (cd >= 55) {
+            card->rank = cdRankUnknow;
+            card->suit = cdSuitUnknow;
+        } else {
+            card->rank = cdRankAce + (cd - 1) % 13;
+            card->suit = cdSuitDiamond + (cd - 1) / 13;
+        }
+    }
+}
+
+unsigned char card_to_n55(card_t* card)
+{
+    unsigned char cd;
+    if (!card)
+        return 0;
+    if (card->rank == cdRankUnknow) {
+        return 55;
+    } else {
+        cd = ((card->suit - 1) * 13) + card->rank;
+    }
+    return cd;
+}
+
 const char* card_to_string(card_t* card)
 {
     static char readable[8];

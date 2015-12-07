@@ -27,41 +27,16 @@ static JNIEnv* g_envJava = NULL;
 static JNIEnv* g_envRead = NULL;
 static JNIEnv* g_envWrite = NULL;
 static jclass g_myjni = NULL;
-static gp_t* g_gp = NULL;
-static hand_t* g_hand_select = NULL;
-static hand_t* g_hand_out = NULL;
-
-inline void ldcard_to_card(unsigned char cd, card_t* card)
-{
-    if (card && cd > 0) {
-        card->rank = cdRankAce + (cd - 1) % 13;
-        card->suit = cdSuitDiamond + (cd - 1) / 13;
-    }
-}
-
-inline unsigned char card_to_ldcard(card_t* card)
-{
-    unsigned char cd;
-    cd = ((card->suit - 1) * 13) + card->rank;
-    return cd;
-}
+static gp_t g_gp;
 
 int Java_com_gameld_core_libqp_gpInit(JNIEnv *, jclass, jint type)
 {
-    g_gp = gp_new(type, GP_MODE_CLIENT);
-    if (g_gp == NULL) {
-        return 0;
-    }
-    g_hand_select = hand_new(15);
-    g_hand_out = hand_new(15);
+    gp_init(&g_gp, type, GP_MODE_CLIENT, 2);
     return 1;
 }
 
 void Java_com_gameld_core_libqp_gpClear(JNIEnv *, jclass)
 {
-    hand_free(g_hand_select);
-    hand_free(g_hand_out);
-    gp_free(g_gp);
 }
 
 void Java_com_gameld_core_libqp_gpStart(JNIEnv *env, jclass,
@@ -69,93 +44,88 @@ void Java_com_gameld_core_libqp_gpStart(JNIEnv *env, jclass,
 {
     card_t* card;
 
-    g_gp->player_num = player_num;
-    gp_start(g_gp);
-    g_gp->curr_player_no = fno;
-    g_gp->first_player_no = fno;
+    g_gp.player_num = player_num;
+    gp_start(&g_gp);
+    g_gp.curr_player_no = fno;
+    g_gp.first_player_no = fno;
 
     jbyte* p = env->GetByteArrayElements(jarray, NULL);
     jsize size = env->GetArrayLength(jarray);
-    hand_t* hand = g_gp->players[my_seat].mycards;
+    card = g_gp.players[my_seat].cards;
     for (int i = 0; i < 15; i++) {
         if (p[i] > 0) {
-            hand->num++;
-            card = hand_get(hand, i);
-            ldcard_to_card(p[i], card);
+            n55_to_card(p[i], card);
+            card++;
         }
     }
     env->ReleaseByteArrayElements(jarray, p, 0);
 
-    gp_sort(hand);
+    gp_sort(g_gp.players[my_seat].cards, GP_MAX_CARDS);
 
     int st = my_seat + 1;
-    if (st >= g_gp->player_num)
+    if (st >= g_gp.player_num)
         st = 0;
-    hand = g_gp->players[st].mycards;
+    card = g_gp.players[st].cards;
     for (int i = 0; i < 15; i++) {
-        hand->num++;
-        card = hand_get(hand, i);
         card->rank = cdRankUnknow;
-        card->suit = 0;
+        card->suit = cdSuitUnknow;
+        card++;
     }
 }
 
 int Java_com_gameld_core_libqp_gpCanPlay(JNIEnv *env, jclass,jbyteArray jarray)
 {
-    card_t* card;
+    int n;
+    card_t cards[GP_MAX_CARDS];
 
     jbyte* p = env->GetByteArrayElements(jarray, NULL);
     jsize size = env->GetArrayLength(jarray);
-    g_hand_select->num = 0;
+    n = 0;
     for (int i = 0; i < 15; i++) {
         if (p[i] > 0) {
-            g_hand_select->num++;
-            card = hand_get(g_hand_select, i);
-            ldcard_to_card(p[i], card);
+            n55_to_card(p[i], cards + n);
+            n++;
         }
     }
     env->ReleaseByteArrayElements(jarray, p, 0);
 
-    return gp_canplay(g_gp, g_hand_select);
+    return gp_canplay(&g_gp, cards, GP_MAX_CARDS);
 }
 
 void Java_com_gameld_core_libqp_gpPlay(JNIEnv *env, jclass,jbyteArray jarray)
 {
-    card_t* card;
+    int n;
+    card_t cards[GP_MAX_CARDS];
 
     jbyte* p = env->GetByteArrayElements(jarray, NULL);
     jsize size = env->GetArrayLength(jarray);
-    g_hand_out->num = 0;
+    n = 0;
     for (int i = 0; i < 15; i++) {
         if (p[i] > 0) {
-            g_hand_select->num++;
-            card = hand_get(g_hand_out, i);
-            ldcard_to_card(p[i], card);
+            n55_to_card(p[i], cards + n);
+            n++;
         }
     }
     env->ReleaseByteArrayElements(jarray, p, 0);
 
-    gp_play(g_gp, g_gp->curr_player_no, g_hand_out);
+    gp_play(&g_gp, g_gp.curr_player_no, cards, GP_MAX_CARDS);
 }
 
 int Java_com_gameld_core_libqp_gpCardNum(JNIEnv *env, jclass, int no)
 {
-    if (no >= g_gp->player_num) {
+    if (no >= g_gp.player_num) {
         return 0;
     }
-    hand_t* hand = g_gp->players[no].mycards;
-    return hand_num(hand);
+    return cards_num(g_gp.players[no].cards, GP_MAX_CARDS);
 }
 
 int Java_com_gameld_core_libqp_gpGetCard(JNIEnv *env, jclass, int no, int index)
 {
-    if (no >= g_gp->player_num) {
+    if (no >= g_gp.player_num) {
         return 0;
     }
-    hand_t* hand = g_gp->players[no].mycards;
-    card_t* card = hand_get(hand, index);
-    if (card == NULL) {
+    if (index >= GP_MAX_CARDS) {
         return 0;
     }
-    return card_to_ldcard(card);
+    return card_to_n55(g_gp.players[no].cards + index);
 }

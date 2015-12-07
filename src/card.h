@@ -1,6 +1,6 @@
 /*
  * Poker game algorithm library
- * This file is distributed under the BSD License. 
+ * This file is distributed under the BSD License.
  * Copyright (C) 2014-2015 Huang Tao(huangtao117@gmail.com)
  */
 #ifndef _CARD_H
@@ -79,6 +79,8 @@ typedef struct card_s{
 int card_equal(card_t* a, card_t* b);
 char card_encode(card_t* card);
 void card_decode(card_t* card, char x);
+void n55_to_card(unsigned char cd, card_t* card);
+unsigned char card_to_n55(card_t* card);
 const char* card_to_string(card_t* card);
 void card_from_string(card_t* card, const char* string);
 
