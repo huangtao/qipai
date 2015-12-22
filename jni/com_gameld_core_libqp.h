@@ -7,6 +7,14 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#undef com_gameld_core_libqp_GP_GAME_END
+#define com_gameld_core_libqp_GP_GAME_END 0L
+#undef com_gameld_core_libqp_GP_GAME_PLAY
+#define com_gameld_core_libqp_GP_GAME_PLAY 1L
+#undef com_gameld_core_libqp_GP_ERROR
+#define com_gameld_core_libqp_GP_ERROR 0L
+#undef com_gameld_core_libqp_GP_BOMB
+#define com_gameld_core_libqp_GP_BOMB 12L
 /*
  * Class:     com_gameld_core_libqp
  * Method:    gpInit
@@ -22,6 +30,22 @@ JNIEXPORT jint JNICALL Java_com_gameld_core_libqp_gpInit
  */
 JNIEXPORT void JNICALL Java_com_gameld_core_libqp_gpClear
   (JNIEnv *, jclass);
+
+/*
+ * Class:     com_gameld_core_libqp
+ * Method:    gpGetState
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_com_gameld_core_libqp_gpGetState
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     com_gameld_core_libqp
+ * Method:    gpSetState
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_com_gameld_core_libqp_gpSetState
+  (JNIEnv *, jclass, jint);
 
 /*
  * Class:     com_gameld_core_libqp
@@ -49,6 +73,22 @@ JNIEXPORT void JNICALL Java_com_gameld_core_libqp_gpPlay
 
 /*
  * Class:     com_gameld_core_libqp
+ * Method:    gpGetCurrentNo
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_com_gameld_core_libqp_gpGetCurrentNo
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     com_gameld_core_libqp
+ * Method:    gpGetHandType
+ * Signature: ([B)I
+ */
+JNIEXPORT jint JNICALL Java_com_gameld_core_libqp_gpGetHandType
+  (JNIEnv *, jclass, jbyteArray);
+
+/*
+ * Class:     com_gameld_core_libqp
  * Method:    gpCardNum
  * Signature: (I)I
  */
@@ -61,6 +101,22 @@ JNIEXPORT jint JNICALL Java_com_gameld_core_libqp_gpCardNum
  * Signature: (II)I
  */
 JNIEXPORT jint JNICALL Java_com_gameld_core_libqp_gpGetCard
+  (JNIEnv *, jclass, jint, jint);
+
+/*
+ * Class:     com_gameld_core_libqp
+ * Method:    gpCardPlayedNum
+ * Signature: (I)I
+ */
+JNIEXPORT jint JNICALL Java_com_gameld_core_libqp_gpCardPlayedNum
+  (JNIEnv *, jclass, jint);
+
+/*
+ * Class:     com_gameld_core_libqp
+ * Method:    gpGetCardPlayed
+ * Signature: (II)I
+ */
+JNIEXPORT jint JNICALL Java_com_gameld_core_libqp_gpGetCardPlayed
   (JNIEnv *, jclass, jint, jint);
 
 #ifdef __cplusplus
