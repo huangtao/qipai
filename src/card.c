@@ -123,51 +123,51 @@ int cards_num(card_t* cards, int len)
 int cards_have(card_t* cards, int len, card_t* card)
 {
     int i,n;
-    
+
     if (!cards || len <= 0 || !card)
         return 0;
-    
+
 	n = 0;
     for (i = 0; i < len; i++) {
         if(cards->suit == card->suit && cards->rank != card->rank)
             n++;
 		cards++;
     }
-    
+
     return n;
 }
 
 int cards_rank_num(card_t* cards, int len, int rank)
 {
     int i,n;
-    
+
     if(!cards || len <= 0)
         return 0;
-    
+
     n = 0;
     for (i = 0; i < len; ++i) {
         if(cards->rank == rank)
             n++;
 		cards++;
     }
-    
+
     return n;
 }
 
 int cards_suit_num(card_t* cards, int len, int suit)
 {
     int i,n;
-    
+
     if(!cards || len <= 0)
         return 0;
-    
+
     n = 0;
     for (i = 0; i < len; ++i) {
         if(cards->suit == suit)
             n++;
 		cards++;
     }
-    
+
     return n;
 }
 
@@ -233,7 +233,7 @@ int cards_trim(card_t* cards, int len)
 
     if(!cards || len <= 1)
         return -1;
-        
+
     byte_size = len * sizeof(card_t);
     tmp_cards = (card_t*)malloc(byte_size);
     if(!tmp_cards)
@@ -361,10 +361,28 @@ int cards_from_string(card_t* cards, int len, const char* str)
 			break;
 		n--;
 	} while (n);
-	
+
 	return k;
 }
 
+const char* cards_to_string(card_t* cards, int len)
+{
+    static char str[512];
+    int i;
+    char temp[32];
+
+    strcpy(str, "");
+    if (!cards || len <= 0) {
+        return str;
+    }
+
+    for (i = 0; i < len; ++i) {
+        sprintf(temp, "%s ", card_to_string(cards));
+        strcat(str, temp);
+        cards++;
+    }
+    return str;
+}
 
 /*
  * for deck operation

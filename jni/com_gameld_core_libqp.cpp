@@ -15,6 +15,9 @@
 #include "com_gameld_core_libqp.h"
 #include "qipai.h"
 
+/* comment this line to release */
+#define TAO_DEBUG 1
+
 const int CORE_PARAM_LOG = 1;
 
 /*
@@ -62,7 +65,7 @@ void Java_com_gameld_core_libqp_gpStart(JNIEnv *env, jclass,
     jbyte* p = env->GetByteArrayElements(jarray, NULL);
     jsize size = env->GetArrayLength(jarray);
     card = g_gp.players[my_seat].cards;
-    for (int i = 0; i < GP_MAX_CARDS; i++) {
+    for (int i = 0; i < size && i < GP_MAX_CARDS; i++) {
         if (p[i] > 0) {
             n55_to_card(p[i], card);
             card++;
@@ -76,11 +79,17 @@ void Java_com_gameld_core_libqp_gpStart(JNIEnv *env, jclass,
     if (st >= g_gp.player_num)
         st = 0;
     card = g_gp.players[st].cards;
-    for (int i = 0; i < GP_MAX_CARDS; i++) {
+    for (int i = 0; i < size && i < GP_MAX_CARDS; i++) {
         card->rank = cdRankUnknow;
         card->suit = cdSuitUnknow;
         card++;
     }
+
+#ifdef TAO_DEBUG
+    __android_log_print(ANDROID_LOG_INFO, "ldcore", "my cards:%d",
+        cards_num(g_gp.players[my_seat].cards, GP_MAX_CARDS));
+        //cards_to_string(g_gp.players[my_seat].cards, GP_MAX_CARDS));
+#endif
 }
 
 int Java_com_gameld_core_libqp_gpCanPlay(JNIEnv *env, jclass,jbyteArray jarray)

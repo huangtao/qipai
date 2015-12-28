@@ -116,6 +116,8 @@ void cards_remove_suit(card_t* cards, int len, int suit);
 
 /* parse a string like "D2,H3,..." to a cards */
 int cards_from_string(card_t* cards, int len, const char* string);
+/* dump cards to string */
+const char* cards_to_string(card_t* cards, int len);
 
 /*
  * deck function
