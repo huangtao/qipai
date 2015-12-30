@@ -14,8 +14,8 @@ static const int texas_allin_mode = 1;
 
 static int texas_table_rank[16] = { 0, 14, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 0, 0 };
 static int texas_table_logic[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 1, 0 };
-static int table_suit[6] = { 0, 1, 2, 3, 4, 5 };
-static const int straight[10] = { 7936, 3968, 1984, 992, 496, 248, 124, 62, 31, 4111 };
+//static int table_suit[6] = { 0, 1, 2, 3, 4, 5 };
+//static const int straight[10] = { 7936, 3968, 1984, 992, 496, 248, 124, 62, 31, 4111 };
 
 void _deck_init(texas_t* texas)
 {
