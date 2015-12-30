@@ -21,7 +21,10 @@ void test_gp()
 
     gp_init(&gp, GP_RULE_ZHUJI, GP_MODE_SERVER, 2);
     gp_start(&gp);
-	
+
+	printf("test cards to string:%s\n\n", 
+			cards_to_string(gp.players[0].cards, GP_MAX_CARDS));
+
 	printf("dump poker deck:\n");
     cards_dump(gp.deck, 54, 10);
 
