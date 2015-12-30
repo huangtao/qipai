@@ -94,13 +94,14 @@ void Java_com_gameld_core_libqp_gpStart(JNIEnv *env, jclass,
 
 int Java_com_gameld_core_libqp_gpCanPlay(JNIEnv *env, jclass,jbyteArray jarray)
 {
-    int n;
+    int ret,n;
     card_t cards[GP_MAX_CARDS];
 
+    memset(cards, 0, sizeof(card_t) * GP_MAX_CARDS);
     jbyte* p = env->GetByteArrayElements(jarray, NULL);
     jsize size = env->GetArrayLength(jarray);
     n = 0;
-    for (int i = 0; i < GP_MAX_CARDS; i++) {
+    for (int i = 0; i < size && i < GP_MAX_CARDS; i++) {
         if (p[i] > 0) {
             n55_to_card(p[i], cards + n);
             n++;
@@ -108,7 +109,17 @@ int Java_com_gameld_core_libqp_gpCanPlay(JNIEnv *env, jclass,jbyteArray jarray)
     }
     env->ReleaseByteArrayElements(jarray, p, 0);
 
-    return gp_canplay(&g_gp, cards, GP_MAX_CARDS);
+    ret = gp_canplay(&g_gp, cards, GP_MAX_CARDS);
+
+#ifdef TAO_DEBUG
+        char dbg_str[512];
+        strcpy(dbg_str, cards_to_string(cards, GP_MAX_CARDS));
+        __android_log_print(ANDROID_LOG_INFO, "ldcore", "play cards:%s", dbg_str);
+        __android_log_print(ANDROID_LOG_INFO, "ldcore", "last type:%d,num=%d",
+            g_gp.last_hand_type.type, g_gp.last_hand_type.num);
+#endif
+
+    return ret;
 }
 
 void Java_com_gameld_core_libqp_gpPlay(JNIEnv *env, jclass,jbyteArray jarray)
@@ -116,10 +127,11 @@ void Java_com_gameld_core_libqp_gpPlay(JNIEnv *env, jclass,jbyteArray jarray)
     int n;
     card_t cards[GP_MAX_CARDS];
 
+    memset(cards, 0, sizeof(card_t) * GP_MAX_CARDS);
     jbyte* p = env->GetByteArrayElements(jarray, NULL);
     jsize size = env->GetArrayLength(jarray);
     n = 0;
-    for (int i = 0; i < GP_MAX_CARDS; i++) {
+    for (int i = 0; i < size && i < GP_MAX_CARDS; i++) {
         if (p[i] > 0) {
             n55_to_card(p[i], cards + n);
             n++;
@@ -128,6 +140,11 @@ void Java_com_gameld_core_libqp_gpPlay(JNIEnv *env, jclass,jbyteArray jarray)
     env->ReleaseByteArrayElements(jarray, p, 0);
 
     gp_play(&g_gp, g_gp.curr_player_no, cards, GP_MAX_CARDS);
+}
+
+void Java_com_gameld_core_libqp_gpPlay(JNIEnv *env, jclass)
+{
+    gp_pass(&g_gp, g_gp.curr_player_no);
 }
 
 int Java_com_gameld_core_libqp_gpGetCurrentNo(JNIEnv *, jclass)
@@ -141,10 +158,11 @@ int Java_com_gameld_core_libqp_gpGetHandType(JNIEnv *env, jclass, jbyteArray jar
     hand_type htype;
     card_t cards[GP_MAX_CARDS];
 
+    memset(cards, 0, sizeof(card_t) * GP_MAX_CARDS);
     jbyte* p = env->GetByteArrayElements(jarray, NULL);
     jsize size = env->GetArrayLength(jarray);
     n = 0;
-    for (int i = 0; i < GP_MAX_CARDS; i++) {
+    for (int i = 0; i < size && i < GP_MAX_CARDS; i++) {
         if (p[i] > 0) {
             n55_to_card(p[i], cards + n);
             n++;

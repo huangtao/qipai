@@ -607,6 +607,8 @@ int gp_pass(gp_t* gp, int player_no)
     if (gp->largest_player_no == player_no)
         return 0;
 
+    memset(&gp->last_hand_type, 0, sizeof(hand_type));
+    memset(gp->last_hand, 0, sizeof(card_t) * GP_MAX_CARDS);
     gp_next_player(gp);
 
     return 1;
@@ -636,4 +638,3 @@ void gp_dump(gp_t* gp)
 
     printf("current player no is %d\n", gp->curr_player_no);
 }
-
