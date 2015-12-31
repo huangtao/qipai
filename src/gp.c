@@ -528,7 +528,7 @@ int gp_play(gp_t* gp, int player_no, card_t* cards, int len)
         cards_add(gp->last_hand, GP_MAX_CARDS, card);
     }
     memcpy(&gp->last_hand_type, &htype, sizeof(hand_type));
-    memcpy(&gp->players[player_no].cards_played, gp->last_hand,
+    memcpy(gp->players[player_no].cards_played, gp->last_hand,
            sizeof(card_t) * GP_MAX_CARDS);
     gp->largest_player_no = player_no;
     cards_trim(gp->players[player_no].cards, GP_MAX_CARDS);
@@ -596,6 +596,8 @@ void gp_next_player(gp_t* gp)
 
 int gp_pass(gp_t* gp, int player_no)
 {
+    int i;
+
     if (!gp)
         return 0;
     if (player_no != gp->curr_player_no)
@@ -606,11 +608,12 @@ int gp_pass(gp_t* gp, int player_no)
         return 0;
     if (gp->largest_player_no == player_no)
         return 0;
-
     memset(&gp->last_hand_type, 0, sizeof(hand_type));
     memset(gp->last_hand, 0, sizeof(card_t) * GP_MAX_CARDS);
+    for (i = 0; i < gp->player_num; ++i) {
+        memset(gp->players[i].cards_played, 0, sizeof(card_t) * GP_MAX_CARDS);
+    }
     gp_next_player(gp);
-
     return 1;
 }
 
@@ -637,4 +640,5 @@ void gp_dump(gp_t* gp)
     printf("\n");
 
     printf("current player no is %d\n", gp->curr_player_no);
+    printf("last hand type is %d\n",gp->last_hand_type.type);
 }

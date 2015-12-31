@@ -142,7 +142,7 @@ void Java_com_gameld_core_libqp_gpPlay(JNIEnv *env, jclass,jbyteArray jarray)
     gp_play(&g_gp, g_gp.curr_player_no, cards, GP_MAX_CARDS);
 }
 
-void Java_com_gameld_core_libqp_gpPlay(JNIEnv *env, jclass)
+void Java_com_gameld_core_libqp_gpPass(JNIEnv *env, jclass)
 {
     gp_pass(&g_gp, g_gp.curr_player_no);
 }
