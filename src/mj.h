@@ -12,7 +12,7 @@ extern "C" {
 #include <stdint.h>
 
 /* majiang suit */
-typedef enum majiang_suit{
+typedef enum majiang_suit {
     mjSuitAny,
     mjSuitBamboo,               /* tiaozi pai */
     mjSuitTiao = mjBamboo,
@@ -22,13 +22,15 @@ typedef enum majiang_suit{
     mjSuitCircle,               /* tongzi pai */
     mjSuitTong = mjSuitCircle,
     mjSuitWind,                 /* feng pai */
+	mjSuitFeng = mjSuitWind,
     mjSuitDragon,
+	mjSuitZFB = mjSuitDragon,	/* zhong,fa,bai */
     mjSuitFlower,               /* hua pai */
     mjSuitSeason
 }mjSuit;
 
 /* majiang ordinal */
-typedef enum majiang_ordinal{
+typedef enum majiang_ordinal {
     mj1,
     mj2,
     mj3,
@@ -40,14 +42,14 @@ typedef enum majiang_ordinal{
     mj9
 }mjOrdinal;
 
-typedef enum majiang_wind{
+typedef enum majiang_wind {
     mjEast,
     mjSouth,
     mjWest,
     mjNorth
 }mjWind;
 
-typedef enum majiang_dragon{
+typedef enum majiang_dragon {
     mjRed,
     mjZhong = mjRed,
     mjGreen,
@@ -56,7 +58,7 @@ typedef enum majiang_dragon{
     mjBai = mjWhite
 }mjDragon;
 
-typedef enum majiang_flower{
+typedef enum majiang_flower {
     mjPlum,
     mjMei = mjPlum,
     mjOrchid,
@@ -67,7 +69,7 @@ typedef enum majiang_flower{
     mjZhu = mjBamboo
 }mjFlower;
 
-typedef enum majiang_season{
+typedef enum majiang_season {
     mjSpring,
     mjCun = mjSpring,
     mjSummer,
@@ -79,7 +81,7 @@ typedef enum majiang_season{
 }
 
 /* a mj card */
-typedef struct mj_s{
+typedef struct mj_s {
     int suit;   /* suit */
     int sign;   /* sign */
 }mj_t;
