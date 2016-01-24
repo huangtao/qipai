@@ -13,7 +13,7 @@ extern "C" {
 
 /* majiang suit */
 typedef enum majiang_suit {
-    mjSuitAny,
+    mjSuitNone,
     mjSuitBamboo,               /* tiaozi pai */
     mjSuitTiao = mjBamboo,
     mjSuitSuo = mjBamboo,
@@ -26,11 +26,13 @@ typedef enum majiang_suit {
     mjSuitDragon,
 	mjSuitZFB = mjSuitDragon,	/* zhong,fa,bai */
     mjSuitFlower,               /* hua pai */
-    mjSuitSeason
+    mjSuitSeason,
+	mjSuitUnknow
 }mjSuit;
 
 /* majiang ordinal */
 typedef enum majiang_ordinal {
+	mjNone,
     mj1,
     mj2,
     mj3,
@@ -43,6 +45,7 @@ typedef enum majiang_ordinal {
 }mjOrdinal;
 
 typedef enum majiang_wind {
+	mjNone,
     mjEast,
     mjSouth,
     mjWest,
@@ -50,6 +53,7 @@ typedef enum majiang_wind {
 }mjWind;
 
 typedef enum majiang_dragon {
+	mjNone,
     mjRed,
     mjZhong = mjRed,
     mjGreen,
@@ -59,6 +63,7 @@ typedef enum majiang_dragon {
 }mjDragon;
 
 typedef enum majiang_flower {
+	mjNone,
     mjPlum,
     mjMei = mjPlum,
     mjOrchid,
@@ -70,6 +75,7 @@ typedef enum majiang_flower {
 }mjFlower;
 
 typedef enum majiang_season {
+	mjNone,
     mjSpring,
     mjCun = mjSpring,
     mjSummer,
@@ -86,19 +92,15 @@ typedef struct mj_s {
     int sign;   /* sign */
 }mj_t;
 
-/* mj oprate */
-void mj_init(mj_t* card, const char* sn);
 int mj_equal(mj_t* a, mj_t* b);
-char mj_encode(mj_t* card);
-void mj_decode(mj_t* card, char x);
+unsigned char mj_encode(mj_t* card);
+void mj_decode(mj_t* card, unsigned char x);
 
+void mj_shuffle(mj_t* cards, int len);
 /**
  * print cards to a readable string
  */
 const char* mj_print(mj_t cards[], int len, int line_number);
-
-char mj_suit_char(mj_t* card);
-const char* mj_rank_str(mj_t* card);
 const char* mj_string(mj_t* card);
 
 #ifdef __cplusplus
