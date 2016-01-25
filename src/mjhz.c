@@ -74,24 +74,21 @@ void mjhz_init(mjhz_t* mj, int mode, int player_num)
 		n++;
 	}
     mj->deck_all_num = n;
-    mj_shuffle(mj->deck, mj->deck_all_num);
-    gp->deck_deal_index = 0;
-    gp->deck_valid_num = gp->deck_all_num;
 
     for(i = 0; i < MJHZ_MAX_PLAYER; i++){
         mj->players[i].position = i;
     }
 }
 
-int gp_deal(gp_t* gp, card_t* card)
+int mjhz_deal(mjhz_t* mj, mj_t* card)
 {
     int i;
-    card_t* p;
+    mj_t* p;
 
-    if(!gp || !card)
+    if (!mj || !card)
         return -1;
 
-    if(gp->deck_deal_index >= gp->deck_valid_num)
+    if (mj->deck_valid_num <= 0)
         return -2;
 
     for(i = gp->deck_deal_index; i < gp->deck_valid_num; ++i){
@@ -108,22 +105,35 @@ int gp_deal(gp_t* gp, card_t* card)
     return -2;
 }
 
-void gp_start(gp_t* gp)
+void mjhz_start(mjhz_t* mj)
 {
     int i;
     int start_num;
     card_t card;
 
-    if(!gp)
+    if(!mj)
         return;
-    gp->round = 0;
-    gp->game_state = GP_GAME_PLAY;
-    gp->inning++;
+    mj->round = 0;
+    mj->game_state = GP_GAME_PLAY;
+    mj->inning++;
 
-    memset(&gp->last_hand_type, 0, sizeof(hand_type));
+	mj->dice1 = rand() % 6 + 1;
+	mj->dice2 = rand() % 6 + 1;
+
+	memset(&gp->last_hand_type, 0, sizeof(hand_type));
     memset(gp->last_hand, 0, sizeof(card_t) * GP_MAX_CARDS);
 
     if (gp->mode == GP_MODE_SERVER) {
+		/* 洗牌 */
+		mj_shuffle(mj->deck, mj->deck_all_num);
+		/*
+		 计算起手牌位置，两个骰子加起来查位置
+		 1,5,9是自己，2,6,10是下家
+		 3,7,11是对门，4,8,12是上家
+		 跳过骰子大的值不拿
+		 */
+		mj->deck_deal_index = 0;
+		mj->deck_valid_num = gp->deck_all_num;
         deck_shuffle(gp->deck, gp->deck_all_num);
         gp->deck_deal_index = 0;
         gp->deck_valid_num = gp->deck_all_num;

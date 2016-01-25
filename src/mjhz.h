@@ -13,7 +13,8 @@ extern "C" {
 #include "mj.h"
 #include "card_player.h"
 
-#define MJHZ_MAX_PLAYER  4
+#define MJHZ_MAX_PLAYER		4
+#define MJHZ_MAX_CARDS		17
 
 /* 游戏状态 */
 typedef enum mjhz_gamestate_e {
@@ -27,6 +28,18 @@ typedef enum mjhz_hu_s {
     int is7dui;		/* 7对子 */
 }mjhz_hu;
 
+typedef struct mjhz_player_s {
+    int level;
+    int state;
+    int position;
+    int64_t score;
+    uint64_t gold;
+    mj_t cards[MJHZ_MAX_CARDS];
+    mj_t cards_played[MJHZ_MAX_CARDS];
+    int num_valid_card;
+}GP_PLAYER;
+
+
 typedef struct mjhz_s {
     int debug;          /* output debug info */
     int mode;			/* client or server mode */
@@ -39,8 +52,12 @@ typedef struct mjhz_s {
     int banker_no;		/* banker no. */
     int first_player_no;/* first player no. */
     int curr_player_no; /* current turn player no. */
+	int dice1;
+	int dice2;
 	mj_t deck[136];		/* mj card */
+	int deck_all_num;
 	int deck_deal_index;/* current deal card index */
+	int deck_deal_end;	/* where deal end position */
 	int deck_valid_num;	/* valid number card */
 	mj_t last_played_mj;
 	mj_t mammon;		/* 财神 */
