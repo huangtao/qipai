@@ -86,22 +86,22 @@ typedef enum majiang_season {
     mjDong = mjWinter
 }
 
-/* a mj card */
-typedef struct mj_s {
+/* a mj pai */
+typedef struct mjpai_s {
     int suit;   /* suit */
     int sign;   /* sign */
-}mj_t;
+}mjpai_t;
 
-int mj_equal(mj_t* a, mj_t* b);
-unsigned char mj_encode(mj_t* card);
-void mj_decode(mj_t* card, unsigned char x);
+int mjpai_equal(mjpai_t* a, mjpai_t* b);
+unsigned char mjpai_encode(mjpai_t* card);
+void mjpai_decode(mj_t* card, unsigned char x);
 
-void mj_shuffle(mj_t* cards, int len);
+void mj_shuffle(mjpai_t* cards, int len);
 /**
  * print cards to a readable string
  */
-const char* mj_print(mj_t cards[], int len, int line_number);
-const char* mj_string(mj_t* card);
+const char* mj_print(mjpai_t* cards, int len, int line_number);
+const char* mjpai_string(mjpai_t* card);
 
 #ifdef __cplusplus
 }

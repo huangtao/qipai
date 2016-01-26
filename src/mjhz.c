@@ -80,10 +80,10 @@ void mjhz_init(mjhz_t* mj, int mode, int player_num)
     }
 }
 
-int mjhz_deal(mjhz_t* mj, mj_t* card)
+int mjhz_deal(mjhz_t* mj, mjpai_t* card)
 {
     int i;
-    mj_t* p;
+    mjpai_t* p;
 
     if (!mj || !card)
         return -1;
@@ -91,25 +91,20 @@ int mjhz_deal(mjhz_t* mj, mj_t* card)
     if (mj->deck_valid_num <= 0)
         return -2;
 
-    for(i = gp->deck_deal_index; i < gp->deck_valid_num; ++i){
-        p = gp->deck + i;
-        if(p->rank || p->suit){
-            card->rank = p->rank;
-            card->suit = p->suit;
-            gp->deck_deal_index++;
-            return 0;
-        }
-        gp->deck_deal_index++;
-    }
-
-    return -2;
+	mj->deck_deal_index++;
+	if (mj->deck_deal_index >= mj->deck_all_num) {
+		mj->deck_deal_index = 0;
+	}
+	card->suit = mj->deck[mj->deck_deal_index].suit;
+	card->sign = mj->deck[mj->deck_deal_index].sign;
+    return 0;
 }
 
 void mjhz_start(mjhz_t* mj)
 {
-    int i;
+    int i,direct,m,n;
     int start_num;
-    card_t card;
+    mjpai_t card;
 
     if(!mj)
         return;
@@ -120,81 +115,78 @@ void mjhz_start(mjhz_t* mj)
 	mj->dice1 = rand() % 6 + 1;
 	mj->dice2 = rand() % 6 + 1;
 
-	memset(&gp->last_hand_type, 0, sizeof(hand_type));
-    memset(gp->last_hand, 0, sizeof(card_t) * GP_MAX_CARDS);
+	/* 白板是财神 */
+	mj->mammon.suit = mjSuitZFB;
+	mj->mammon.sign = mjBai;
 
-    if (gp->mode == GP_MODE_SERVER) {
+	mj->last_played_mj.suit = 0;
+	mj->last_played_mj.sign = 0;
+
+    if (mj->mode == GP_MODE_SERVER) {
 		/* 洗牌 */
 		mj_shuffle(mj->deck, mj->deck_all_num);
-		/*
-		 计算起手牌位置，两个骰子加起来查位置
-		 1,5,9是自己，2,6,10是下家
-		 3,7,11是对门，4,8,12是上家
-		 跳过骰子大的值不拿
-		 */
-		mj->deck_deal_index = 0;
-		mj->deck_valid_num = gp->deck_all_num;
-        deck_shuffle(gp->deck, gp->deck_all_num);
-        gp->deck_deal_index = 0;
-        gp->deck_valid_num = gp->deck_all_num;
+		/* 计算起手牌位置 */
+		direct = (mj->banker_no + MJHZ_MAX_PLAYERS
+			- (mj->dice1 + mj->dice2) % MJHZ_MAX_PLAYERS)
+			% MJHZ_MAX_PLAYERS;
+		mj->deck_deal_index = direct * 17 * 2 
+			+ (mj->dice1 + mj->dice2) * 2;
+		mj->deck_deal_gang = mj->deck_deal_index - 1; /* 杠抓牌 */
+		mj->deck_deal_end = (mj->deck_deal_index + mj->deck_all_num
+				- 20) % mj->deck_all_num;
+		mj->deck_valid_num = gp->deck_all_num - 20;
 
-        /* draw start cards for every player */
-        if(gp->game_rule == GP_RULE_DEFAULT){
-            start_num = 16;
-        } else {
-            start_num = 15;
-        }
-        for (i = 0; i < start_num; ++i) {
-            gp_deal(gp, &card);
-            cards_add(gp->players[0].cards, GP_MAX_CARDS, &card);
-
-            gp_deal(gp, &card);
-            cards_add(gp->players[1].cards, GP_MAX_CARDS, &card);
-
-            if (gp->player_num > 2) {
-                gp_deal(gp, &card);
-                cards_add(gp->players[2].cards, GP_MAX_CARDS, &card);
-            }
-        }
-
+		/* 顺时针,每人抓12张,庄家先抓 */
+		m = n = 0;
+		for (i = 0; i < MJHZ_MAX_PLAYERS; i++) {
+			direct = (mj->banker_no + i) % MJHZ_MAX_PLAYERS;
+			memcpy(mj->players[direct].cards + m, mj->deck + n, 4 * sizeof(mjpai_t));
+			n += 4;
+		}
+		m += 12;
+		/* 庄家跳牌2张,其他人一张 */
+		mj->players[banker_no].cards[m].suit = mj->deck[n].suit;
+		mj->players[banker_no].cards[m].sign = mj->deck[n].sign;
+		mj->players[banker_no].cards[m+1].suit = mj->deck[n+4].suit;
+		mj->players[banker_no].cards[m+1].sign = mj->deck[n+4].sign;
+		n++;
+		for (i = 0; i < MJHZ_MAX_PLAYERS; i++) {
+			if (i == banker_no) continue;
+			direct = (mj->banker_no + i) % MJHZ_MAX_PLAYERS;
+			mj->players[direct].cards[m].suit = mj->deck[n].suit;
+			mj->players[direct].cards[m].suit = mj->deck[n].sign;
+		}
         /* the first player */
-        gp->first_player_no = rand() % gp->player_num;
-        gp->curr_player_no = gp->first_player_no;
+        mj->first_player_no = mj->banker_no;
+        mj->curr_player_no = mj->first_player_no;
     } else {
-        for (i = 0; i < 3; i++) {
-            memset(gp->players[i].cards, 0, sizeof(card_t) * GP_MAX_PLAYER);
-            memset(gp->players[i].cards_played, 0, sizeof(card_t) * GP_MAX_PLAYER);
-            gp->players[i].num_valid_card = 0;
+        for (i = 0; i < MJHZ_MAX_PLAYERS; i++) {
+            memset(mj->players[i].cards, 0, sizeof(mjpai_t) * MJHZ_MAX_CARDS);
+            memset(mj->players[i].cards_played, 0, sizeof(mjpai_t) * MJHZ_MAX_CARDS);
+            mj->players[i].num_valid_card = 0;
         }
-        gp->first_player_no = 0;
-        gp->curr_player_no = 0;
+		mj->banker_no = 0;
+        mj->first_player_no = 0;
+        mj->curr_player_no = 0;
     }
 }
 
-void gp_sort(card_t* cards, int len)
+void mjhz_sort(mjpai_t* cards, int len)
 {
-    cards_sort(cards, len);
+    mj_sort(cards, len);
 }
 
-const char* gp_htype_name(int htype)
+const char* mjhz_htype_name(int htype)
 {
     static char* htype_name[] = {
-        "GP_ERROR",
-        "GP_SINGLE",
-        "GP_DOUBLE",
-        "GP_THREE",
-        "GP_STRAIGHT",
-        "GP_D_STRAIGHT",
-        "GP_T_STRAIGHT",
-        "GP_THREE_P1",
-        "GP_THREE_P2",
-        "GP_PLANE",
-		"GP_FOUR",
-        "GP_FOUR_P3",
-        "GP_BOMB"
+        "MJHZ_ERROR",
+        "MJHZ_PING",	/* 平胡 */
+        "MJHZ_DUI7",	/* 7对子 */
+        "MJHZ_LONG",	/* 一条龙 */
+        "MJHZ_QYS"		/* 清一色*/
     };
 
-    if (htype <= 12)
+    if (htype <= 4)
         return htype_name[htype];
     else
         return htype_name[0];

@@ -34,8 +34,8 @@ typedef struct mjhz_player_s {
     int position;
     int64_t score;
     uint64_t gold;
-    mj_t cards[MJHZ_MAX_CARDS];
-    mj_t cards_played[MJHZ_MAX_CARDS];
+    mjpai_t cards[MJHZ_MAX_CARDS];
+    mjpai_t cards_played[MJHZ_MAX_CARDS];
     int num_valid_card;
 }GP_PLAYER;
 
@@ -54,13 +54,14 @@ typedef struct mjhz_s {
     int curr_player_no; /* current turn player no. */
 	int dice1;
 	int dice2;
-	mj_t deck[136];		/* mj card */
+	mjpai_t deck[136];	/* mj card */
 	int deck_all_num;
 	int deck_deal_index;/* current deal card index */
 	int deck_deal_end;	/* where deal end position */
+	int deck_deal_gang; /* deal when gang */
 	int deck_valid_num;	/* valid number card */
-	mj_t last_played_mj;
-	mj_t mammon;		/* 财神 */
+	mjpai_t last_played_mj;
+	mjpai_t mammon;		/* 财神 */
     MJHZ_PLAYER players[MJHZ_MAX_PLAYER];
 }mjhz_t;
 
@@ -70,9 +71,9 @@ void mjhz_init(mjhz_t* mj, int mode, int player_num);
 /* start a new game */
 void mjhz_start(mjhz_t* mj);
 
-void mjhz_sort(mj_t* cards, int len);
+void mjhz_sort(mjpai_t* cards, int len);
 const char* mjhz_hu_name(mjhz_hu_t* hu);
-void mjhz_play(mjhz_t* mj, int player_no, mj_t card);
+void mjhz_play(mjhz_t* mj, int player_no, mjpai_t card);
 int mjhz_chi(mjhz_t* mj, int player_no);
 int mjhz_peng(mjhz_t* mj, int player_no);
 int mjhz_gang(mjhz_t* mj, int player_no);
