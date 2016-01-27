@@ -73,7 +73,8 @@ void mjhz_start(mjhz_t* mj);
 
 void mjhz_sort(mjpai_t* cards, int len);
 const char* mjhz_hu_name(mjhz_hu_t* hu);
-void mjhz_play(mjhz_t* mj, int player_no, mjpai_t card);
+void mjhz_play(mjhz_t* mj, int player_no, mjpai_t* card);
+void mjhz_draw(mjhz_t* mj, int is_gang);
 int mjhz_chi(mjhz_t* mj, int player_no);
 int mjhz_peng(mjhz_t* mj, int player_no);
 int mjhz_gang(mjhz_t* mj, int player_no);

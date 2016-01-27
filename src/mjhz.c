@@ -176,9 +176,9 @@ void mjhz_sort(mjpai_t* cards, int len)
     mj_sort(cards, len);
 }
 
-const char* mjhz_htype_name(int htype)
+const char* mjhz_hu_name(mjhz_hu_t* hu)
 {
-    static char* htype_name[] = {
+    static char* hu_name[] = {
         "MJHZ_ERROR",
         "MJHZ_PING",	/* 平胡 */
         "MJHZ_DUI7",	/* 7对子 */
@@ -190,6 +190,14 @@ const char* mjhz_htype_name(int htype)
         return htype_name[htype];
     else
         return htype_name[0];
+}
+
+void mjhz_play(mjhz_t* mj, int player_no, mjpai_t* card)
+{
+}
+
+void mjhz_draw(mjhz_t* mj, int is_gang)
+{
 }
 
 void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
