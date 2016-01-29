@@ -12,8 +12,8 @@ extern "C" {
 #include <stdint.h>
 
 /* majiang suit */
-typedef enum majiang_suit{
-    mjSuitAny,
+typedef enum majiang_suit {
+    mjSuitNone,
     mjSuitBamboo,               /* tiaozi pai */
     mjSuitTiao = mjBamboo,
     mjSuitSuo = mjBamboo,
@@ -22,13 +22,17 @@ typedef enum majiang_suit{
     mjSuitCircle,               /* tongzi pai */
     mjSuitTong = mjSuitCircle,
     mjSuitWind,                 /* feng pai */
+	mjSuitFeng = mjSuitWind,
     mjSuitDragon,
+	mjSuitZFB = mjSuitDragon,	/* zhong,fa,bai */
     mjSuitFlower,               /* hua pai */
-    mjSuitSeason
+    mjSuitSeason,
+	mjSuitUnknow
 }mjSuit;
 
 /* majiang ordinal */
-typedef enum majiang_ordinal{
+typedef enum majiang_ordinal {
+	mjNone,
     mj1,
     mj2,
     mj3,
@@ -40,14 +44,16 @@ typedef enum majiang_ordinal{
     mj9
 }mjOrdinal;
 
-typedef enum majiang_wind{
+typedef enum majiang_wind {
+	mjNone,
     mjEast,
     mjSouth,
     mjWest,
     mjNorth
 }mjWind;
 
-typedef enum majiang_dragon{
+typedef enum majiang_dragon {
+	mjNone,
     mjRed,
     mjZhong = mjRed,
     mjGreen,
@@ -56,7 +62,8 @@ typedef enum majiang_dragon{
     mjBai = mjWhite
 }mjDragon;
 
-typedef enum majiang_flower{
+typedef enum majiang_flower {
+	mjNone,
     mjPlum,
     mjMei = mjPlum,
     mjOrchid,
@@ -67,7 +74,8 @@ typedef enum majiang_flower{
     mjZhu = mjBamboo
 }mjFlower;
 
-typedef enum majiang_season{
+typedef enum majiang_season {
+	mjNone,
     mjSpring,
     mjCun = mjSpring,
     mjSummer,
@@ -78,26 +86,22 @@ typedef enum majiang_season{
     mjDong = mjWinter
 }
 
-/* a mj card */
-typedef struct mj_s{
+/* a mj pai */
+typedef struct mjpai_s {
     int suit;   /* suit */
     int sign;   /* sign */
-}mj_t;
+}mjpai_t;
 
-/* mj oprate */
-void mj_init(mj_t* card, const char* sn);
-int mj_equal(mj_t* a, mj_t* b);
-char mj_encode(mj_t* card);
-void mj_decode(mj_t* card, char x);
+int mjpai_equal(mjpai_t* a, mjpai_t* b);
+unsigned char mjpai_encode(mjpai_t* card);
+void mjpai_decode(mj_t* card, unsigned char x);
 
+void mj_shuffle(mjpai_t* cards, int len);
 /**
  * print cards to a readable string
  */
-const char* mj_print(mj_t cards[], int len, int line_number);
-
-char mj_suit_char(mj_t* card);
-const char* mj_rank_str(mj_t* card);
-const char* mj_string(mj_t* card);
+const char* mj_print(mjpai_t* cards, int len, int line_number);
+const char* mjpai_string(mjpai_t* card);
 
 #ifdef __cplusplus
 }
