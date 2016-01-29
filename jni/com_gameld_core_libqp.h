@@ -57,6 +57,22 @@ JNIEXPORT void JNICALL Java_com_gameld_core_libqp_gpStart
 
 /*
  * Class:     com_gameld_core_libqp
+ * Method:    gpSetCards
+ * Signature: (I[B)V
+ */
+JNIEXPORT void JNICALL Java_com_gameld_core_libqp_gpSetCards
+  (JNIEnv *, jclass, jint, jbyteArray);
+
+/*
+ * Class:     com_gameld_core_libqp
+ * Method:    gpSetPlayedCards
+ * Signature: (I[B)V
+ */
+JNIEXPORT void JNICALL Java_com_gameld_core_libqp_gpSetPlayedCards
+  (JNIEnv *, jclass, jint, jbyteArray);
+
+/*
+ * Class:     com_gameld_core_libqp
  * Method:    gpCanPlay
  * Signature: ([B)I
  */

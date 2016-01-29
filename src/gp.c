@@ -163,7 +163,6 @@ void gp_start(gp_t* gp)
         for (i = 0; i < 3; i++) {
             memset(gp->players[i].cards, 0, sizeof(card_t) * GP_MAX_PLAYER);
             memset(gp->players[i].cards_played, 0, sizeof(card_t) * GP_MAX_PLAYER);
-            gp->players[i].num_valid_card = 0;
         }
         gp->first_player_no = 0;
         gp->curr_player_no = 0;
