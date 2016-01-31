@@ -13,7 +13,7 @@ extern "C" {
 #include "mj.h"
 #include "card_player.h"
 
-#define MJHZ_MAX_PLAYER		4
+#define MJHZ_MAX_PLAYERS	4
 #define MJHZ_MAX_CARDS		17
 
 /* 游戏状态 */
@@ -22,11 +22,16 @@ typedef enum mjhz_gamestate_e {
     MJHZ_GAME_PLAY       /* playing */
 }MJHZ_GAMESTATE;
 
+typedef enum mjhz_mode_e {
+    MJHZ_MODE_SERVER = 0,
+    MJHZ_MODE_CLIENT
+}MJHZ_MODE;
+
 /* mjhz hu info */
-typedef enum mjhz_hu_s {
+typedef struct mjhz_hu_s {
 	int canhu;		/* 是否胡牌 */
     int is7dui;		/* 7对子 */
-}mjhz_hu;
+}mjhz_hu_t;
 
 typedef struct mjhz_player_s {
     int level;
@@ -36,9 +41,12 @@ typedef struct mjhz_player_s {
     uint64_t gold;
     mjpai_t cards[MJHZ_MAX_CARDS];
     mjpai_t cards_played[MJHZ_MAX_CARDS];
-    int num_valid_card;
-}GP_PLAYER;
-
+    int last_played;
+	int can_chi;
+	int can_peng;
+	int can_gang;
+	int can_hu;
+}MJHZ_PLAYER;
 
 typedef struct mjhz_s {
     int debug;          /* output debug info */
@@ -61,8 +69,10 @@ typedef struct mjhz_s {
 	int deck_deal_gang; /* deal when gang */
 	int deck_valid_num;	/* valid number card */
 	mjpai_t last_played_mj;
+	int last_played_no;
+	int lao_z;			/* 老庄 */
 	mjpai_t mammon;		/* 财神 */
-    MJHZ_PLAYER players[MJHZ_MAX_PLAYER];
+    MJHZ_PLAYER players[MJHZ_MAX_PLAYERS];
 }mjhz_t;
 
 /* init a mjhz game object */
@@ -73,7 +83,7 @@ void mjhz_start(mjhz_t* mj);
 
 void mjhz_sort(mjpai_t* cards, int len);
 const char* mjhz_hu_name(mjhz_hu_t* hu);
-void mjhz_play(mjhz_t* mj, int player_no, mjpai_t* card);
+int mjhz_play(mjhz_t* mj, int player_no, mjpai_t* card);
 void mjhz_draw(mjhz_t* mj, int is_gang);
 int mjhz_chi(mjhz_t* mj, int player_no);
 int mjhz_peng(mjhz_t* mj, int player_no);

@@ -9,12 +9,16 @@ CFLAGS = -Wall -g \
 		 -Iinclude
 
 INCLUDES = src/card.h \
-           src/card_sort.h
+           src/card_sort.h \
+		   src/mj.h \
+		   src/mjhz.h
 
 OBJS = src/card.o \
 	   src/gp.o \
 	   src/texas.o \
-       src/card_sort.o
+       src/card_sort.o \
+	   src/mj.o \
+	   src/mjhz.o
 
 TEST_OBJS = test/test.o
 

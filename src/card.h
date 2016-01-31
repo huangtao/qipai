@@ -45,30 +45,6 @@ typedef enum card_rank
     cdRankUnknow    /* unknow rank(ob) */
 }cdRank;
 
-/* majiang suit */
-typedef enum majiang_suit{
-    mjSuitNone,
-    mjSuitWan,      /* wanzi pai */
-    mjSuitTiao,     /* tiaozi pai */
-    mjSuitTong,     /* tongzi pai */
-    mjSuitZi,       /* zi pai */
-    mjSuitHua       /* hua pai */
-}mjSuit;
-
-/* majiang rank */
-typedef enum majiang_rank{
-    mjRankNone,
-    mjRank1,
-    mjRank2,
-    mjRank3,
-    mjRank4,
-    mjRank5,
-    mjRank6,
-    mjRank7,
-    mjRank8,
-    mjRank9
-}mjRank;
-
 /* a card */
 typedef struct card_s{
     int suit;   /* card suit */
