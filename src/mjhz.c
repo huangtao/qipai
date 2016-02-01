@@ -260,6 +260,26 @@ int mjhz_play(mjhz_t* mj, int player_no, mjpai_t* card)
     return 1;
 }
 
+int mjhz_can_chi(mjhz_t* mj, int player_no)
+{
+    return 0;
+}
+
+int mjhz_can_peng(mjhz_t* mj, int player_no)
+{
+    return 0;
+}
+
+int mjhz_can_gang(mjhz_t* mj, int player_no)
+{
+    return 0;
+}
+
+int mjhz_can_hu(mjhz_t* mj, int player_no)
+{
+    return 0;
+}
+
 int mjhz_chi(mjhz_t* mj, int player_no)
 {
 	return 0;

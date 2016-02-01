@@ -145,9 +145,9 @@ const char* mjpai_string(mjpai_t* card)
 			} else if (card->sign == mjXia) {
 				strcpy(str, "XT");
 			} else if (card->sign == mjQiu) {
-				strpcy(str, "QT");
+				strcpy(str, "QT");
 			} else if (card->sign == mjDong) {
-				strpcy(str, "DT");
+				strcpy(str, "DT");
 			}
 		}
 	}
