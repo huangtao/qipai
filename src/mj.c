@@ -1,6 +1,8 @@
 ﻿#include "mj.h"
 #include "ht_lch.h"
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 
 int mjpai_equal(mjpai_t* a, mjpai_t* b)
 {
@@ -106,11 +108,11 @@ const char* mjpai_string(mjpai_t* card)
 	memset(str, 0, 8);
 	if (card) {
 		if (card->suit == mjSuitSuo) {
-			sprintf("%dS", card->sign);
+			sprintf(str, "%dS", card->sign);
 		} else if (card->suit == mjSuitWan) {
-			sprintf("%dW", card->sign);
+			sprintf(str, "%dW", card->sign);
 		} else if (card->suit == mjSuitTong) {
-			sprintf("%dT", card->sign);
+			sprintf(str, "%dT", card->sign);
 		} else if (card->suit == mjSuitFeng) {
 			if (card->sign == mjEast) {
 				strcpy(str, "DF");
