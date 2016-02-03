@@ -301,9 +301,78 @@ int mjhz_play(mjhz_t* mj, int player_no, mjpai_t* card)
     return 1;
 }
 
+/*
+ * 返回吃牌信息
+ * 0 : 不能吃
+ * 1 : **o
+ * 2 : *o*
+ * 4 : o**
+ */
 int mjhz_can_chi(mjhz_t* mj, int player_no)
 {
-    return 0;
+	int i,chi_info;
+	int num[10];
+	mjpai_t* p;
+	int pos1,pos2,pos3;
+
+	if (!mj)
+		return 0;
+	if (player_no >= mj->player_num)
+		return 0;
+	if (mj->curr_player_no == player_no)
+		return 0;
+	/* 只能吃万、索、筒子 */
+	if (mj->last_played_mj.suit == mj->mammon.suit && 
+			mj->last_played_mj.sign == mj->mammon.sign) {
+		return 0;
+	}
+	if (mj->last_played_mj.suit != mjSuitWan ||
+			mj->last_played_mj.suit != mjSuitSuo ||
+			mj->last_played_mj.suit != mjSuitTong) {
+		return 0;
+	}
+
+	/* 同类型序数牌计数 */
+	memset((void*)num, 0, sizeof(int) * 9);
+	p = mj->players[player_no].cards;
+	for (i = 0; i < MJHZ_MAX_CARDS; ++i) {
+		if (p->suit == mj->last_played_mj.suit) {
+			num[p->sign]++;
+		}
+		p++;
+	}
+	chi_info = 0;
+
+	for (i = 1; i <= 9; ++i) {
+		if ( i != mj->last_played_mj.sign)
+			continue;
+		pos1 = pos2 = pos3 = 0;
+		if (i == 1) {
+			pos1 = 1;
+		} else if (i == 2) {
+			pos1 = pos2 = 1;
+		} else if (i == 8) {
+			pos2 = pos3 = 1;
+		} else if (i == 9) {
+			pos3 = 1;
+		} else {
+			pos1 = pos2 = pos3 = 1;
+		}
+		if (pos1) {
+			if (num[i+1] > 0 && num[i+2] > 0)
+				chi_info &= 0x01;
+		}
+		if (pos2) {
+			if (num[i-1] > 0 && num[i+1] > 0)
+				chi_info &= 0x02;
+		}
+		if (pos3) {
+			if (num[i-1] > 0 && num[i-2] > 0)
+				chi_info &= 0x04;
+		}
+	}
+	
+    return chi_info;
 }
 
 int mjhz_can_peng(mjhz_t* mj, int player_no)
