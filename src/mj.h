@@ -14,11 +14,11 @@ extern "C" {
 /* majiang suit */
 typedef enum majiang_suit {
     mjSuitNone,
+	mjSuitCharacter,            /* wanzi pai */
+    mjSuitWan = mjSuitCharacter,
     mjSuitBamboo,               /* tiaozi pai */
     mjSuitTiao = mjSuitBamboo,
     mjSuitSuo = mjSuitBamboo,
-    mjSuitCharacter,            /* wanzi pai */
-    mjSuitWan = mjSuitCharacter,
     mjSuitCircle,               /* tongzi pai */
     mjSuitTong = mjSuitCircle,
     mjSuitWind,                 /* feng pai */

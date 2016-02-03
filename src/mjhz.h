@@ -81,7 +81,7 @@ void mjhz_init(mjhz_t* mj, int mode, int player_num);
 /* start a new game */
 void mjhz_start(mjhz_t* mj);
 
-void mjhz_sort(mjpai_t* cards, int len);
+void mjhz_sort(mjhz_t* mj, mjpai_t* cards, int len);
 const char* mjhz_hu_name(mjhz_hu_t* hu);
 int mjhz_play(mjhz_t* mj, int player_no, mjpai_t* card);
 void mjhz_draw(mjhz_t* mj, int is_gang);

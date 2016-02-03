@@ -148,9 +148,50 @@ void mjhz_start(mjhz_t* mj)
     }
 }
 
-void mjhz_sort(mjpai_t* cards, int len)
+/* 财神 万 索 筒 风 */
+void mjhz_sort(mjhz_t* mj, mjpai_t* cards, int len)
 {
-    //mj_sort(cards, len);
+	int i,j;
+	int exchange;
+	mjpai_t temp;
+	mjpai_t *pa, *pb;
+
+	if (!mj || !cards || len < 2)
+		return;
+
+	/* 选择排序 */
+	for (i = 0; i < len - 1; ++i) {
+		exchange = 0;
+		pa = cards + i;
+		for (j = i + 1; j < len; ++j) {
+			pb = cards + j;
+			if (pb->suit == mjSuitZFB && pb->sign == mjBai) {
+				if (pa->suit != mjSuitZFB || pa->sign != mjBai) {
+					exchange = 1;
+					pa = pb;
+				}
+			} else if (pb->suit == pa->suit) {
+				if (pb->sign < pa->sign) {
+					exchange = 1;
+					pa = pb;
+				}
+			} else {
+				if (pb->suit < pa->suit) {
+					exchange = 1;
+					pa = pb;
+				}
+			}
+		}
+		if (exchange) {
+			pb = cards + i;
+			temp.suit = pb->suit;
+			temp.sign = pb->sign;
+			pb->suit = pa->suit;
+			pb->sign = pa->sign;
+			pa->suit = temp.suit;
+			pb->sign = temp.sign;
+		}
+	}
 }
 
 const char* mjhz_hu_name(mjhz_hu_t* hu)

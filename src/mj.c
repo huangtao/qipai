@@ -53,6 +53,12 @@ void mj_shuffle(mjpai_t* cards, int len)
     }
 }
 
+void mj_sort(mjpai_t* cards, int len, mjpai_t* mammon)
+{
+	if (!cards || len < 2)
+		return;
+}
+
 void mj_trim(mjpai_t* cards, int len)
 {
 	int i,n;
