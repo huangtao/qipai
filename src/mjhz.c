@@ -377,11 +377,84 @@ int mjhz_can_chi(mjhz_t* mj, int player_no)
 
 int mjhz_can_peng(mjhz_t* mj, int player_no)
 {
-    return 0;
+    int i;
+	int num;
+	mjpai_t* p;
+
+	if (!mj)
+		return 0;
+	if (player_no >= mj->player_num)
+		return 0;
+	if (mj->curr_player_no == player_no)
+		return 0;
+	if (mj->last_played_mj.suit == mj->mammon.suit && 
+			mj->last_played_mj.sign == mj->mammon.sign) {
+		return 0;
+	}
+
+	p = mj->players[player_no].cards;
+	for (i = 0; i < MJHZ_MAX_CARDS; ++i) {
+		if (p->suit == mj->last_played_mj.suit &&
+                p->sign == mj->last_played_mj.sign) {
+			num++;
+		}
+		p++;
+	}
+	if (num >= 2)
+        return 1;
+    else
+        return 0;
 }
 
 int mjhz_can_gang(mjhz_t* mj, int player_no)
 {
+    int i;
+	int num;
+    int n_xu[10],n_f[10];
+	mjpai_t* p;
+
+	if (!mj)
+		return 0;
+	if (player_no >= mj->player_num)
+		return 0;
+	if (mj->curr_player_no == player_no)
+		return 0;
+
+    if (mj->last_played_mj.suit > 0 && 
+            mj->last_played_mj.sign > 0) {
+        /* 明杠(杠打出的牌) */
+        if (mj->last_played_mj.suit == mj->mammon.suit &&
+                mj->last_played_mj.sign == mj->mammon.sign) {
+            return 0;
+        }
+        num = 0;
+        p = mj->players[player_no].cards;
+        for (i = 0; i < MJHZ_MAX_CARDS; ++i) {
+            if (p->suit == mj->last_played_mj.suit &&
+                    p->sign == mj->last_played_mj.sign) {
+                num++;
+            }
+            p++;
+        }
+        if (num >= 3)
+            return 1;
+        else
+            return 0;
+    } else {
+        /* 暗杠或者加杠 */
+        memset(n_xu, 0, sizeof(int) * 10);
+        memset(n_f, 0, sizeof(int) * 10);
+        p = mj->players[player_no].cards;
+        for (i = 0; i < MJHZ_MAX_CARDS; ++i) {
+            if (p->suit >= mjSuitWan &&
+                    p->suit <= mjSuitTong) {
+                n_xu[p->sign]++;
+            } else {
+                n_f[p->sign]++;
+            }
+        }
+    }
+
     return 0;
 }
 
