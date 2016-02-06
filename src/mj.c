@@ -17,13 +17,49 @@ int mjpai_equal(mjpai_t* a, mjpai_t* b)
 
 unsigned char mjpai_encode(mjpai_t* card)
 {
-	return 0;
+    unsigned char x;
+
+    if (card) {
+        if (card->suit == mjSuitWan) {
+            x = card->sign;
+        } else if (card->suit == mjSuitSuo) {
+            x = 9 + card->sign;
+        } else if (card->suit == mjSuitTong) {
+            x = 18 + card->sign;
+        } else if (card->suit == mjSuitFeng) {
+            x = 27 + card->sign;
+        } else if (card->suit == mjSuitZFB) {
+            x = 31 + card->sign;
+        } else if (card->suit == mjSuitFlower) {
+            x = 34 + card->sign;
+        } else if (card->suit == mjSuitSeason) {
+            x = 38 + card->sign;
+        } else
+            x = 43;
+        }
+    } else {
+        x = 0;
+    }
+	return x;
 }
 
 void mjpai_decode(mjpai_t* card, unsigned char x)
 {
 	if (card) {
-	}
+        if (x == 0) {
+            card->suit = card->sign = 0;
+        } else if (x >= 1 && x <= 9) {
+            card->suit = mjSuitWan;
+            card->sign = x;
+        } else if (x >= 10 && x <= 18) {
+            card->suit = mjSuitSuo;
+            card->sign = x - 9;
+        } else if (x >= 19 && x <= 27) {
+            card->suit 
+        }
+	} else {
+        x = 0;
+    }
 }
 
 void mj_shuffle(mjpai_t* cards, int len)
