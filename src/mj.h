@@ -11,6 +11,17 @@ extern "C" {
 
 #include <stdint.h>
 
+/*
+ * 麻将常用术语
+ * 顺子：由同花色三个连续的牌组成。
+ * 刻子：又称“坎”，由三张或四张（又称杠子）相同的牌组成。
+ * 面子：顺子和刻子的统称。
+ * 将头：又称“眼”，胡牌需要的对子。
+ * 胡牌：一副牌必须凑满四（五）副面子及一组将，才可以胡牌。
+ * 庄家：每局掷骰子决定开牌位置的人。
+ * 连庄：庄家胡牌或者流局即可连庄。
+ */
+
 /* majiang suit */
 typedef enum majiang_suit {
     mjSuitNone,
@@ -82,11 +93,30 @@ typedef enum majiang_season {
     mjDong = mjWinter
 }mjSeason;
 
+typedef enum mj_melded_sets {
+    mjMS_NONE,
+    mjMS_KE,        /* 刻子 */
+    mjMS_SHUN,      /* 顺子 */
+    mjMS_JIANG,     /* 将牌(对子) */
+    mjMS_CHI,       /* 吃 */
+    mjMS_PENG,      /* 碰 */
+    mjMS_GANG,      /* 杠 */
+    mjMS_GANG_AN    /* 暗杠 */
+}mjMeldedSets;
+
 /* a mj pai */
 typedef struct mjpai_s {
     int suit;   /* suit */
     int sign;   /* sign */
 }mjpai_t;
+
+/* 描述一组(2,3,4张)牌 */
+typedef struct mj_sets_s {
+    int type;
+    mjpai_t card;
+    int player_no;
+    int info;
+}mjSets_t;
 
 int mjpai_equal(mjpai_t* a, mjpai_t* b);
 unsigned char mjpai_encode(mjpai_t* card);

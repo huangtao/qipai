@@ -14,7 +14,9 @@ extern "C" {
 #include "card_player.h"
 
 #define MJHZ_MAX_PLAYERS	4
-#define MJHZ_MAX_CARDS		17
+#define MJHZ_MAX_CARDS		17      /* 手上牌最大数量 */
+#define MJHZ_SETS_MAX       6       /* 面子最大数量 */
+#define MJHZ_DECK_CARDS     136 
 
 /* 游戏状态 */
 typedef enum mjhz_gamestate_e {
@@ -40,7 +42,8 @@ typedef struct mjhz_player_s {
     int64_t score;
     uint64_t gold;
     mjpai_t cards[MJHZ_MAX_CARDS];
-    mjpai_t cards_played[MJHZ_MAX_CARDS];
+    mjpai_t cards_played[MJHZ_DECK_CARDS/2];
+    mjSets_t mj_sets[MJHZ_SETS_MAX];
     int last_played;
 	int can_chi;
 	int can_peng;

@@ -408,9 +408,8 @@ int mjhz_can_peng(mjhz_t* mj, int player_no)
 
 int mjhz_can_gang(mjhz_t* mj, int player_no)
 {
-    int i;
-	int num;
-    int n_xu[10],n_f[10];
+    int i,num,x;
+    int js[43];
 	mjpai_t* p;
 
 	if (!mj)
@@ -442,19 +441,22 @@ int mjhz_can_gang(mjhz_t* mj, int player_no)
             return 0;
     } else {
         /* 暗杠或者加杠 */
-        memset(n_xu, 0, sizeof(int) * 10);
-        memset(n_f, 0, sizeof(int) * 10);
+        memset(js, 0, sizeof(int) * 43);
         p = mj->players[player_no].cards;
-        for (i = 0; i < MJHZ_MAX_CARDS; ++i) {
-            if (p->suit >= mjSuitWan &&
-                    p->suit <= mjSuitTong) {
-                n_xu[p->sign]++;
-            } else {
-                n_f[p->sign]++;
+        for (i = 0; i < MJHZ_MAX_CARDS; ++i,p++) {
+            if (p->suit == 0 || p->sign == 0)
+                continue;
+            x = mjpai_encode(p);
+            if (x >= 43) continue;
+            js[x]++;
+        }
+        /* 有没有暗杠 */
+        for (i = 1; i < 43; i++) {
+            if (js[i] == 4) {
+                return 1;
             }
         }
     }
-
     return 0;
 }
 

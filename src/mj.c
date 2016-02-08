@@ -34,7 +34,7 @@ unsigned char mjpai_encode(mjpai_t* card)
             x = 34 + card->sign;
         } else if (card->suit == mjSuitSeason) {
             x = 38 + card->sign;
-        } else
+        } else {
             x = 43;
         }
     } else {
@@ -55,7 +55,23 @@ void mjpai_decode(mjpai_t* card, unsigned char x)
             card->suit = mjSuitSuo;
             card->sign = x - 9;
         } else if (x >= 19 && x <= 27) {
-            card->suit 
+            card->suit = mjSuitTong;
+            card->sign = x - 18;
+        } else if (x >= 28 && x <= 31) {
+            card->suit = mjSuitFeng;
+            card->sign = x - 27;
+        } else if (x >= 32 && x <= 34) {
+            card->suit = mjSuitZFB;
+            card->sign = x - 31;
+        } else if (x >= 35 && x <= 38) {
+            card->suit = mjSuitFlower;
+            card->sign = x - 34;
+        } else if (x >= 39 && x <= 42) {
+            card->suit = mjSuitSeason;
+            card->sign = x - 38;
+        } else {
+            card->suit = mjSuitUnknow;
+            card->sign = 0;
         }
 	} else {
         x = 0;
