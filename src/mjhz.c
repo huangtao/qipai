@@ -392,6 +392,7 @@ int mjhz_can_peng(mjhz_t* mj, int player_no)
 		return 0;
 	}
 
+	num = 0;
 	p = mj->players[player_no].cards;
 	for (i = 0; i < MJHZ_MAX_CARDS; ++i) {
 		if (p->suit == mj->last_played_mj.suit &&
