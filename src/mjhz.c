@@ -406,9 +406,11 @@ int mjhz_can_peng(mjhz_t* mj, int player_no)
         return 0;
 }
 
+/* 返回可以杠牌的数量 */
 int mjhz_can_gang(mjhz_t* mj, int player_no)
 {
-    int i,num,x;
+    int i,j,num,x;
+    int mask;
     int js[43];
 	mjpai_t* p;
 
@@ -456,12 +458,33 @@ int mjhz_can_gang(mjhz_t* mj, int player_no)
                 return 1;
             }
         }
+        num = 0;
+        mask = 0;
+        for (i = 0; i < MJHZ_SETS_MAX; ++i) {
+            if (mj->players[player_no].mj_sets[i].type == mjMS_PENG) {
+                for (j = 0; j < MJHZ_MAX_CARDS; ++j) {
+                    if (mj->players[player_no].cards[j].suit == 
+                            mj->players[player_no].mj_sets[i].card.suit &&
+                            mj->players[player_no].cards[j].sign ==
+                            mj->players[player_no].mj_sets[i].card.sign) {
+                        /* 此牌可以加杠 */
+                        x = mjpai_encode(&mj->players[player_no].mj_sets[i].card);
+                        mask |= x << (num * 8);
+                        num++;
+                    }
+                }
+            }
+        }
+        if (num > 0)
+            return mask;
     }
     return 0;
 }
 
 int mjhz_can_hu(mjhz_t* mj, int player_no)
 {
+    int i;
+
     return 0;
 }
 
