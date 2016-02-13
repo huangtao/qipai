@@ -213,3 +213,21 @@ const char* mjpai_string(mjpai_t* card)
 	}
 	return str;
 }
+
+int mj_pair(int* array, int len)
+{
+	int i,n;
+
+	if (!array || len < 4)
+		return 0;
+
+	n = 0;
+	for (i = 0; i < len; ++i) {
+		if (*array == 2)
+			n++;
+		else if (*array == 4)
+			n += 2;
+	}
+	return n;
+}
+

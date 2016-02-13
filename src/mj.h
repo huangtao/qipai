@@ -130,6 +130,10 @@ void mj_trim(mjpai_t* cards, int len);
 const char* mj_string(mjpai_t* cards, int len, int line_number);
 const char* mjpai_string(mjpai_t* card);
 
+
+/* 得到对子数量 */
+int mj_pair(int* array, int len);
+
 #ifdef __cplusplus
 }
 #endif

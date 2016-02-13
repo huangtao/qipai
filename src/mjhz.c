@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include "card_sort.h"
 
+const int  MJHZ_ID_BAI = 34;	/* 白板 */
+
 typedef struct analyse_r_s{
     int n1;
     int v1[MJHZ_MAX_CARDS];
@@ -93,8 +95,8 @@ void mjhz_start(mjhz_t* mj)
 	mj->dice2 = rand() % 6 + 1;
 
 	/* 白板是财神 */
-	mj->mammon.suit = mjSuitZFB;
-	mj->mammon.sign = mjBai;
+	mj->god.suit = mjSuitZFB;
+	mj->god.sign = mjBai;
 
 	mj->last_played_mj.suit = 0;
 	mj->last_played_mj.sign = 0;
@@ -322,8 +324,8 @@ int mjhz_can_chi(mjhz_t* mj, int player_no)
 	if (mj->curr_player_no == player_no)
 		return 0;
 	/* 只能吃万、索、筒子 */
-	if (mj->last_played_mj.suit == mj->mammon.suit && 
-			mj->last_played_mj.sign == mj->mammon.sign) {
+	if (mj->last_played_mj.suit == mj->god.suit && 
+			mj->last_played_mj.sign == mj->god.sign) {
 		return 0;
 	}
 	if (mj->last_played_mj.suit != mjSuitWan ||
@@ -387,8 +389,8 @@ int mjhz_can_peng(mjhz_t* mj, int player_no)
 		return 0;
 	if (mj->curr_player_no == player_no)
 		return 0;
-	if (mj->last_played_mj.suit == mj->mammon.suit && 
-			mj->last_played_mj.sign == mj->mammon.sign) {
+	if (mj->last_played_mj.suit == mj->god.suit && 
+			mj->last_played_mj.sign == mj->god.sign) {
 		return 0;
 	}
 
@@ -412,7 +414,7 @@ int mjhz_can_gang(mjhz_t* mj, int player_no)
 {
     int i,j,num,x;
     int mask;
-    int js[43];
+    int js[MJHZ_LEN_JS];
 	mjpai_t* p;
 
 	if (!mj)
@@ -425,8 +427,8 @@ int mjhz_can_gang(mjhz_t* mj, int player_no)
     if (mj->last_played_mj.suit > 0 && 
             mj->last_played_mj.sign > 0) {
         /* 明杠(杠打出的牌) */
-        if (mj->last_played_mj.suit == mj->mammon.suit &&
-                mj->last_played_mj.sign == mj->mammon.sign) {
+        if (mj->last_played_mj.suit == mj->god.suit &&
+                mj->last_played_mj.sign == mj->god.sign) {
             return 0;
         }
         num = 0;
@@ -444,24 +446,24 @@ int mjhz_can_gang(mjhz_t* mj, int player_no)
             return 0;
     } else {
         /* 暗杠或者加杠 */
-        memset(js, 0, sizeof(int) * 43);
+        memset(js, 0, sizeof(int) * MJHZ_LEN_JS);
         p = mj->players[player_no].cards;
         for (i = 0; i < MJHZ_MAX_CARDS; ++i,p++) {
             if (p->suit == 0 || p->sign == 0)
                 continue;
             x = mjpai_encode(p);
-            if (x >= 43) continue;
+            if (x >= MJHZ_LEN_JS) continue;
             js[x]++;
         }
         /* 有没有暗杠 */
-        for (i = 1; i < 43; i++) {
+        for (i = 1; i < MJHZ_LEN_JS; i++) {
             if (js[i] == 4) {
                 return 1;
             }
         }
         num = 0;
         mask = 0;
-        for (i = 0; i < MJHZ_SETS_MAX; ++i) {
+        for (i = 0; i < MJHZ_MAX_SETS; ++i) {
             if (mj->players[player_no].mj_sets[i].type == mjMS_PENG) {
                 for (j = 0; j < MJHZ_MAX_CARDS; ++j) {
                     if (mj->players[player_no].cards[j].suit == 
@@ -482,10 +484,54 @@ int mjhz_can_gang(mjhz_t* mj, int player_no)
     return 0;
 }
 
+/*
+ * 基本胡牌公式
+ * m * ABC + n * AAA + AA
+ * 其中m,n可以为0
+ * 特殊牌型另外判断
+ */
 int mjhz_can_hu(mjhz_t* mj, int player_no)
 {
-    int i;
+    int i,x,n;
+	int n_god;
+	int js[MJHZ_LEN_JS];
+	mjpai_t* p;
 
+	if (!mj)
+		return 0;
+	if (player_no >= mj->player_num)
+		return 0;
+	if (mj->last_played_mj.suit == mj->god.suit &&
+			mj->last_played_mj.sign == mj->god.sign) {
+		return 0;
+	}
+
+	n = 0;
+	n_god = 0;
+    memset(js, 0, sizeof(int) * MJHZ_LEN_JS);
+    p = mj->players[player_no].cards;
+    for (i = 0; i < MJHZ_MAX_CARDS; ++i,p++) {
+        if (p->suit == 0 || p->sign == 0)
+            continue;
+        x = mjpai_encode(p);
+        if (x >= MJHZ_LEN_JS) continue;
+		if (x == MJHZ_ID_BAI) {
+			n_god++;
+			continue;
+		}
+        js[x]++;
+		n++;
+	}
+	if (mj->curr_player_no != player_no) {
+		x = mjpai_encode(&mj->last_played_mj);
+		if (x < MJHZ_LEN_JS)
+			js[x]++;
+	}
+
+	/* 是否七对子 */
+	if (mjhz_pair7(mj, player_no, n_god, js, MJHZ_LEN_JS))
+		return 1;
+ 
     return 0;
 }
 
@@ -526,7 +572,7 @@ void mjhz_dump(mjhz_t* mj)
 
     printf("player number:%d\n", mj->player_num);
 	printf("mamon:\n");
-	printf("%s\n", mjpai_string(&mj->mammon));
+	printf("%s\n", mjpai_string(&mj->god));
 
     /* dump player's mj pai */
     printf("players mj cards:\n");
@@ -546,3 +592,58 @@ void mjhz_dump(mjhz_t* mj)
 
     printf("current player no is %d\n", mj->curr_player_no);
 }
+
+/* 返回
+ * 0:不是7对子
+ * 1:是7对子
+ * 11:豪华7对子
+ * 21:2豪华7对子
+ * 31:3豪华7对子
+ */
+int mjhz_pair7(mjhz_t* mj, int player_no, int num_god, int* js, int len)
+{
+	int i,n4,n2;
+
+	if (!mj || !js || len < 4)
+		return 0;
+	if (player_no >= mj->player_num)
+		return 0;
+
+	n2 = n4 = 0;
+	for (i = 0; i < len; i++) {
+		if (*js == 2) {
+			n2++;
+		} else if (*js == 3) {
+			if (num_god > 0) {
+				num_god--;
+				n4++;
+			} else {
+				return 0;
+			}
+		} else if (*js == 4) {
+			n4++;
+		} else if (*js == 1) {
+			if (num_god > 0) {
+				n2++;
+			} else {
+				return 0;
+			}
+		}
+		js++;
+	}
+	n2 += n4 * 2;
+	/* 还有剩下财神? */
+	if (num_god == 2)
+		n2++;
+	else if (num_god == 4)
+		n2 += 2;
+
+	if (n2 == 7) {
+		mj->players[player_no].hu.isPair7 = 1;
+		mj->players[player_no].hu.pair7H4 = n4;
+		return 1;
+	} else {
+		return 0;
+	}
+}
+

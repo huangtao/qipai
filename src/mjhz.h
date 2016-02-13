@@ -15,8 +15,12 @@ extern "C" {
 
 #define MJHZ_MAX_PLAYERS	4
 #define MJHZ_MAX_CARDS		17      /* 手上牌最大数量 */
-#define MJHZ_SETS_MAX       6       /* 面子最大数量 */
-#define MJHZ_DECK_CARDS     136 
+#define MJHZ_MAX_SETS       6       /* 面子最大数量 */
+#define MJHZ_DECK_CARDS     136		/* 杭州麻将麻将牌最大数量 */
+#define MJHZ_MAX_PAITYPE	34		/* 杭州麻将使用34种牌(27张序数+7张字牌) */
+
+#define MJHZ_LEN_JS			MJHZ_MAX_PAITYPE+1	/* 用于计数 */
+
 
 /* 游戏状态 */
 typedef enum mjhz_gamestate_e {
@@ -31,8 +35,11 @@ typedef enum mjhz_mode_e {
 
 /* mjhz hu info */
 typedef struct mjhz_hu_s {
-	int canhu;		/* 是否胡牌 */
-    int is7dui;		/* 7对子 */
+	int fan;		/* 番数 */
+    int isPair7;	/* 7对子 */
+	int pair7H4;	/* 7对子包含4个的数量 */
+	int isBaoTou;	/* 爆头 */
+	int isCaiPiao;	/* 财飘 */
 }mjhz_hu_t;
 
 typedef struct mjhz_player_s {
@@ -43,12 +50,13 @@ typedef struct mjhz_player_s {
     uint64_t gold;
     mjpai_t cards[MJHZ_MAX_CARDS];
     mjpai_t cards_played[MJHZ_DECK_CARDS/2];
-    mjSets_t mj_sets[MJHZ_SETS_MAX];
+    mjSets_t mj_sets[MJHZ_MAX_SETS];
     int last_played;
 	int can_chi;
 	int can_peng;
 	int can_gang;
 	int can_hu;
+	mjhz_hu_t hu;
 }MJHZ_PLAYER;
 
 typedef struct mjhz_s {
@@ -65,7 +73,7 @@ typedef struct mjhz_s {
     int curr_player_no; /* current turn player no. */
 	int dice1;
 	int dice2;
-	mjpai_t deck[136];	/* mj card */
+	mjpai_t deck[MJHZ_DECK_CARDS];	/* mj card */
 	int deck_all_num;
 	int deck_deal_index;/* current deal card index */
 	int deck_deal_end;	/* where deal end position */
@@ -74,7 +82,7 @@ typedef struct mjhz_s {
 	mjpai_t last_played_mj;
 	int last_played_no;
 	int lao_z;			/* 老庄 */
-	mjpai_t mammon;		/* 财神 */
+	mjpai_t god;		/* 财神 */
     MJHZ_PLAYER players[MJHZ_MAX_PLAYERS];
 }mjhz_t;
 
@@ -98,6 +106,9 @@ int mjhz_gang(mjhz_t* mj, int player_no);
 int mjhz_hu(mjhz_t* mj, int player_no);
 void mjhz_next_player(mjhz_t* mj);
 void mjhz_dump(mjhz_t* mj);
+
+/* 是否是7对子 */
+int mjhz_pair7(mjhz_t* mj, int player_no, int num_god, int* js, int len);
 
 #ifdef __cplusplus
 }
