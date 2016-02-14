@@ -107,9 +107,6 @@ int mjhz_hu(mjhz_t* mj, int player_no);
 void mjhz_next_player(mjhz_t* mj);
 void mjhz_dump(mjhz_t* mj);
 
-/* 是否是7对子 */
-int mjhz_pair7(mjhz_t* mj, int player_no, int num_god, int* js, int len);
-
 #ifdef __cplusplus
 }
 #endif

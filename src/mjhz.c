@@ -493,8 +493,9 @@ int mjhz_can_gang(mjhz_t* mj, int player_no)
 int mjhz_can_hu(mjhz_t* mj, int player_no)
 {
     int i,x,n;
-	int n_god;
+	int n_god,left_god;
 	int js[MJHZ_LEN_JS];
+	int js_god[MJHZ_LEN_JS];
 	mjpai_t* p;
 
 	if (!mj)
@@ -529,8 +530,33 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
 	}
 
 	/* 是否七对子 */
-	if (mjhz_pair7(mj, player_no, n_god, js, MJHZ_LEN_JS))
+	memcpy(js_god, js, sizeof(int) * MJHZ_LEN_JS);
+	if (n_god > 0) {
+		/* 财神处理 */
+		left_god = n_god;
+		for (i = 0; i < MJHZ_LEN_JS; ++i) {
+			if (js_god[i] == 0) continue;
+			if ((js_god[i] % 2) > 0) {
+				js_god[i]++;
+				left_god--;
+				if (left_god == 0)
+					break;
+			}
+		}
+		if (left_god > 0) {
+			js_god[MJHZ_ID_BAI] += left_god;
+		}
+	}
+	if (mj_pair7(js_god, MJHZ_LEN_JS)) {
+		/* 是7对子得到豪华数量 */
+		mj->players[player_no].hu.isPair7 = 1;
+		mj->players[player_no].hu.pair7H4 = 0;
+		for (i = 0; i < MJHZ_LEN_JS; ++i) {
+			if (js_god[i] == 4)
+				mj->players[player_no].hu.pair7H4++;
+		}
 		return 1;
+	}
  
     return 0;
 }
@@ -593,57 +619,4 @@ void mjhz_dump(mjhz_t* mj)
     printf("current player no is %d\n", mj->curr_player_no);
 }
 
-/* 返回
- * 0:不是7对子
- * 1:是7对子
- * 11:豪华7对子
- * 21:2豪华7对子
- * 31:3豪华7对子
- */
-int mjhz_pair7(mjhz_t* mj, int player_no, int num_god, int* js, int len)
-{
-	int i,n4,n2;
-
-	if (!mj || !js || len < 4)
-		return 0;
-	if (player_no >= mj->player_num)
-		return 0;
-
-	n2 = n4 = 0;
-	for (i = 0; i < len; i++) {
-		if (*js == 2) {
-			n2++;
-		} else if (*js == 3) {
-			if (num_god > 0) {
-				num_god--;
-				n4++;
-			} else {
-				return 0;
-			}
-		} else if (*js == 4) {
-			n4++;
-		} else if (*js == 1) {
-			if (num_god > 0) {
-				n2++;
-			} else {
-				return 0;
-			}
-		}
-		js++;
-	}
-	n2 += n4 * 2;
-	/* 还有剩下财神? */
-	if (num_god == 2)
-		n2++;
-	else if (num_god == 4)
-		n2 += 2;
-
-	if (n2 == 7) {
-		mj->players[player_no].hu.isPair7 = 1;
-		mj->players[player_no].hu.pair7H4 = n4;
-		return 1;
-	} else {
-		return 0;
-	}
-}
 

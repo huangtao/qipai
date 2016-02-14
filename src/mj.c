@@ -214,7 +214,7 @@ const char* mjpai_string(mjpai_t* card)
 	return str;
 }
 
-int mj_pair(int* array, int len)
+int mj_pair7(int* array, int len)
 {
 	int i,n;
 
