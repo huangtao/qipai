@@ -95,8 +95,8 @@ void mjhz_start(mjhz_t* mj)
 	mj->dice2 = rand() % 6 + 1;
 
 	/* 白板是财神 */
-	mj->god.suit = mjSuitZFB;
-	mj->god.sign = mjBai;
+	mj->joker.suit = mjSuitZFB;
+	mj->joker.sign = mjBai;
 
 	mj->last_played_mj.suit = 0;
 	mj->last_played_mj.sign = 0;
@@ -324,8 +324,8 @@ int mjhz_can_chi(mjhz_t* mj, int player_no)
 	if (mj->curr_player_no == player_no)
 		return 0;
 	/* 只能吃万、索、筒子 */
-	if (mj->last_played_mj.suit == mj->god.suit && 
-			mj->last_played_mj.sign == mj->god.sign) {
+	if (mj->last_played_mj.suit == mj->joker.suit && 
+			mj->last_played_mj.sign == mj->joker.sign) {
 		return 0;
 	}
 	if (mj->last_played_mj.suit != mjSuitWan ||
@@ -389,8 +389,8 @@ int mjhz_can_peng(mjhz_t* mj, int player_no)
 		return 0;
 	if (mj->curr_player_no == player_no)
 		return 0;
-	if (mj->last_played_mj.suit == mj->god.suit && 
-			mj->last_played_mj.sign == mj->god.sign) {
+	if (mj->last_played_mj.suit == mj->joker.suit && 
+			mj->last_played_mj.sign == mj->joker.sign) {
 		return 0;
 	}
 
@@ -427,8 +427,8 @@ int mjhz_can_gang(mjhz_t* mj, int player_no)
     if (mj->last_played_mj.suit > 0 && 
             mj->last_played_mj.sign > 0) {
         /* 明杠(杠打出的牌) */
-        if (mj->last_played_mj.suit == mj->god.suit &&
-                mj->last_played_mj.sign == mj->god.sign) {
+        if (mj->last_played_mj.suit == mj->joker.suit &&
+                mj->last_played_mj.sign == mj->joker.sign) {
             return 0;
         }
         num = 0;
@@ -493,22 +493,22 @@ int mjhz_can_gang(mjhz_t* mj, int player_no)
 int mjhz_can_hu(mjhz_t* mj, int player_no)
 {
     int i,x,n;
-	int n_god,left_god;
+	int n_joker,left_joker;
 	int js[MJHZ_LEN_JS];
-	int js_god[MJHZ_LEN_JS];
+	int js_joker[MJHZ_LEN_JS];
 	mjpai_t* p;
 
 	if (!mj)
 		return 0;
 	if (player_no >= mj->player_num)
 		return 0;
-	if (mj->last_played_mj.suit == mj->god.suit &&
-			mj->last_played_mj.sign == mj->god.sign) {
+	if (mj->last_played_mj.suit == mj->joker.suit &&
+			mj->last_played_mj.sign == mj->joker.sign) {
 		return 0;
 	}
 
 	n = 0;
-	n_god = 0;
+	n_joker = 0;
     memset(js, 0, sizeof(int) * MJHZ_LEN_JS);
     p = mj->players[player_no].cards;
     for (i = 0; i < MJHZ_MAX_CARDS; ++i,p++) {
@@ -517,7 +517,7 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
         x = mjpai_encode(p);
         if (x >= MJHZ_LEN_JS) continue;
 		if (x == MJHZ_ID_BAI) {
-			n_god++;
+			n_joker++;
 			continue;
 		}
         js[x]++;
@@ -530,29 +530,29 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
 	}
 
 	/* 是否七对子 */
-	memcpy(js_god, js, sizeof(int) * MJHZ_LEN_JS);
-	if (n_god > 0) {
+	memcpy(js_joker, js, sizeof(int) * MJHZ_LEN_JS);
+	if (n_joker > 0) {
 		/* 财神处理 */
-		left_god = n_god;
+		left_joker = n_joker;
 		for (i = 0; i < MJHZ_LEN_JS; ++i) {
-			if (js_god[i] == 0) continue;
-			if ((js_god[i] % 2) > 0) {
-				js_god[i]++;
-				left_god--;
-				if (left_god == 0)
+			if (js_joker[i] == 0) continue;
+			if ((js_joker[i] % 2) > 0) {
+				js_joker[i]++;
+				left_joker--;
+				if (left_joker == 0)
 					break;
 			}
 		}
-		if (left_god > 0) {
-			js_god[MJHZ_ID_BAI] += left_god;
+		if (left_joker > 0) {
+			js_joker[MJHZ_ID_BAI] += left_joker;
 		}
 	}
-	if (mj_pair7(js_god, MJHZ_LEN_JS)) {
+	if (mj_pair7(js_joker, MJHZ_LEN_JS)) {
 		/* 是7对子得到豪华数量 */
 		mj->players[player_no].hu.isPair7 = 1;
 		mj->players[player_no].hu.pair7H4 = 0;
 		for (i = 0; i < MJHZ_LEN_JS; ++i) {
-			if (js_god[i] == 4)
+			if (js_joker[i] == 4)
 				mj->players[player_no].hu.pair7H4++;
 		}
 		return 1;
@@ -598,7 +598,7 @@ void mjhz_dump(mjhz_t* mj)
 
     printf("player number:%d\n", mj->player_num);
 	printf("mamon:\n");
-	printf("%s\n", mjpai_string(&mj->god));
+	printf("%s\n", mjpai_string(&mj->joker));
 
     /* dump player's mj pai */
     printf("players mj cards:\n");

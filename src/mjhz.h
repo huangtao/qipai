@@ -82,7 +82,7 @@ typedef struct mjhz_s {
 	mjpai_t last_played_mj;
 	int last_played_no;
 	int lao_z;			/* 老庄 */
-	mjpai_t god;		/* 财神 */
+	mjpai_t joker;		/* 百搭(财神) */
     MJHZ_PLAYER players[MJHZ_MAX_PLAYERS];
 }mjhz_t;
 
