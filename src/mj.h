@@ -43,8 +43,7 @@ typedef enum majiang_suit {
 
 /* majiang ordinal */
 typedef enum majiang_ordinal {
-	mjNone,
-    mj1,
+    mj1 = 1,
     mj2,
     mj3,
     mj4,
