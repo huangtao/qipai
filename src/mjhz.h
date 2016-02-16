@@ -48,8 +48,8 @@ typedef struct mjhz_player_s {
     int position;
     int64_t score;
     uint64_t gold;
-    mjpai_t cards[MJHZ_MAX_CARDS];
-    mjpai_t cards_played[MJHZ_DECK_CARDS/2];
+    mjpai_t tiles[MJHZ_MAX_CARDS];
+    mjpai_t tiles_played[MJHZ_DECK_CARDS/2];
     mj_melded_t mj_sets[MJHZ_MAX_SETS];
     int last_played;
 	int can_chi;
@@ -92,7 +92,7 @@ void mjhz_init(mjhz_t* mj, int mode, int player_num);
 /* start a new game */
 void mjhz_start(mjhz_t* mj);
 
-void mjhz_sort(mjhz_t* mj, mjpai_t* cards, int len);
+void mjhz_sort(mjhz_t* mj, mjpai_t* tiles, int len);
 const char* mjhz_hu_name(mjhz_hu_t* hu);
 int mjhz_play(mjhz_t* mj, int player_no, mjpai_t* card);
 void mjhz_draw(mjhz_t* mj, int is_gang);

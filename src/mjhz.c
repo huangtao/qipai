@@ -2,20 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include "card_sort.h"
 
 const int  MJHZ_ID_BAI = 34;	/* 白板 */
-
-typedef struct analyse_r_s{
-    int n1;
-    int v1[MJHZ_MAX_CARDS];
-    int n2;
-    int v2[MJHZ_MAX_CARDS/2];
-    int n3;
-    int v3[MJHZ_MAX_CARDS/3];
-    int n4;
-    int v4[MJHZ_MAX_CARDS/4];
-}analyse_r;
 
 void mjhz_init(mjhz_t* mj, int mode, int player_num)
 {
@@ -119,29 +107,29 @@ void mjhz_start(mjhz_t* mj)
         m = n = 0;
         for (i = 0; i < MJHZ_MAX_PLAYERS; i++) {
             direct = (mj->banker_no + i) % MJHZ_MAX_PLAYERS;
-            memcpy(mj->players[direct].cards + m, mj->deck + n, 4 * sizeof(mjpai_t));
+            memcpy(mj->players[direct].tiles + m, mj->deck + n, 4 * sizeof(mjpai_t));
             n += 4;
         }
         m += 12;
         /* 庄家跳牌2张,其他人一张 */
-        mj->players[mj->banker_no].cards[m].suit = mj->deck[n].suit;
-        mj->players[mj->banker_no].cards[m].sign = mj->deck[n].sign;
-        mj->players[mj->banker_no].cards[m+1].suit = mj->deck[n+4].suit;
-        mj->players[mj->banker_no].cards[m+1].sign = mj->deck[n+4].sign;
+        mj->players[mj->banker_no].tiles[m].suit = mj->deck[n].suit;
+        mj->players[mj->banker_no].tiles[m].sign = mj->deck[n].sign;
+        mj->players[mj->banker_no].tiles[m+1].suit = mj->deck[n+4].suit;
+        mj->players[mj->banker_no].tiles[m+1].sign = mj->deck[n+4].sign;
         n++;
         for (i = 0; i < MJHZ_MAX_PLAYERS; i++) {
             if (i == mj->banker_no) continue;
             direct = (mj->banker_no + i) % MJHZ_MAX_PLAYERS;
-            mj->players[direct].cards[m].suit = mj->deck[n].suit;
-            mj->players[direct].cards[m].suit = mj->deck[n].sign;
+            mj->players[direct].tiles[m].suit = mj->deck[n].suit;
+            mj->players[direct].tiles[m].suit = mj->deck[n].sign;
         }
         /* the first player */
         mj->first_player_no = mj->banker_no;
         mj->curr_player_no = mj->first_player_no;
     } else {
         for (i = 0; i < MJHZ_MAX_PLAYERS; i++) {
-            memset(mj->players[i].cards, 0, sizeof(mjpai_t) * MJHZ_MAX_CARDS);
-            memset(mj->players[i].cards_played, 0, sizeof(mjpai_t) * MJHZ_MAX_CARDS);
+            memset(mj->players[i].tiles, 0, sizeof(mjpai_t) * MJHZ_MAX_CARDS);
+            memset(mj->players[i].tiles_played, 0, sizeof(mjpai_t) * MJHZ_MAX_CARDS);
         }
         mj->banker_no = 0;
         mj->first_player_no = 0;
@@ -151,22 +139,22 @@ void mjhz_start(mjhz_t* mj)
 }
 
 /* 财神 万 索 筒 风 */
-void mjhz_sort(mjhz_t* mj, mjpai_t* cards, int len)
+void mjhz_sort(mjhz_t* mj, mjpai_t* tiles, int len)
 {
     int i,j;
     int exchange;
     mjpai_t temp;
     mjpai_t *pa, *pb;
 
-    if (!mj || !cards || len < 2)
+    if (!mj || !tiles || len < 2)
         return;
 
     /* 选择排序 */
     for (i = 0; i < len - 1; ++i) {
         exchange = 0;
-        pa = cards + i;
+        pa = tiles + i;
         for (j = i + 1; j < len; ++j) {
-            pb = cards + j;
+            pb = tiles + j;
             if (pb->suit == mjSuitZFB && pb->sign == mjBai) {
                 if (pa->suit != mjSuitZFB || pa->sign != mjBai) {
                     exchange = 1;
@@ -185,7 +173,7 @@ void mjhz_sort(mjhz_t* mj, mjpai_t* cards, int len)
             }
         }
         if (exchange) {
-            pb = cards + i;
+            pb = tiles + i;
             temp.suit = pb->suit;
             temp.sign = pb->sign;
             pb->suit = pa->suit;
@@ -215,60 +203,60 @@ void mjhz_draw(mjhz_t* mj, int is_gang)
 }
 
 /* 出牌 */
-int mjhz_play(mjhz_t* mj, int player_no, mjpai_t* card)
+int mjhz_play(mjhz_t* mj, int player_no, mjpai_t* pai)
 {
     int i,n,flag;
-    mjpai_t* cd;
+    mjpai_t* p;
 
-    if(!mj || !card)
+    if(!mj || !pai)
         return -1;
 
     if (mj->game_state != MJHZ_GAME_PLAY) {
         if (mj->debug)
-            printf("play cards but game state not play.\n");
+            printf("play pai but game state not play.\n");
         return -2;
     }
     if (player_no != mj->curr_player_no) {
         if (mj->debug)
-            printf("play cards but not this no.\n");
+            printf("play pai but not this no.\n");
         return -3;
     }
 
     /* 有效检查并删除这张牌 */
     if (mj->mode == MJHZ_MODE_SERVER) {
         n = -1;
-        cd = mj->players[player_no].cards;
+        p = mj->players[player_no].tiles;
         for (i = 0; i < MJHZ_MAX_CARDS; ++i){
-            if (cd->suit == card->suit && cd->sign == card->sign) {
+            if (p->suit == pai->suit && p->sign == pai->sign) {
                 n = i;
                 break;
             }
-            cd++;
+            p++;
         }
         if (n == -1) {
             if (mj->debug) {
-                printf("play cards but player hasn't this card.\n");
+                printf("play pai but player hasn't this card.\n");
             }
             return -4;
         } else {
-            mj->players[player_no].cards[n].suit = 0;
-            mj->players[player_no].cards[n].sign = 0;
+            mj->players[player_no].tiles[n].suit = 0;
+            mj->players[player_no].tiles[n].sign = 0;
         }
     } else {
-        cd = mj->players[player_no].cards;
+        p = mj->players[player_no].tiles;
         for (i = 0; i < MJHZ_MAX_CARDS; ++i) {
-            if (cd->suit == card->suit && cd->sign == card->sign) {
-                cd->suit = 0;
-                cd->sign = 0;
+            if (p->suit == pai->suit && p->sign == pai->sign) {
+                p->suit = 0;
+                p->sign = 0;
                 break;
             }
-            cd++;
+            p++;
         }
     }
-    mj->last_played_mj.suit = card->suit;
-    mj->last_played_mj.sign = card->sign;
+    mj->last_played_mj.suit = pai->suit;
+    mj->last_played_mj.sign = pai->sign;
     mj->last_played_no = player_no;
-    mj_trim(mj->players[player_no].cards, MJHZ_MAX_CARDS);
+    mj_trim(mj->players[player_no].tiles, MJHZ_MAX_CARDS);
     /* 判定吃碰杠胡 */
     for (i = 0; i < mj->player_num; ++i) {
         if (i != player_no) {
@@ -336,7 +324,7 @@ int mjhz_can_chi(mjhz_t* mj, int player_no)
 
     /* 同类型序数牌计数 */
     memset((void*)num, 0, sizeof(int) * 9);
-    p = mj->players[player_no].cards;
+    p = mj->players[player_no].tiles;
     for (i = 0; i < MJHZ_MAX_CARDS; ++i) {
         if (p->suit == mj->last_played_mj.suit) {
             num[p->sign]++;
@@ -395,7 +383,7 @@ int mjhz_can_peng(mjhz_t* mj, int player_no)
     }
 
     num = 0;
-    p = mj->players[player_no].cards;
+    p = mj->players[player_no].tiles;
     for (i = 0; i < MJHZ_MAX_CARDS; ++i) {
         if (p->suit == mj->last_played_mj.suit &&
                 p->sign == mj->last_played_mj.sign) {
@@ -432,7 +420,7 @@ int mjhz_can_gang(mjhz_t* mj, int player_no)
             return 0;
         }
         num = 0;
-        p = mj->players[player_no].cards;
+        p = mj->players[player_no].tiles;
         for (i = 0; i < MJHZ_MAX_CARDS; ++i) {
             if (p->suit == mj->last_played_mj.suit &&
                     p->sign == mj->last_played_mj.sign) {
@@ -447,7 +435,7 @@ int mjhz_can_gang(mjhz_t* mj, int player_no)
     } else {
         /* 暗杠或者加杠 */
         memset(js, 0, sizeof(int) * MJHZ_LEN_JS);
-        p = mj->players[player_no].cards;
+        p = mj->players[player_no].tiles;
         for (i = 0; i < MJHZ_MAX_CARDS; ++i,p++) {
             if (p->suit == 0 || p->sign == 0)
                 continue;
@@ -466,9 +454,9 @@ int mjhz_can_gang(mjhz_t* mj, int player_no)
         for (i = 0; i < MJHZ_MAX_SETS; ++i) {
             if (mj->players[player_no].mj_sets[i].type == mjMeldPeng) {
                 for (j = 0; j < MJHZ_MAX_CARDS; ++j) {
-                    if (mj->players[player_no].cards[j].suit == 
+                    if (mj->players[player_no].tiles[j].suit == 
                             mj->players[player_no].mj_sets[i].card.suit &&
-                            mj->players[player_no].cards[j].sign ==
+                            mj->players[player_no].tiles[j].sign ==
                             mj->players[player_no].mj_sets[i].card.sign) {
                         /* 此牌可以加杠 */
                         x = mjpai_encode(&mj->players[player_no].mj_sets[i].card);
@@ -510,7 +498,7 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
     n = 0;
     n_joker = 0;
     memset(js, 0, sizeof(int) * MJHZ_LEN_JS);
-    p = mj->players[player_no].cards;
+    p = mj->players[player_no].tiles;
     for (i = 0; i < MJHZ_MAX_CARDS; ++i,p++) {
         if (p->suit == 0 || p->sign == 0)
             continue;
@@ -597,20 +585,20 @@ void mjhz_dump(mjhz_t* mj)
         return;
 
     printf("player number:%d\n", mj->player_num);
-    printf("mamon:\n");
+    printf("joker:\n");
     printf("%s\n", mjpai_string(&mj->joker));
 
     /* dump player's mj pai */
-    printf("players mj cards:\n");
+    printf("players mj pai:\n");
     printf("%s\n",
-            mj_string(mj->players[0].cards, MJHZ_MAX_CARDS, 10));
+            mj_string(mj->players[0].tiles, MJHZ_MAX_CARDS, 10));
     printf("%s\n",
-            mj_string(mj->players[1].cards, MJHZ_MAX_CARDS, 10));
+            mj_string(mj->players[1].tiles, MJHZ_MAX_CARDS, 10));
     if (mj->player_num > 2) {
         printf("%s\n",
-                mj_string(mj->players[2].cards, MJHZ_MAX_CARDS, 10));
+                mj_string(mj->players[2].tiles, MJHZ_MAX_CARDS, 10));
         printf("%s\n",
-                mj_string(mj->players[3].cards, MJHZ_MAX_CARDS, 10));
+                mj_string(mj->players[3].tiles, MJHZ_MAX_CARDS, 10));
     }
 
     printf("last mj pai:\n");
