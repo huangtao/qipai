@@ -464,7 +464,7 @@ int mjhz_can_gang(mjhz_t* mj, int player_no)
         num = 0;
         mask = 0;
         for (i = 0; i < MJHZ_MAX_SETS; ++i) {
-            if (mj->players[player_no].mj_sets[i].type == mjMS_PENG) {
+            if (mj->players[player_no].mj_sets[i].type == mjMeldPeng) {
                 for (j = 0; j < MJHZ_MAX_CARDS; ++j) {
                     if (mj->players[player_no].cards[j].suit == 
                             mj->players[player_no].mj_sets[i].card.suit &&
