@@ -50,7 +50,7 @@ typedef struct mjhz_player_s {
     uint64_t gold;
     mjpai_t cards[MJHZ_MAX_CARDS];
     mjpai_t cards_played[MJHZ_DECK_CARDS/2];
-    mjSets_t mj_sets[MJHZ_MAX_SETS];
+    mj_melded_t mj_sets[MJHZ_MAX_SETS];
     int last_played;
 	int can_chi;
 	int can_peng;

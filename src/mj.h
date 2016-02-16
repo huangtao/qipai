@@ -43,8 +43,7 @@ typedef enum majiang_suit {
 
 /* majiang ordinal */
 typedef enum majiang_ordinal {
-	mjNone,
-    mj1,
+    mj1 = 1,
     mj2,
     mj3,
     mj4,
@@ -93,16 +92,17 @@ typedef enum majiang_season {
     mjDong = mjWinter
 }mjSeason;
 
-typedef enum mj_melded_sets {
-    mjMS_NONE,
-    mjMS_KE,        /* 刻子 */
-    mjMS_SHUN,      /* 顺子 */
-    mjMS_JIANG,     /* 将牌(对子) */
-    mjMS_CHI,       /* 吃 */
-    mjMS_PENG,      /* 碰 */
-    mjMS_GANG,      /* 杠 */
-    mjMS_GANG_AN    /* 暗杠 */
-}mjMeldedSets;
+/* 面子类型 */
+typedef enum mj_meld_type {
+    mjMeldNone,
+    mjMeldKe,       /* 刻子 */
+    mjMeldShun,     /* 顺子 */
+    mjMeldJiang,    /* 将牌(对子) */
+    mjMeldChi,      /* 吃获取的顺子 */
+    mjMeldPeng,     /* 碰获取的刻子 */
+    mjMeldGang,     /* 杠 */
+    mjMeldAngang    /* 暗杠 */
+}mjMeldType;
 
 /* a mj pai */
 typedef struct mjpai_s {
@@ -110,13 +110,12 @@ typedef struct mjpai_s {
     int sign;   /* sign */
 }mjpai_t;
 
-/* 描述一组(2,3,4张)牌 */
-typedef struct mj_sets_s {
-    int type;
-    mjpai_t card;
-    int player_no;
-    int info;
-}mjSets_t;
+/* 面子 */
+typedef struct mj_melded_s {
+    int type;       /* 面子类型 */
+    mjpai_t card;   /* 特征牌 */
+    int player_no;  /* 吃碰目标玩家 */
+}mj_melded_t;
 
 int mjpai_equal(mjpai_t* a, mjpai_t* b);
 unsigned char mjpai_encode(mjpai_t* card);
