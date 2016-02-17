@@ -22,21 +22,22 @@ extern "C" {
  * 连庄：庄家胡牌或者流局即可连庄。
  */
 
-/* majiang suit */
+/* majiang tile suit */
 typedef enum majiang_suit {
     mjSuitNone,
-	mjSuitCharacter,            /* wanzi pai */
-    mjSuitWan = mjSuitCharacter,
-    mjSuitBamboo,               /* tiaozi pai */
-    mjSuitTiao = mjSuitBamboo,
-    mjSuitSuo = mjSuitBamboo,
-    mjSuitCircle,               /* tongzi pai */
-    mjSuitTong = mjSuitCircle,
-    mjSuitWind,                 /* feng pai */
-	mjSuitFeng = mjSuitWind,
-    mjSuitDragon,
-	mjSuitZFB = mjSuitDragon,	/* zhong,fa,bai */
-    mjSuitFlower,               /* hua pai */
+	mjSuitWan,                      /* 万子 */
+    mjSuitCharacters = mjSuitWan,
+    mjSuitTiao,                     /* 条子 */
+    mjSuitSuo = mjSuitTiao,
+    mjSuitBamboo = mjSuitTiao,
+    mjSuitTong,                     /* 筒子 */
+    mjSuitDots = mjSuitTong,
+    mjSuitFeng,                     /* 风牌 */
+	mjSuitWind = mjSuitFeng,
+    mjSuitZFB,                      /* 中发白 */
+	mjSuitDragon = mjSuitZFB,
+    mjSuitHua,                      /* 花牌 */
+    mjSuitFlower = mjSuitHua,
     mjSuitSeason,
 	mjSuitUnknow
 }mjSuit;
@@ -62,34 +63,34 @@ typedef enum majiang_wind {
 }mjWind;
 
 typedef enum majiang_dragon {
-    mjRed = 1,
-    mjZhong = mjRed,
-    mjGreen,
-    mjFa = mjGreen,
-    mjWhite,
-    mjBai = mjWhite
+    mjZhong = 1,
+    mjRed = mjZhong,
+    mjFa,
+    mjGreen = mjFa,
+    mjBai,
+    mjWhite = mjBai
 }mjDragon;
 
 typedef enum majiang_flower {
-    mjPlum = 1,
-    mjMei = mjPlum,
-    mjOrchid,
-    mjLan = mjOrchid,
-    mjChrysan,
-    mjJu = mjChrysan,
-    mjBamboo,
-    mjZhu = mjBamboo
+    mjMei = 1,
+    mjPlum = mjMei,
+    mjLan,
+    mjOrchid = mjLan,
+    mjJu,
+    mjChrysan = mjJu,
+    mjZhu,
+    mjBamboo = mjZhu
 }mjFlower;
 
 typedef enum majiang_season {
-    mjSpring = 1,
-    mjCun = mjSpring,
-    mjSummer,
-    mjXia = mjSummer,
-    mjAutumn,
-    mjQiu = mjAutumn,
-    mjWinter,
-    mjDong = mjWinter
+    mjCun = 1,
+    mjSpring = mjCun,
+    mjXia,
+    mjSummer = mjXia,
+    mjQiu,
+    mjAutumn = mjQiu,
+    mjDong,
+    mjWinter = mjDong
 }mjSeason;
 
 /* 面子类型 */
@@ -106,6 +107,7 @@ typedef enum mj_meld_type {
 
 /* a mj pai */
 typedef struct mjpai_s {
+    int id;     /* start with 1 */
     int suit;   /* suit */
     int sign;   /* sign */
 }mjpai_t;
