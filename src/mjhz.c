@@ -547,7 +547,7 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
     }
 
 	/* 暴力枚举，将每张牌作为将牌(1张的用财神+1) 来判定是否全成面子 */
-	for (i = 1; i < MJHZ_LEN_JS, ++i) {
+	for (i = 1; i < MJHZ_LEN_JS; ++i) {
 		if (js[i] == 0) continue;
 		memcpy(js_joker, js, sizeof(int) * MJHZ_LEN_JS);
 		if (js_joker[i] >= 2) {
