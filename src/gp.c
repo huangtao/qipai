@@ -702,6 +702,7 @@ int gp_hint(gp_t* gp, card_t* cards, int len)
             if (ret_n > 0)
                 gp_copy_cards(gp, gp->curr_player_no, cards, 0, rank, 3);
         } else if (gp->last_hand_type.type == GP_STRAIGHT) {
+			rank = 0;
             for (i = 4; i<= 10; ++i) {
                 if (js[i] == 0) continue;
                 if (rank2logic(i) <= card_logicvalue(&gp->last_hand_type.type_card))
@@ -718,12 +719,14 @@ int gp_hint(gp_t* gp, card_t* cards, int len)
                     break;
                 }
             }
-            n = 0;
-            for (i = rank; i < (rank + ret_n); ++i) {
-                gp_copy_cards(gp, gp->curr_player_no, cards, n++, i, 1);  
-            }
+			if (ret_n > 0) {
+				n = 0;
+				for (i = rank; i < (rank + ret_n); ++i) {
+					gp_copy_cards(gp, gp->curr_player_no, cards, n++, i, 1);  
+				}
+			}
         } else if (gp->last_hand_type.type == GP_D_STRAIGHT) {
-            for (i = 4; i<= 10; ++i) {
+			for (i = 4; i<= 10; ++i) {
                 if (js[i] < 2) continue;
                 if (rank2logic(i) <= card_logicvalue(&gp->last_hand_type.type_card))
                     continue;
@@ -739,11 +742,13 @@ int gp_hint(gp_t* gp, card_t* cards, int len)
                     break;
                 }
             }
-            n = 0;
-            for (i = rank; i < (rank + ret_n); ++i) {
-                gp_copy_cards(gp, gp->curr_player_no, cards, n, i, 2);
-                n += 2;
-            }
+			if (ret_n > 0) {
+				n = 0;
+				for (i = rank; i < (rank + ret_n); ++i) {
+					gp_copy_cards(gp, gp->curr_player_no, cards, n, i, 2);
+					n += 2;
+				}
+			}
         } else if (gp->last_hand_type.type == GP_T_STRAIGHT) {
             for (i = 4; i<= 10; ++i) {
                 if (js[i] < 3) continue;
@@ -761,12 +766,13 @@ int gp_hint(gp_t* gp, card_t* cards, int len)
                     break;
                 }
             }
-            n = 0;
-            for (i = rank; i < (rank + ret_n); ++i) {
-                gp_copy_cards(gp, gp->curr_player_no, cards, n, i, 2);
-                n += 2;
-            }
-
+			if (ret_n > 0) {
+				n = 0;
+				for (i = rank; i < (rank + ret_n); ++i) {
+					gp_copy_cards(gp, gp->curr_player_no, cards, n, i, 2);
+					n += 2;
+				}
+			}
         } else if (gp->last_hand_type.type == GP_THREE_P2) {
             for (i = 4; i<= 10; ++i) {
                 if (js[i] < 3) continue;

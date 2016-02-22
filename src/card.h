@@ -45,8 +45,34 @@ typedef enum card_rank
     cdRankUnknow    /* unknow rank(ob) */
 }cdRank;
 
+/* poker id */
+typedef enum card_id {
+	CD_ID_EMPTY,
+	
+	/* diamond A~K */
+	CD_ID_D1, CD_ID_D2, CD_ID_D3, CD_ID_D4, CD_ID_D5, CD_ID_D6, CD_ID_D7,
+	CD_ID_D8, CD_ID_D9, CD_ID_D10, CD_ID_DJ, CD_ID_DQ, CD_ID_DK,
+
+	/* club A~K */
+	CD_ID_C1, CD_ID_C2, CD_ID_C3, CD_ID_C4, CD_ID_C5, CD_ID_C6, CD_ID_C7,
+	CD_ID_C8, CD_ID_C9, CD_ID_C10, CD_ID_CJ, CD_ID_CQ, CD_ID_CK,
+	
+	/* heart A~K */
+	CD_ID_H1, CD_ID_H2, CD_ID_H3, CD_ID_H4, CD_ID_H5, CD_ID_H6, CD_ID_H7,
+	CD_ID_H8, CD_ID_H9, CD_ID_H10, CD_ID_HJ, CD_ID_HQ, CD_ID_HK,
+	
+	/* spade A~K */
+	CD_ID_S1, CD_ID_S2, CD_ID_S3, CD_ID_S4, CD_ID_S5, CD_ID_S6, CD_ID_S7,
+	CD_ID_S8, CD_ID_S9, CD_ID_S10, CD_ID_SJ, CD_ID_SQ, CD_ID_SK,
+	
+	/* joker */
+	CD_ID_JS, CD_ID_JB,
+	CD_ID_UNKNOW
+}cdID;
+
 /* a card */
-typedef struct card_s{
+typedef struct card_s {
+	int id;
     int suit;   /* card suit */
     int rank;   /* card rank */
 }card_t;

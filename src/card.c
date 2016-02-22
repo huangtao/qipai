@@ -405,14 +405,17 @@ int deck_init(card_t* cards, int len)
     for(i = 0; i < fu; ++i){
         for(j = cdSuitDiamond; j <= cdSuitSpade; ++j){
             for(k = cdRankAce; k <= cdRankK; ++k){
+				p->id = j * 13 + k;
                 p->rank = k;
                 p->suit = j;
                 p++;
             }
         }
+		p->id = CD_ID_JS;
         p->rank = cdRankSJoker;
         p->suit = cdSuitJoker;
         p++;
+		p->id = CD_ID_JB;
         p->rank = cdRankBJoker;
         p->suit = cdSuitJoker;
         p++;
