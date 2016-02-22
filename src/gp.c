@@ -613,7 +613,247 @@ int gp_pass(gp_t* gp, int player_no)
         memset(gp->players[i].cards_played, 0, sizeof(card_t) * GP_MAX_CARDS);
     }
     gp_next_player(gp);
+    gp->first_player_no = gp->curr_player_no;
     return 1;
+}
+
+/* 出牌提示 */
+int gp_hint(gp_t* gp, card_t* cards, int len)
+{
+    int i,j,n,rank;
+    int ret_n;
+    cd_bucket x[20];
+    int js[20];
+
+    if (!gp || !cards || len < GP_MAX_CARDS)
+        return 0;
+    
+    memset(cards, 0, sizeof(card_t) * len);
+    memset(x, 0, sizeof(cd_bucket) * 20);
+    cards_bucket(gp->players[gp->curr_player_no].cards, GP_MAX_CARDS, x);
+    for (i = 0; i < 20; i++) {
+        js[i] = x[i].num_spade + x[i].num_heart +
+            x[i].num_club + x[i].num_diamond;
+    }
+
+    if (gp->curr_player_no == gp->first_player_no) {
+        /* 必须出牌 */
+        ret_n = 0;
+        /* 查找单张 */
+        for (i = 3; i < 8; i++) {
+            if (js[i] > 1) continue;
+            if (js[i+1] >= 1 && js[i+2] >=1 && js[i+3] >= 1 &&
+                    js[i+4] >= 1) {
+                continue;
+            }
+            ret_n = 1;
+            gp_copy_cards(gp, gp->curr_player_no, cards, 0, i, 1);
+            break;
+        }
+        if (ret_n == 0) {
+            cards->rank = gp->players[gp->curr_player_no].cards->rank;
+            cards->suit = gp->players[gp->curr_player_no].cards->suit;
+            ret_n = 1;
+        }
+    } else {
+        /* 跟牌 */
+        ret_n = 0;
+        if (gp->last_hand_type.type == GP_SINGLE) {
+            for (i = 3; i <= 13; ++i) {
+                if (js[i] == 1 &&
+                        rank2logic(i) > card_logicvalue(&gp->last_hand_type.type_card)) {
+                    rank = i;
+                    ret_n = 1;
+                    break;
+                }
+            }
+            if (ret_n == 0) {
+                for (i = 2; i >= 1; --i) {
+                    if (js[i] == 1 &&
+                            rank2logic(i) > card_logicvalue(&gp->last_hand_type.type_card)) {
+                        rank = i;
+                        ret_n = 1;
+                        break;
+                    }
+                }
+            }
+            if (ret_n > 0)
+                gp_copy_cards(gp, gp->curr_player_no, cards, 0, rank, 1);
+        } else if (gp->last_hand_type.type == GP_DOUBLE) {
+            for (i = 4; i <= 13; ++i) {
+                if (js[i] == 2 &&
+                        rank2logic(i) > card_logicvalue(&gp->last_hand_type.type_card)) {
+                    rank = i;
+                    ret_n = 2;
+                    break;
+                }
+            }
+            if (ret_n > 0)
+                gp_copy_cards(gp, gp->curr_player_no, cards, 0, rank, 2);
+        } else if(gp->last_hand_type.type == GP_THREE) {
+            for (i = 4; i <= 12; ++i) {
+                if (js[i] == 3 &&
+                        rank2logic(i) > card_logicvalue(&gp->last_hand_type.type_card)) {
+                    rank = i;
+                    ret_n = 3;
+                    break;
+                }
+            }
+            if (ret_n > 0)
+                gp_copy_cards(gp, gp->curr_player_no, cards, 0, rank, 3);
+        } else if (gp->last_hand_type.type == GP_STRAIGHT) {
+            for (i = 4; i<= 10; ++i) {
+                if (js[i] == 0) continue;
+                if (rank2logic(i) <= card_logicvalue(&gp->last_hand_type.type_card))
+                    continue;
+                ret_n = gp->last_hand_type.num;
+                for (j = i; j < (i + gp->last_hand_type.num); ++j) {
+                    if (js[j] == 0) {
+                        ret_n = 0;
+                        break;
+                    }
+                }
+                if (ret_n > 0) {
+                    rank = i;
+                    break;
+                }
+            }
+            n = 0;
+            for (i = rank; i < (rank + ret_n); ++i) {
+                gp_copy_cards(gp, gp->curr_player_no, cards, n++, i, 1);  
+            }
+        } else if (gp->last_hand_type.type == GP_D_STRAIGHT) {
+            for (i = 4; i<= 10; ++i) {
+                if (js[i] < 2) continue;
+                if (rank2logic(i) <= card_logicvalue(&gp->last_hand_type.type_card))
+                    continue;
+                ret_n = gp->last_hand_type.num;
+                for (j = i; j < (i + gp->last_hand_type.num); ++j) {
+                    if (js[j] < 2) {
+                        ret_n = 0;
+                        break;
+                    }
+                }
+                if (ret_n > 0) {
+                    rank = i;
+                    break;
+                }
+            }
+            n = 0;
+            for (i = rank; i < (rank + ret_n); ++i) {
+                gp_copy_cards(gp, gp->curr_player_no, cards, n, i, 2);
+                n += 2;
+            }
+        } else if (gp->last_hand_type.type == GP_T_STRAIGHT) {
+            for (i = 4; i<= 10; ++i) {
+                if (js[i] < 3) continue;
+                if (rank2logic(i) <= card_logicvalue(&gp->last_hand_type.type_card))
+                    continue;
+                ret_n = gp->last_hand_type.num;
+                for (j = i; j < (i + gp->last_hand_type.num); ++j) {
+                    if (js[j] < 3) {
+                        ret_n = 0;
+                        break;
+                    }
+                }
+                if (ret_n > 0) {
+                    rank = i;
+                    break;
+                }
+            }
+            n = 0;
+            for (i = rank; i < (rank + ret_n); ++i) {
+                gp_copy_cards(gp, gp->curr_player_no, cards, n, i, 2);
+                n += 2;
+            }
+
+        } else if (gp->last_hand_type.type == GP_THREE_P2) {
+            for (i = 4; i<= 10; ++i) {
+                if (js[i] < 3) continue;
+                if (rank2logic(i) <= card_logicvalue(&gp->last_hand_type.type_card)) {
+                    rank = i;
+                    ret_n += 3;
+                    break;
+                }
+            }
+            if (ret_n > 0) {
+                /* 有对子吗*/
+                for (i = 3; i <= 13; ++i) {
+                    if (js[i] != 2) continue;
+                    if (i == rank) continue;
+                    ret_n += 2;
+                    j = i;
+                    break;
+                }
+            }
+            if (ret_n == 5) {
+                gp_copy_cards(gp, gp->curr_player_no, cards, 0, rank, 3);
+                gp_copy_cards(gp, gp->curr_player_no, cards, 3, j, 2);
+            } else {
+                ret_n = 0;
+            }
+        }
+        if (ret_n == 0) { 
+            for (i = cdRank3; i <= cdRankK; ++i) {
+                if (js[i] == 4) {
+                    if (gp->last_hand_type.type == GP_BOMB) {
+                        if (rank2logic(i) <= card_logicvalue(&gp->last_hand_type.type_card))
+                            continue;
+                    }
+                    rank = i;
+                    ret_n = 4;
+                    n = 4;
+                    break;
+                } else if (js[i] == 3 && i == cdRankK) {
+                    rank = i;
+                    ret_n = 3;
+                    n = 3;
+                    break;
+                }
+            }
+            if (ret_n > 0) {
+                /* 拿单张 */
+                for (i = cdRank3; i <= cdRankK; ++i) {
+                    if (js[i] > 0 && i != rank) {
+                        j = i;
+                        ret_n += 1;
+                        break;
+                    }
+                }
+            }
+            if (ret_n == 5 || (ret_n == 4 && rank == cdRankK)) {
+                gp_copy_cards(gp, gp->curr_player_no, cards, 0, rank, n);
+                gp_copy_cards(gp, gp->curr_player_no, cards, n, j, 1);
+            } else {
+                ret_n = 0;
+            }
+        }
+    }
+
+    return ret_n;
+}
+
+void gp_copy_cards(gp_t* gp, int player_no, card_t* cards, int offset, int rank, int num)
+{
+    int i,n;
+
+    if (!gp || !cards || num == 0)
+        return;
+    if (offset < 0 || offset >= GP_MAX_CARDS)
+        return;
+    if (rank == 0)
+        return;
+
+    n = 0;
+    for (i = 0; i < GP_MAX_CARDS; i++) {
+        if (gp->players[player_no].cards[i].rank == rank) {
+            cards[offset+n].rank = gp->players[player_no].cards[i].rank;
+            cards[offset+n].suit = gp->players[player_no].cards[i].suit;
+            n++;
+            if (n >= num)
+                return;
+        }
+    }
 }
 
 void gp_dump(gp_t* gp)

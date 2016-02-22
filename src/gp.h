@@ -108,6 +108,8 @@ int gp_play(gp_t* gp, int player_no, card_t* cards, int len);
 int gp_canplay(gp_t* gp, card_t* cards, int len);
 void gp_next_player(gp_t* gp);
 int gp_pass(gp_t* gp, int player_no);
+int gp_hint(gp_t* gp, card_t* cards, int len);
+void gp_copy_cards(gp_t* gp, int player_no, card_t* cards, int offset, int rank, int num);
 void gp_dump(gp_t* gp);
 
 #ifdef __cplusplus
