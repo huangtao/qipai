@@ -198,7 +198,7 @@ const char* mjpai_string(mjpai_t* pai)
                 strcpy(str, "JH");
             } else if (pai->sign == mjZhu) {
                 strcpy(str, "ZH");
-            }
+			}
         } else if (pai->suit == mjSuitSeason) {
             if (pai->sign == mjCun) {
                 strcpy(str, "CT");
@@ -212,6 +212,60 @@ const char* mjpai_string(mjpai_t* pai)
         }
     }
     return str;
+}
+
+int mj_all_melded(int* array, int len)
+{
+	return 0;
+}
+
+/**
+ * 此版本适用没有花牌的判定
+*/
+int mj_all_melded_joker(int* array, int len, int num_joker)
+{
+	int i,yes,n;
+	int* p;
+
+	if (!array || len < 2)
+		return 0;
+
+	yes = 0;
+	p = array;
+	if (num_joker > 0) {
+		/* 先判定风牌 */
+		p = array + MJ_ID_DONG;
+		for (i = MJ_ID_DONG; i <= MJ_ID_BAI; ++i) {
+			n = *p;
+			if (n == 3 || n == 0) continue;
+			if (n == 1) {
+				if (num_joker < 2) {
+					return 0;
+				}
+				num_joker -= 2;
+				*p = 3;
+			} else if (n == 2) {
+				if (num_joker < 1) {
+					return 0;
+				}
+				num_joker--;
+				*p = 3;
+			}
+			p++;
+		}
+		/* 序数牌 */
+		p = array + MJ_ID_1W;
+		for (i = MJ_ID_1W; i <= MJ_ID_9T; ++i) {
+			n = *p;
+			if (i == MJ_ID_8W || i == MJ_ID_8S || i == MJ_ID_8T) {
+				/* 8W,8S,8T */
+			}
+		}
+	} else {
+		yes = mj_all_melded(array, len);
+	}
+
+	return yes;
 }
 
 int mj_pair7(int* array, int len)

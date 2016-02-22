@@ -93,6 +93,15 @@ typedef enum majiang_season {
     mjWinter = mjDong
 }mjSeason;
 
+typedef enum majiang_id {
+	MJ_ID_EMPTY,
+	MJ_ID_1W, MJ_ID_2W, MJ_ID_3W, MJ_ID_4W, MJ_ID_5W, MJ_ID_6W, MJ_ID_7W, MJ_ID_8W, MJ_ID_9W,
+	MJ_ID_1S, MJ_ID_2S, MJ_ID_3S, MJ_ID_4S, MJ_ID_5S, MJ_ID_6S, MJ_ID_7S, MJ_ID_8S, MJ_ID_9S,
+	MJ_ID_1T, MJ_ID_2T, MJ_ID_3T, MJ_ID_4T, MJ_ID_5T, MJ_ID_6T, MJ_ID_7T, MJ_ID_8T, MJ_ID_9T,
+	MJ_ID_DONG, MJ_ID_NAN, MJ_ID_XI, MJ_ID_BEI,
+	MJ_ID_ZHONG, MJ_ID_FA, MJ_ID_BAI
+}mjID;
+
 /* 面子类型 */
 typedef enum mj_meld_type {
     mjMeldNone,
@@ -130,6 +139,11 @@ void mj_trim(mjpai_t* cards, int len);
  */
 const char* mj_string(mjpai_t* cards, int len, int line_number);
 const char* mjpai_string(mjpai_t* card);
+
+/* 是否全顺子和刻子 */
+int mj_all_melded(int* array, int len);
+/* 带百搭数量 */
+int mj_all_melded_joker(int* array, int len, int num_joker);
 
 /* 7对子判定 */
 int mj_pair7(int* array, int len);
