@@ -6,7 +6,7 @@
 
 QT       -= core gui
 
-TARGET = qp
+TARGET = qipai
 TEMPLATE = lib
 CONFIG += staticlib
 
