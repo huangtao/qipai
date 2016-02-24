@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include "card_sort.h"
 
-typedef struct analyse_r_s{
+typedef struct analyse_r_s {
     int n1;
     int v1[GP_MAX_CARDS];
     int n2;
@@ -17,8 +17,7 @@ typedef struct analyse_r_s{
 
 void gp_init(gp_t* gp, int rule, int mode, int player_num)
 {
-    int i,n;
-    card_t card;
+    int i,j,n;
 
     if(!gp)
         return;
@@ -37,57 +36,57 @@ void gp_init(gp_t* gp, int rule, int mode, int player_num)
     n = 54;
     deck_init(gp->deck, n);
 
-    card.suit = cdSuitJoker;
-    card.rank = cdRankSJoker;
-    cards_del(gp->deck, n, &card);
-    card.rank = cdRankBJoker;
-    cards_del(gp->deck, n, &card);
-    if(gp->game_rule == GP_RULE_DEFAULT){
-        /* del three 2 and one A */
-        card.suit = cdSuitDiamond;
-        card.rank = cdRank2;
-        cards_del(gp->deck, n, &card);
-        card.rank = cdRankAce;
-        cards_del(gp->deck, n, &card);
-
-        card.suit = cdSuitClub;
-        card.rank = cdRank2;
-        cards_del(gp->deck, n, &card);
-
-        card.suit = cdSuitHeart;
-        card.rank = cdRank2;
-        cards_del(gp->deck, n, &card);
-        n -= 6;
+    /* initialize gp's deck */
+    n = 0;
+    for (i = cdSuitDiamond; i <= cdSuitSpade; ++i) {
+        for (j = cdRank3; j <= cdRankQ; ++j) {
+            gp->deck[n].id = (i - 1) * 13 + j;
+            gp->deck[n].suit = i;
+            gp->deck[n].rank = j;
+            n++;
+        }
     }
-    else if(gp->game_rule == GP_RULE_ZHUJI){
-        /* del three 2 and three A and one K */
-        card.suit = cdSuitDiamond;
-        card.rank = cdRank2;
-        cards_del(gp->deck, n, &card);
-        card.rank = cdRankAce;
-        cards_del(gp->deck, n, &card);
-        card.rank = cdRankK;
-        cards_del(gp->deck, n, &card);
-
-        card.suit = cdSuitClub;
-        card.rank = cdRank2;
-        cards_del(gp->deck, n, &card);
-        card.rank = cdRankAce;
-        cards_del(gp->deck, n, &card);
-
-        card.suit = cdSuitHeart;
-        card.rank = cdRank2;
-        cards_del(gp->deck, n, &card);
-        card.rank = cdRankAce;
-        cards_del(gp->deck, n, &card);
-        n -= 9;
+    if (gp->game_rule == GP_RULE_DEFAULT) {
+        /* one 2, three A and four K */
+        for (i = cdSuitDiamond; i <= cdSuitSpade; ++i) {
+            gp->deck[n].id = (i - 1) * 13 + cdRankK;
+            gp->deck[n].suit = i;
+            gp->deck[n].rank = cdRankK;
+            n++;
+            if (i != cdSuitDiamond) {
+                gp->deck[n].id = (i - 1) * 13 + cdRankAce;
+                gp->deck[n].suit = i;
+                gp->deck[n].rank = cdRankAce;
+                n++;
+            }
+        }
+        gp->deck[n].id = CD_ID_S2;
+        gp->deck[n].suit = cdSuitSpade;
+        gp->deck[n].rank = cdRank2;
+        gp->deck_all_num = 48; 
     }
-    gp->deck_all_num = cards_trim(gp->deck, 54);
+    else if (gp->game_rule == GP_RULE_ZHUJI) {
+        /* one 2, one A and three K */
+        for (i = cdSuitClub; i <= cdSuitSpade; ++i) {
+            gp->deck[n].id = (i - 1) * 13 + cdRankK;
+            gp->deck[n].suit = i;
+            gp->deck[n].rank = cdRankK;
+            n++;
+        }
+        gp->deck[n].id = CD_ID_SA;
+        gp->deck[n].suit = cdSuitSpade;
+        gp->deck[n].rank = cdRankAce;
+        n++;
+        gp->deck[n].id = CD_ID_S2;
+        gp->deck[n].suit = cdSuitSpade;
+        gp->deck[n].rank = cdRank2;
+        gp->deck_all_num = 45;
+    }
     deck_shuffle(gp->deck, gp->deck_all_num);
     gp->deck_deal_index = 0;
     gp->deck_valid_num = gp->deck_all_num;
 
-    for(i = 0; i < GP_MAX_PLAYER; i++){
+    for (i = 0; i < GP_MAX_PLAYER; i++){
         gp->players[i].position = i;
     }
 }
@@ -95,19 +94,18 @@ void gp_init(gp_t* gp, int rule, int mode, int player_num)
 int gp_deal(gp_t* gp, card_t* card)
 {
     int i;
-    card_t* p;
 
-    if(!gp || !card)
+    if (!gp || !card)
         return -1;
 
-    if(gp->deck_deal_index >= gp->deck_valid_num)
+    if (gp->deck_deal_index >= gp->deck_valid_num)
         return -2;
 
-    for(i = gp->deck_deal_index; i < gp->deck_valid_num; ++i){
-        p = gp->deck + i;
-        if(p->rank || p->suit){
-            card->rank = p->rank;
-            card->suit = p->suit;
+    for (i = gp->deck_deal_index; i < gp->deck_valid_num; ++i) {
+        if (gp->deck[i].id > 0) {
+            card->id = gp->deck[i].id;
+            card->rank = gp->deck[i].rank;
+            card->suit = gp->deck[i].suit;
             gp->deck_deal_index++;
             return 0;
         }
@@ -119,11 +117,11 @@ int gp_deal(gp_t* gp, card_t* card)
 
 void gp_start(gp_t* gp)
 {
-    int i;
+    int i,j;
     int start_num;
     card_t card;
 
-    if(!gp)
+    if (!gp)
         return;
     gp->round = 0;
     gp->game_state = GP_GAME_PLAY;
@@ -138,21 +136,15 @@ void gp_start(gp_t* gp)
         gp->deck_valid_num = gp->deck_all_num;
 
         /* draw start cards for every player */
-        if(gp->game_rule == GP_RULE_DEFAULT){
+        if (gp->game_rule == GP_RULE_DEFAULT) {
             start_num = 16;
         } else {
             start_num = 15;
         }
         for (i = 0; i < start_num; ++i) {
-            gp_deal(gp, &card);
-            cards_add(gp->players[0].cards, GP_MAX_CARDS, &card);
-
-            gp_deal(gp, &card);
-            cards_add(gp->players[1].cards, GP_MAX_CARDS, &card);
-
-            if (gp->player_num > 2) {
+            for (j = 0; j < gp->player_num; ++j) {
                 gp_deal(gp, &card);
-                cards_add(gp->players[2].cards, GP_MAX_CARDS, &card);
+                cards_add(gp->players[j].cards, GP_MAX_CARDS, &card);
             }
         }
 
@@ -215,15 +207,13 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
             return;
         case 1:
             ht->type = GP_SINGLE;
-            ht->type_card.rank = p->rank;
-            ht->type_card.suit = p->suit;
+            memcpy(&ht->type_card, p, sizeof(card_t));
             ht->param = card_logicvalue(p);
             return;
         case 2:
             if (p->rank == (p + 1)->rank) {
                 ht->type = GP_DOUBLE;
-                ht->type_card.rank = p->rank;
-                ht->type_card.suit = p->suit;
+                memcpy(&ht->type_card, p, sizeof(card_t));
                 ht->param = card_logicvalue(p);
                 return;
             }
@@ -267,6 +257,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
                 ht->type = GP_FOUR;
             ht->type_card.rank = x[ar.v4[0]].rank;
             ht->type_card.suit = get_bucket_suit(&x[ar.v3[0]]);
+            ht->type_card.id = (ht->type_card.suit - 1) * 13 + ht->type_card.rank;
             ht->param = ar.v4[0];
             return;
         }
@@ -274,6 +265,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
             ht->type = GP_BOMB;
             ht->type_card.rank = x[ar.v4[0]].rank;
             ht->type_card.suit = get_bucket_suit(&x[ar.v3[0]]);
+            ht->type_card.id = (ht->type_card.suit - 1) * 13 + ht->type_card.rank;
             ht->param = ar.v4[0];
             return;
         }
@@ -282,6 +274,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
                 ht->type = GP_FOUR_P3;
                 ht->type_card.rank = x[ar.v4[0]].rank;
                 ht->type_card.suit = get_bucket_suit(&x[ar.v3[0]]);
+                ht->type_card.id = (ht->type_card.suit - 1) * 13 + ht->type_card.rank;
                 ht->param = ar.v4[0];
                 return;
             }
@@ -300,6 +293,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
             }
             ht->type_card.rank = x[ar.v3[0]].rank;
             ht->type_card.suit = get_bucket_suit(&x[ar.v3[0]]);
+            ht->type_card.id = (ht->type_card.suit - 1) * 13 + ht->type_card.rank;
             ht->param = ar.v3[0];
             return;
         }
@@ -315,6 +309,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
             }
             ht->type_card.rank = x[ar.v3[0]].rank;
             ht->type_card.suit = get_bucket_suit(&x[ar.v3[0]]);
+            ht->type_card.id = (ht->type_card.suit - 1) * 13 + ht->type_card.rank;
             ht->param = ar.v3[0];
             return;
         }
@@ -322,6 +317,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
             ht->type = GP_THREE_P2;
             ht->type_card.rank = x[ar.v3[0]].rank;
             ht->type_card.suit = get_bucket_suit(&x[ar.v3[0]]);
+            ht->type_card.id = (ht->type_card.suit - 1) * 13 + ht->type_card.rank;
             ht->param = ar.v3[0];
             return;
         }
@@ -330,6 +326,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
                 ht->type = GP_FOUR_P3;
                 ht->type_card.rank = x[ar.v3[0]].rank;
                 ht->type_card.suit = get_bucket_suit(&x[ar.v3[0]]);
+                ht->type_card.id = (ht->type_card.suit - 1) * 13 + ht->type_card.rank;
                 ht->param = ar.v3[0];
                 return;
             }
@@ -347,6 +344,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
                 ht->type = GP_T_STRAIGHT;
                 ht->type_card.rank = x[ar.v3[0]].rank;
                 ht->type_card.suit = get_bucket_suit(&x[ar.v3[0]]);
+                ht->type_card.id = (ht->type_card.suit - 1) * 13 + ht->type_card.rank;
                 ht->param = ar.v3[0];
                 return;
             }
@@ -359,6 +357,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
                 ht->type = GP_PLANE;
                 ht->type_card.rank = x[ar.v3[0]].rank;
                 ht->type_card.suit = get_bucket_suit(&x[ar.v3[0]]);
+                ht->type_card.id = (ht->type_card.suit - 1) * 13 + ht->type_card.rank;
                 ht->param = ar.v3[0];
                 return;
             }
@@ -379,6 +378,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
             ht->type = GP_D_STRAIGHT;
             ht->type_card.rank = x[ar.v2[0]].rank;
             ht->type_card.suit = get_bucket_suit(&x[ar.v2[0]]);
+            ht->type_card.id = (ht->type_card.suit - 1) * 13 + ht->type_card.rank;
             ht->param = ar.v2[0];
             return;
         }
@@ -462,6 +462,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
         ht->type = GP_STRAIGHT;
         ht->type_card.rank = x[ar.v1[0]].rank;
         ht->type_card.suit = get_bucket_suit(&x[ar.v1[0]]);
+        ht->type_card.id = (ht->type_card.suit - 1) * 13 + ht->type_card.rank;
         ht->param = ar.v1[0];
         return;
     }
@@ -475,7 +476,7 @@ int gp_play(gp_t* gp, int player_no, card_t* cards, int len)
     hand_type htype;
     card_t* card;
 
-    if(!cards || len <= 0)
+    if (!cards || len <= 0)
         return -1;
 
     if (gp->game_state != GP_GAME_PLAY) {
@@ -546,7 +547,7 @@ int gp_canplay(gp_t* gp, card_t* cards, int len)
     int remain_num;
     hand_type ht;
 
-    if(!gp || !cards || len <= 0)
+    if (!gp || !cards || len <= 0)
         return 0;
     gp_handtype(gp, cards, len, &ht);
     if(ht.type == GP_ERROR)
@@ -651,8 +652,7 @@ int gp_hint(gp_t* gp, card_t* cards, int len)
             break;
         }
         if (ret_n == 0) {
-            cards->rank = gp->players[gp->curr_player_no].cards->rank;
-            cards->suit = gp->players[gp->curr_player_no].cards->suit;
+            memcpy(cards, gp->players[gp->curr_player_no].cards, sizeof(card_t));
             ret_n = 1;
         }
     } else {
@@ -853,8 +853,7 @@ void gp_copy_cards(gp_t* gp, int player_no, card_t* cards, int offset, int rank,
     n = 0;
     for (i = 0; i < GP_MAX_CARDS; i++) {
         if (gp->players[player_no].cards[i].rank == rank) {
-            cards[offset+n].rank = gp->players[player_no].cards[i].rank;
-            cards[offset+n].suit = gp->players[player_no].cards[i].suit;
+            memcpy(cards+offset+n, gp->players[player_no].cards+i, sizeof(card_t));
             n++;
             if (n >= num)
                 return;
