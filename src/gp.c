@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include "card_sort.h"
+#include "card_algo.h"
 
 typedef struct analyse_r_s {
     int n1;
