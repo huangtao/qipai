@@ -20,18 +20,18 @@ void test_gp()
     gp_t gp;
 
 
-	printf("=== start gp testing... ===\n");
+    printf("=== start gp testing... ===\n");
 
     gp_init(&gp, GP_RULE_ZHUJI, GP_MODE_SERVER, 2);
     gp_start(&gp);
 
-	printf("test cards to string:\n%s\n\n", 
-			cards_to_string(gp.players[0].cards, GP_MAX_CARDS));
-
-	printf("dump poker deck:\n");
+    printf("dump deck(%d):\n", cards_num(gp.deck, 54));
     cards_dump(gp.deck, 54, 10);
 
-	printf("\ndump player0's cards:\n");
+	printf("player0's cards to string:%s\n", 
+			cards_to_string(gp.players[0].cards, GP_MAX_CARDS));
+
+	printf("dump player0's cards:\n");
     cards_dump(gp.players[0].cards, GP_MAX_CARDS, 10);
 
 	printf("dump player1's cards:\n");
@@ -40,9 +40,9 @@ void test_gp()
     printf("gp game state:%d\n", gp.game_state);
     printf("first player:%d\n", gp.first_player_no);
 
-	printf("sort player0's cards and dump:\n");
-    gp_sort(gp.players[0].cards, GP_MAX_CARDS);
-    cards_dump(gp.players[0].cards, GP_MAX_CARDS, 10);
+	//printf("sort player0's cards and dump:\n");
+    //gp_sort(gp.players[0].cards, GP_MAX_CARDS);
+    //cards_dump(gp.players[0].cards, GP_MAX_CARDS, 10);
 
 	/* 牌型判断 */
 	printf("===start hand type test===\n");

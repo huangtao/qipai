@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include "card_sort.h"
+#include "card_algo.h"
 
 typedef struct analyse_r_s {
     int n1;
@@ -32,9 +32,6 @@ void gp_init(gp_t* gp, int rule, int mode, int player_num)
     gp->game_rule = rule;
     gp->inning = 0;
     gp->turn_time = 30;
-
-    n = 54;
-    deck_init(gp->deck, n);
 
     /* initialize gp's deck */
     n = 0;
@@ -146,6 +143,11 @@ void gp_start(gp_t* gp)
                 gp_deal(gp, &card);
                 cards_add(gp->players[j].cards, GP_MAX_CARDS, &card);
             }
+        }
+
+        /* sort cards */
+        for (i = 0; i < gp->player_num; ++i) {
+            gp_sort(gp->players[i].cards, GP_MAX_CARDS);
         }
 
         /* the first player */

@@ -80,13 +80,14 @@ void Java_com_gameld_core_libqp_gpStart(JNIEnv *env, jclass,
         st = 0;
     card = g_gp.players[st].cards;
     for (int i = 0; i < size && i < GP_MAX_CARDS; i++) {
+        card->id = CD_ID_UNKNOW;
         card->rank = cdRankUnknow;
         card->suit = cdSuitUnknow;
         card++;
     }
 
 #ifdef TAO_DEBUG
-    __android_log_print(ANDROID_LOG_INFO, "ldcore", "my cards:%d",
+    __android_log_print(ANDROID_LOG_INFO, "qipai", "my cards:%d",
         cards_num(g_gp.players[my_seat].cards, GP_MAX_CARDS));
         //cards_to_string(g_gp.players[my_seat].cards, GP_MAX_CARDS));
 #endif
@@ -113,6 +114,11 @@ void Java_com_gameld_core_libqp_gpSetCards(JNIEnv *env, jclass,
     env->ReleaseByteArrayElements(jarray, p, 0);
 
     gp_sort(g_gp.players[no].cards, GP_MAX_CARDS);
+
+    #ifdef TAO_DEBUG
+        __android_log_print(ANDROID_LOG_INFO, "qipai", "gpSetCards:%s",
+            cards_to_string(g_gp.players[no].cards, GP_MAX_CARDS));
+    #endif
 }
 
 void Java_com_gameld_core_libqp_gpSetPlayedCards(JNIEnv *env, jclass,
@@ -162,8 +168,8 @@ int Java_com_gameld_core_libqp_gpCanPlay(JNIEnv *env, jclass,jbyteArray jarray)
 #ifdef TAO_DEBUG
         char dbg_str[512];
         strcpy(dbg_str, cards_to_string(cards, GP_MAX_CARDS));
-        __android_log_print(ANDROID_LOG_INFO, "ldcore", "play cards:%s", dbg_str);
-        __android_log_print(ANDROID_LOG_INFO, "ldcore", "last type:%d,num=%d",
+        __android_log_print(ANDROID_LOG_INFO, "qipai", "play cards:%s", dbg_str);
+        __android_log_print(ANDROID_LOG_INFO, "qipai", "last type:%d,num=%d",
             g_gp.last_hand_type.type, g_gp.last_hand_type.num);
 #endif
 

@@ -12,12 +12,12 @@ CONFIG += staticlib
 
 SOURCES += ../src/card.c \
     ../src/gp.c \
-    ../src/card_sort.c
+    ../src/card_algo.c
 
 HEADERS += ../src/card.h \
     ../src/gp.h \
     ../src/qipai.h \
-    ../src/card_sort.h
+    ../src/card_algo.h
 unix {
     target.path = /usr/lib
     INSTALLS += target
