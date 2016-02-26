@@ -15,15 +15,15 @@
 LOCAL_PATH := $(call my-dir)
 
 #
-# libqp.so for android
+# libqipai.so for android
 #
 include $(CLEAR_VARS)
-LOCAL_MODULE := qp
+LOCAL_MODULE := qipai
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../include \
 					$(LOCAL_PATH)/../src
 LOCAL_SRC_FILES := com_gameld_core_libqp.cpp \
 				   ../src/card.c \
-				   ../src/card_sort.c \
+				   ../src/card_algo.c \
 				   ../src/gp.c
 LOCAL_LDLIBS += -llog
 include $(BUILD_SHARED_LIBRARY)

@@ -96,7 +96,7 @@ void mjhz_start(mjhz_t* mj)
         direct = (mj->banker_no + MJHZ_MAX_PLAYERS
                 - (mj->dice1 + mj->dice2) % MJHZ_MAX_PLAYERS)
             % MJHZ_MAX_PLAYERS;
-        mj->deck_deal_index = direct * 17 * 2 
+        mj->deck_deal_index = direct * 17 * 2
             + (mj->dice1 + mj->dice2) * 2;
         mj->deck_deal_gang = mj->deck_deal_index - 1; /* 杠抓牌 */
         mj->deck_deal_end = (mj->deck_deal_index + mj->deck_all_num
@@ -179,7 +179,7 @@ void mjhz_sort(mjhz_t* mj, mjpai_t* tiles, int len)
             pb->suit = pa->suit;
             pb->sign = pa->sign;
             pa->suit = temp.suit;
-            pb->sign = temp.sign;
+            pa->sign = temp.sign;
         }
     }
 }
@@ -312,7 +312,7 @@ int mjhz_can_chi(mjhz_t* mj, int player_no)
     if (mj->curr_player_no == player_no)
         return 0;
     /* 只能吃万、索、筒子 */
-    if (mj->last_played_mj.suit == mj->joker.suit && 
+    if (mj->last_played_mj.suit == mj->joker.suit &&
             mj->last_played_mj.sign == mj->joker.sign) {
         return 0;
     }
@@ -377,7 +377,7 @@ int mjhz_can_peng(mjhz_t* mj, int player_no)
         return 0;
     if (mj->curr_player_no == player_no)
         return 0;
-    if (mj->last_played_mj.suit == mj->joker.suit && 
+    if (mj->last_played_mj.suit == mj->joker.suit &&
             mj->last_played_mj.sign == mj->joker.sign) {
         return 0;
     }
@@ -412,7 +412,7 @@ int mjhz_can_gang(mjhz_t* mj, int player_no)
     if (mj->curr_player_no == player_no)
         return 0;
 
-    if (mj->last_played_mj.suit > 0 && 
+    if (mj->last_played_mj.suit > 0 &&
             mj->last_played_mj.sign > 0) {
         /* 明杠(杠打出的牌) */
         if (mj->last_played_mj.suit == mj->joker.suit &&
@@ -454,7 +454,7 @@ int mjhz_can_gang(mjhz_t* mj, int player_no)
         for (i = 0; i < MJHZ_MAX_SETS; ++i) {
             if (mj->players[player_no].mj_sets[i].type == mjMeldPeng) {
                 for (j = 0; j < MJHZ_MAX_CARDS; ++j) {
-                    if (mj->players[player_no].tiles[j].suit == 
+                    if (mj->players[player_no].tiles[j].suit ==
                             mj->players[player_no].mj_sets[i].card.suit &&
                             mj->players[player_no].tiles[j].sign ==
                             mj->players[player_no].mj_sets[i].card.sign) {
@@ -624,5 +624,3 @@ void mjhz_dump(mjhz_t* mj)
 
     printf("current player no is %d\n", mj->curr_player_no);
 }
-
-

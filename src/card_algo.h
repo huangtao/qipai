@@ -44,7 +44,6 @@ int card_compare(const void* a, const void* b);
 int card_logicvalue(card_t* card);
 int rank2logic(int rank);
 int logic2rank(int logic);
-int card_interval(card_t* card1, card_t* card2);
 
 #ifdef __cplusplus
 }

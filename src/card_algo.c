@@ -1,10 +1,45 @@
 ﻿#include "card_algo.h"
 #include <stdlib.h>
 
-static int table_suit[6] = { 0, 1, 2, 3, 4, 5 };
-static int table_rank[16] = { 0, 14, 15, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 16, 17 };
-static int table_logic[18] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 1, 2, 14, 15 };
+//static int table_suit[7] = { 0, 1, 2, 3, 4, 5, 6 };
+static int rank_to_logic[17] = { 0, 14, 15, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 16, 17, 18 };
+static int logic_to_rank[19] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 1, 2, 14, 15, 16 };
 
+void cards_sort(card_t* cards, int len)
+{
+    int i,j;
+    int exchange;
+    card_t temp;
+    card_t *pa, *pb;
+
+    if (!cards || len < 2)
+        return;
+
+    /* select sort */
+    for (i = 0; i < len - 1; ++i) {
+        exchange = 0;
+        pa = cards + i;
+        for (j = i + 1; j < len; ++j) {
+            pb = cards + j;
+            if (rank_to_logic[pa->rank] < rank_to_logic[pb->rank]) {
+                exchange = 1;
+                pa = pb;
+            } else if (rank_to_logic[pa->rank] == rank_to_logic[pb->rank]) {
+                if (pa->suit < pb->suit) {
+                    exchange = 1;
+                    pa = pb;
+                }
+            }
+        }
+        if (exchange) {
+            pb = cards + i;
+            memcpy(&temp, pb, sizeof(card_t));
+            memcpy(pb, pa, sizeof(card_t));
+            memcpy(pa, &temp, sizeof(card_t));
+        }
+    }
+}
+/*
 int card_compare(const void* a, const void* b)
 {
     card_t *card1, *card2;
@@ -13,9 +48,10 @@ int card_compare(const void* a, const void* b)
     card2 = (card_t*)b;
     if(!card1 || !card2)
         return 0;
-    if (card1->rank >= 16 || card1->suit >= 6)
+
+    if (card1->rank > 16 || card1->suit > 6)
         return 0;
-    if (card2->rank >= 16 || card2->suit >= 6)
+    if (card2->rank > 16 || card2->suit > 6)
         return 0;
 
     if(table_rank[card1->rank] < table_rank[card2->rank])
@@ -41,9 +77,9 @@ void cards_sort(card_t* cards, int len)
     if(!cards || len <= 0)
         return;
 
-    qsort(cards, len, sizeof(card_t), card_compare); 
+    qsort(cards, len, sizeof(card_t), card_compare);
 }
-
+*/
 void cards_algo(card_t* cards, int len, cd_analyse* result)
 {
 }
@@ -125,18 +161,6 @@ int cards_have_rank(int rank, int x[], int size)
     return 0;
 }
 
-int card_interval(card_t* card1, card_t* card2)
-{
-    int r;
-
-    if (!card1 || !card2)
-        return 0;
-
-	r = (table_rank[card1->rank] - table_rank[card2->rank]) / 10;
-
-	return r;
-}
-
 int card_logicvalue(card_t* card)
 {
     if (!card)
@@ -147,15 +171,15 @@ int card_logicvalue(card_t* card)
 
 int rank2logic(int rank)
 {
-    if (rank > 15) return 0;
+    if (rank >= 17) return 0;
 
-    return table_rank[rank];
+    return rank_to_logic[rank];
 }
 
 int logic2rank(int logic)
 {
-    if (logic > 17)
+    if (logic >= 19)
         return 0;
 
-    return table_logic[logic];
+    return logic_to_rank[logic];
 }
