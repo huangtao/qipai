@@ -5,28 +5,29 @@
 CC = gcc
 
 CFLAGS = -Wall -g \
-		 -Isrc \
-		 -Iinclude
+         -Isrc \
+         -Iinclude
 
 INCLUDES = src/card.h \
            src/card_algo.h \
-		   src/mj.h \
-		   src/mjhz.h
+           src/gp.h \
+           src/mj.h \
+           src/mjhz.h
 
 OBJS = src/card.o \
-	   src/gp.o \
-	   src/texas.o \
+       src/gp.o \
+       src/texas.o \
        src/card_algo.o \
-	   src/mj.o \
-	   src/mjhz.o
+       src/mj.o \
+       src/mjhz.o
 
 TEST_OBJS = test/test.o
 
 # build library and test app
-all: libqp.a mytest
+all: libqipai.a mytest
 .PHONY: all
 
-libqp.a: $(OBJS)
+libqipai.a: $(OBJS)
 	$(AR) crs $@ $^
 
 mytest: $(TEST_OBJS) $(OBJS)

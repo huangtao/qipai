@@ -6,6 +6,18 @@
 static char c_suit[] = {'0','D','C','H','S','*','?'};
 static char c_rank[] = {'0','A','2','3','4','5','6','7','8','9','T','J','Q','K','S','B','?'};
 
+void card_from_id(card_t* card, int id)
+{
+    if (card) {
+        memset(card, 0, sizeof(card_t));
+        if (id >= 0 && id <= CD_ID_UNKNOW) {
+            card->id = id;
+            card->suit = cdSuitDiamond + (id - 1) / 13;
+            card->rank = cdRankAce + (id - 1) % 13;
+        }
+    }
+}
+
 int card_equal(card_t* a, card_t* b)
 {
     if (!a || !b)
@@ -15,26 +27,6 @@ int card_equal(card_t* a, card_t* b)
         return 1;
 	else
 		return 0;
-}
-
-char card_encode(card_t* cd)
-{
-    char x;
-
-    if (cd)
-        x = (cd->suit << 4) | cd->rank;
-    else
-        x = 0;
-
-    return x;
-}
-
-void card_decode(card_t* cd, char x)
-{
-    if (cd) {
-        cd->suit = x >> 4;
-        cd->rank = x & 0xf;
-    }
 }
 
 void n55_to_card(unsigned char cd, card_t* card)
@@ -80,7 +72,7 @@ void card_from_string(card_t* card, const char* str)
     if (strlen(str) < 2)
         return;
 
-    card->rank = card->suit = 0;
+    memset(card, 0, sizeof(card_t));
     for (i = 0; i < 7; i++) {
         if (*str == c_suit[i]) {
             card->suit = i;
@@ -93,6 +85,7 @@ void card_from_string(card_t* card, const char* str)
             break;
         }
     }
+    card->id = (card->suit - 1) * 13 + card->rank;
 }
 
 int cards_num(card_t* cards, int len)
@@ -194,6 +187,7 @@ int cards_del(card_t* cards, int len, card_t* card)
     p = cards;
     for (i = 0; i < len; i++) {
         if (p->id == card->id) {
+            p->id = 0;
             p->suit = 0;
             p->rank = 0;
             break;
@@ -206,6 +200,7 @@ int cards_del(card_t* cards, int len, card_t* card)
         p = cards;
         for (i = 0; i < len; i++) {
             if (p->id == CD_ID_UNKNOW) {
+                p->id = 0;
                 p->rank = 0;
                 p->suit = 0;
                 break;
@@ -289,8 +284,6 @@ void cards_dump(card_t* cards, int len, int line_number)
         }
 		cards++;
     }
-    if ((i+1) % line_number != 0)
-        printf("\n");
 }
 
 void cards_remove_rank(card_t* cards, int len, int rank)
@@ -301,6 +294,7 @@ void cards_remove_rank(card_t* cards, int len, int rank)
         return;
     for (i = 0; i < len; ++i) {
         if (cards->rank == rank) {
+            cards->id = 0;
             cards->rank = 0;
             cards->suit = 0;
         }
@@ -316,6 +310,7 @@ void cards_remove_suit(card_t* cards, int len, int suit)
         return;
     for (i = 0; i < len; ++i) {
         if(cards->suit == suit) {
+            cards->id = 0;
             cards->rank = 0;
             cards->suit = 0;
         }
