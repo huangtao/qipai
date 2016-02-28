@@ -678,7 +678,7 @@ int gp_hint(gp_t* gp, card_t* cards, int len)
  */
 int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, hand_type* ht_out)
 {
-	int i,ret;
+	int i,ret,n;
 
 	if (type == GP_ERROR)
 		return 0;
@@ -691,6 +691,7 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, hand_type* ht_out)
 
 	ret = 0;
 	memset(ht_out, 0, sizeof(hand_type));
+
 	if (ht_in->type == GP_SINGLE) {
 		/* logic value 3~15 */
 		ret = 0;
@@ -699,115 +700,119 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, hand_type* ht_out)
 					result->count[i+1] == 0 &&
 					i > card_logic(&ht_in->type_card)) {
 				ht_out->type = ht_in->type;
-				ht_out->type_card.rank = card_logic2rank(i);
-				ht_out->type_card.suit = cdSuitDiamond;
+				card_init(&ht_out->type_card, cdSuitDiamond, card_logic2rank(i));
 				ht_out->num = 1;
 				ret = 1;
 				break;
 			}
 		}
     } else if (ht_in->type == GP_DOUBLE) {
+		if (analyse->num_2 == 0)
+			return 0;
 		for (i = 3; i <= 13; ++i) {
 			if (result->count[i] == 2 && i > card_logic(&ht_in->type_card)) {
 				ht_out->type = ht_in->type;
-				ht_out->type_card.rank = card_logic2rank(i);
-				ht_out->type_card.suit = cdSuitDiamond;
+				card_init(&ht_out->type_card, cdSuitDiamond, card_logic2rank(i));
 				ht_out->num = 2;
 				ret = 1;
 				break;
 			}
 		}
     } else if (ht_in->type == GP_THREE) {
-            for (i = 4; i <= 12; ++i) {
-                if (js[i] == 3 &&
-                        rank2logic(i) > card_logicvalue(&gp->last_hand_type.type_card)) {
-                    rank = i;
-                    ret_n = 3;
-                    break;
-                }
-            }
-            if (ret_n > 0)
-                gp_copy_cards(gp, gp->curr_player_no, cards, 0, rank, 3);
-        } else if (gp->last_hand_type.type == GP_STRAIGHT) {
-			rank = 0;
-            for (i = 4; i<= 10; ++i) {
-                if (js[i] == 0) continue;
-                if (rank2logic(i) <= card_logicvalue(&gp->last_hand_type.type_card))
-                    continue;
-                ret_n = gp->last_hand_type.num;
-                for (j = i; j < (i + gp->last_hand_type.num); ++j) {
-                    if (js[j] == 0) {
-                        ret_n = 0;
-                        break;
-                    }
-                }
-                if (ret_n > 0) {
-                    rank = i;
-                    break;
-                }
-            }
-			if (ret_n > 0) {
-				n = 0;
-				for (i = rank; i < (rank + ret_n); ++i) {
-					gp_copy_cards(gp, gp->curr_player_no, cards, n++, i, 1);  
+		if (analyse->num_3 == 0)
+			return 0;
+		for (i = 3; i <= 12; ++i) {
+			if (result->count[i] == 3 && i > card_logic(&ht_in->type_card)) {
+				ht_out->type = ht_in->type;
+				card_init(&ht_out->type_card, cdSuitDiamond, card_logic2rank(i));
+				ht_out->num = 3;
+				ret = 1;
+				break;
+			}
+		}
+    } else if (ht_in->type == GP_STRAIGHT) {
+        for (i = 3; i<= 10; ++i) {
+			if (result->count[i] == 0)
+				continue;
+			if (i <= card_logic(&ht_in->type_card))
+				continue;
+			b_straight = 1;
+			for (j = i + 1; j < (i + ht_in->num); ++j) {
+				if (result->count[j] == 0) {
+					b_straight = 0;
+					break;
 				}
 			}
-        } else if (gp->last_hand_type.type == GP_D_STRAIGHT) {
-			for (i = 4; i<= 10; ++i) {
-                if (js[i] < 2) continue;
-                if (rank2logic(i) <= card_logicvalue(&gp->last_hand_type.type_card))
-                    continue;
-                ret_n = gp->last_hand_type.num;
-                for (j = i; j < (i + gp->last_hand_type.num); ++j) {
-                    if (js[j] < 2) {
-                        ret_n = 0;
-                        break;
-                    }
-                }
-                if (ret_n > 0) {
-                    rank = i;
+			if (b_straight) {
+				ht_out->type = ht_in->type;
+				card_init(&ht_out->type_card, cdSuitDiamond, card_logic2rank(i));
+				ht_out->num = ht_in->num;
+				ret = 1;
+				break;
+			}
+		}
+    } else if (ht_in->type == GP_D_STRAIGHT) {
+		for (i = 3; i<= 10; ++i) {
+            if (result->count[i] < 2)
+				continue;
+            if (i <= card_logic(&ht_in->type_card))
+                continue;
+			b_straight = 1;
+			for (j = i + 1; j < (i + ht_in->num); ++j) {
+				if (result->count[j] < 2) {
+					b_straight = 0;
+					break;
+				}
+			}
+			if (b_straight) {
+				ht_out->type = ht_in->type;
+				card_init(&ht_out->type_card, cdSuitDiamond, card_logic2rank(i));
+				ht_out->num = ht_in->num;
+				ret = 1;
+				break;
+			}
+		}
+    } else if (ht_in->type == GP_T_STRAIGHT) {
+        if (result->num_2 < ht_in->num)
+			return 0;
+		for (i = 3; i<= 10; ++i) {
+            if (result->count[i] < 3)
+				continue;
+            if (i <= card_logic(&ht_in->type_card))
+                continue;
+            b_straight = 1;
+            for (j = i + 1; j < (i + ht_in->num); ++j) {
+                if (result->count[j] < 3) {
+					b_straight = 0;
                     break;
                 }
             }
-			if (ret_n > 0) {
-				n = 0;
-				for (i = rank; i < (rank + ret_n); ++i) {
-					gp_copy_cards(gp, gp->curr_player_no, cards, n, i, 2);
-					n += 2;
-				}
+			if (b_straight) {
+				ht_out->type = ht_in->type;
+				card_init(&ht_out->type_card, cdSuitDiamond, card_logic2rank(i));
+				ht_out->num = ht_in->num;
+				ret = 1;
+				break;
 			}
-        } else if (gp->last_hand_type.type == GP_T_STRAIGHT) {
-            for (i = 4; i<= 10; ++i) {
-                if (js[i] < 3) continue;
-                if (rank2logic(i) <= card_logicvalue(&gp->last_hand_type.type_card))
-                    continue;
-                ret_n = gp->last_hand_type.num;
-                for (j = i; j < (i + gp->last_hand_type.num); ++j) {
-                    if (js[j] < 3) {
-                        ret_n = 0;
-                        break;
-                    }
-                }
-                if (ret_n > 0) {
-                    rank = i;
-                    break;
-                }
-            }
-			if (ret_n > 0) {
-				n = 0;
-				for (i = rank; i < (rank + ret_n); ++i) {
-					gp_copy_cards(gp, gp->curr_player_no, cards, n, i, 2);
-					n += 2;
+		}
+    } else if (ht_in->type == GP_THREE_P2) {
+		if (result->num_3 == 0 || result->num_2 == 0)
+			return 0;
+		/* 先找到3个 */
+        for (i = 3; i <= 12; ++i) {
+            if (result->count[i] < 3)
+				continue;
+            if (i > card_logic(&ht_in->type_card)) {
+				ht_out->type = ht_in->type;
+				card_init(&ht_out->type_card, cdSuitDiamond, card_logic2rank(i));
+				ht_out->num = ht_in->num;
+				/* 找一对 */
+				for (j = 3; j <= 13; ++j) {
+					if (result->count[i] == 2) {
+						ht_out->param1 = j;
+						break;
+					}
 				}
-			}
-        } else if (gp->last_hand_type.type == GP_THREE_P2) {
-            for (i = 4; i<= 10; ++i) {
-                if (js[i] < 3) continue;
-                if (rank2logic(i) <= card_logicvalue(&gp->last_hand_type.type_card)) {
-                    rank = i;
-                    ret_n += 3;
-                    break;
-                }
             }
             if (ret_n > 0) {
                 /* 有对子吗*/
@@ -819,48 +824,7 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, hand_type* ht_out)
                     break;
                 }
             }
-            if (ret_n == 5) {
-                gp_copy_cards(gp, gp->curr_player_no, cards, 0, rank, 3);
-                gp_copy_cards(gp, gp->curr_player_no, cards, 3, j, 2);
-            } else {
-                ret_n = 0;
-            }
-        }
-        if (ret_n == 0) { 
-            for (i = cdRank3; i <= cdRankK; ++i) {
-                if (js[i] == 4) {
-                    if (gp->last_hand_type.type == GP_BOMB) {
-                        if (rank2logic(i) <= card_logicvalue(&gp->last_hand_type.type_card))
-                            continue;
-                    }
-                    rank = i;
-                    ret_n = 4;
-                    n = 4;
-                    break;
-                } else if (js[i] == 3 && i == cdRankK) {
-                    rank = i;
-                    ret_n = 3;
-                    n = 3;
-                    break;
-                }
-            }
-            if (ret_n > 0) {
-                /* 拿单张 */
-                for (i = cdRank3; i <= cdRankK; ++i) {
-                    if (js[i] > 0 && i != rank) {
-                        j = i;
-                        ret_n += 1;
-                        break;
-                    }
-                }
-            }
-            if (ret_n == 5 || (ret_n == 4 && rank == cdRankK)) {
-                gp_copy_cards(gp, gp->curr_player_no, cards, 0, rank, n);
-                gp_copy_cards(gp, gp->curr_player_no, cards, n, j, 1);
-            } else {
-                ret_n = 0;
-            }
-        }
+		}
     }
 }
 
