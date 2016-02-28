@@ -621,78 +621,103 @@ int gp_pass(gp_t* gp, int player_no)
 }
 
 /* 出牌提示 */
+/* 专业AI请联系作者 */
 int gp_hint(gp_t* gp, card_t* cards, int len)
 {
     int i,j,n,rank;
-    int ret_n;
-    cd_bucket x[20];
-    int js[20];
+    int ret;
+	card_t temp[GP_MAX_CARDS];
+	hand_type htype1,htype2;
+    cd_analyse result;
 
     if (!gp || !cards || len < GP_MAX_CARDS)
         return 0;
     
+	ret = 0;
+	/* 分析扑克 */
     memset(cards, 0, sizeof(card_t) * len);
-    memset(x, 0, sizeof(cd_bucket) * 20);
-    cards_bucket(gp->players[gp->curr_player_no].cards, GP_MAX_CARDS, x);
-    for (i = 0; i < 20; i++) {
-        js[i] = x[i].num_spade + x[i].num_heart +
-            x[i].num_club + x[i].num_diamond;
-    }
-
-    if (gp->curr_player_no == gp->first_player_no) {
-        /* 必须出牌 */
-        ret_n = 0;
-        /* 查找单张 */
-        for (i = 3; i < 8; i++) {
-            if (js[i] > 1) continue;
-            if (js[i+1] >= 1 && js[i+2] >=1 && js[i+3] >= 1 &&
-                    js[i+4] >= 1) {
-                continue;
-            }
-            ret_n = 1;
-            gp_copy_cards(gp, gp->curr_player_no, cards, 0, i, 1);
-            break;
-        }
-        if (ret_n == 0) {
-            memcpy(cards, gp->players[gp->curr_player_no].cards, sizeof(card_t));
-            ret_n = 1;
-        }
+    cards_analyse(gp->players[gp->curr_player_no].cards, GP_MAX_CARDS, result);
+    
+	if (gp->curr_player_no == gp->first_player_no) {
+        /* 先出牌 */
+		/* 得到各种牌型最小的 */
+		memset(&htype1, 0, sizeof(hand_type));
+		for (i = GP_SINGLE; i < GP_BOMB; ++i) {
+			if (result->valid_num != 4 && i == GP_THREE_P1)
+				continue;
+			htype1.type = i;
+			if (gp_analyse_search(&result, &htype1, &htype2, temp, len)) {
+				memcpy(&htype1, &htype2, sizeof(hand_type));
+				break;
+			}
+		}
+		if (htype1.type == GP_ERROR) {
+			/* 得到最小的一张 */
+			for (i = GP_MAX_CARDS - 1; i >= 0; --i) {
+				if (gp->players[gp->curr_player_no].cards[i].id != 0) {
+					memcpy(cards, 
+							gp->players[gp->curr_player_no].cards + i);
+					break;
+				}
+			}
+		}
+		ret = 1;
     } else {
         /* 跟牌 */
-        ret_n = 0;
-        if (gp->last_hand_type.type == GP_SINGLE) {
-            for (i = 3; i <= 13; ++i) {
-                if (js[i] == 1 &&
-                        rank2logic(i) > card_logicvalue(&gp->last_hand_type.type_card)) {
-                    rank = i;
-                    ret_n = 1;
-                    break;
-                }
-            }
-            if (ret_n == 0) {
-                for (i = 2; i >= 1; --i) {
-                    if (js[i] == 1 &&
-                            rank2logic(i) > card_logicvalue(&gp->last_hand_type.type_card)) {
-                        rank = i;
-                        ret_n = 1;
-                        break;
-                    }
-                }
-            }
-            if (ret_n > 0)
-                gp_copy_cards(gp, gp->curr_player_no, cards, 0, rank, 1);
-        } else if (gp->last_hand_type.type == GP_DOUBLE) {
-            for (i = 4; i <= 13; ++i) {
-                if (js[i] == 2 &&
-                        rank2logic(i) > card_logicvalue(&gp->last_hand_type.type_card)) {
-                    rank = i;
-                    ret_n = 2;
-                    break;
-                }
-            }
-            if (ret_n > 0)
-                gp_copy_cards(gp, gp->curr_player_no, cards, 0, rank, 2);
-        } else if(gp->last_hand_type.type == GP_THREE) {
+		if (gp_analyse_search(&result, &gp->last_hand_type, &htype1, temp, len)) {
+			ret = 1;
+		}
+	}
+	if (ret > 0)
+		memcpy(cards, temp, sizeof(card_t) * GP_MAX_CARDS);
+    return ret;
+}
+
+/*
+ * 查找比htout大的牌组,没有返回0
+ */
+int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, hand_type* ht_out)
+{
+	int i,ret;
+
+	if (type == GP_ERROR)
+		return 0;
+
+	if (!analyse || !ht_in || !ht_out)
+		return 0;
+
+	if (len < GP_MAX_CARDS)
+		return 0;
+
+	ret = 0;
+	memset(ht_out, 0, sizeof(hand_type));
+	if (ht_in->type == GP_SINGLE) {
+		/* logic value 3~15 */
+		ret = 0;
+        for (i = 3; i <= 15; ++i) {
+            if (result->count[i] == 1 && result->count[i-1] == 0 &&
+					result->count[i+1] == 0 &&
+					i > card_logic(&ht_in->type_card)) {
+				ht_out->type = ht_in->type;
+				ht_out->type_card.rank = card_logic2rank(i);
+				ht_out->type_card.suit = cdSuitDiamond;
+				ht_out->num = 1;
+				ret = 1;
+				break;
+			}
+		}
+    } else if (ht_in->type == GP_DOUBLE) {
+		for (i = 3; i <= 13; ++i) {
+			if (result->count[i] == 2 && i > card_logic(&ht_in->type_card)) {
+				ht_out->type = ht_in->type;
+				ht_out->type_card.rank = card_logic2rank(i);
+				ht_out->type_card.suit = cdSuitDiamond;
+				ht_out->num = 2;
+				ret = 1;
+				break;
+			}
+		}
+    } else if (ht_in->type == GP_THREE) {
             for (i = 4; i <= 12; ++i) {
                 if (js[i] == 3 &&
                         rank2logic(i) > card_logicvalue(&gp->last_hand_type.type_card)) {
@@ -837,15 +862,13 @@ int gp_hint(gp_t* gp, card_t* cards, int len)
             }
         }
     }
-
-    return ret_n;
 }
 
-void gp_copy_cards(gp_t* gp, int player_no, card_t* cards, int offset, int rank, int num)
+int gp_copy_cards(card_t* src, card_t* dest, int offset, int rank, int num)
 {
     int i,n;
 
-    if (!gp || !cards || num == 0)
+    if (!src || !dest || num == 0)
         return;
     if (offset < 0 || offset >= GP_MAX_CARDS)
         return;
@@ -854,13 +877,14 @@ void gp_copy_cards(gp_t* gp, int player_no, card_t* cards, int offset, int rank,
 
     n = 0;
     for (i = 0; i < GP_MAX_CARDS; i++) {
-        if (gp->players[player_no].cards[i].rank == rank) {
-            memcpy(cards+offset+n, gp->players[player_no].cards+i, sizeof(card_t));
+        if (src[i].rank == rank) {
+            memcpy(dest+offset+n, src+i, sizeof(card_t));
             n++;
             if (n >= num)
-                return;
+                break;
         }
     }
+	return n;
 }
 
 void gp_dump(gp_t* gp)

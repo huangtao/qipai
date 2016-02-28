@@ -81,8 +81,50 @@ void cards_sort(card_t* cards, int len)
     qsort(cards, len, sizeof(card_t), card_compare);
 }
 */
-void cards_algo(card_t* cards, int len, cd_analyse* result)
+void cards_analyse(card_t* cards, int len, cd_analyse* result)
 {
+	int i,v;
+
+	if (!cards || !result || len == 0)
+		return;
+
+	memset(result, 0, sizeof(cd_analyse));
+	result->valid_num = cards_num(cards, len);
+	for (i = 0; i < len; ++i) {
+		if (cards->id > 0) {
+			v = card_logic(cards);
+			result->count[v]++;
+		}
+		cards++;
+	}
+	for (i = 0; i < (CD_MAX_LOGIC + 1); ++i) {
+		switch (result->count[i]) {
+			case 1:
+				result->num_1++;
+				break;
+			case 2:
+				result->num_2++;
+				break;
+			case 3:
+				result->num_3++;
+				break;
+			case 4:
+				result->num_4++;
+				break;
+			case 5:
+				result->num_5++;
+				break;
+			case 6:
+				result->num_6++;
+				break;
+			case 7:
+				result->num_7++;
+				break;
+			case 8:
+				result->num_8++;
+				break;
+		}
+	}
 }
 
 /*

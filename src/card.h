@@ -11,6 +11,9 @@ extern "C" {
 
 #include <stdint.h>
 
+/* max of card logic value */
+#define CD_MAX_LOGIC	18 
+
 /* poker suit define */
 typedef enum card_suit
 {

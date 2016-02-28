@@ -108,8 +108,18 @@ int gp_play(gp_t* gp, int player_no, card_t* cards, int len);
 int gp_canplay(gp_t* gp, card_t* cards, int len);
 void gp_next_player(gp_t* gp);
 int gp_pass(gp_t* gp, int player_no);
+
+/* simple hint for play */
 int gp_hint(gp_t* gp, card_t* cards, int len);
-void gp_copy_cards(gp_t* gp, int player_no, card_t* cards, int offset, int rank, int num);
+
+/*
+ * 将特定的rank值牌从src拷贝num张到dest中
+ * 此函数不检查数组溢出
+ * return: number of copyed
+ */
+int gp_copy_cards(card_t* src, card_t* dest, int offset, int rank, int num);
+
+/* dump a gp */
 void gp_dump(gp_t* gp);
 
 #ifdef __cplusplus
