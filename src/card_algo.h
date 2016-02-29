@@ -23,6 +23,8 @@ typedef struct cd_bucket_s {
 
 /* used for analyse cards */
 typedef struct cd_analyse_s {
+    card_t* raw_cards;
+    int raw_max;
     int valid_num;
     int num_1;
     int num_2;

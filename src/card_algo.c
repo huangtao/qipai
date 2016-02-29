@@ -89,6 +89,8 @@ void cards_analyse(card_t* cards, int len, cd_analyse* result)
 		return;
 
 	memset(result, 0, sizeof(cd_analyse));
+    result->raw_cards = cards;
+    result->raw_max = len;
 	result->valid_num = cards_num(cards, len);
 	for (i = 0; i < len; ++i) {
 		if (cards->id > 0) {

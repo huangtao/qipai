@@ -112,7 +112,7 @@ int gp_pass(gp_t* gp, int player_no);
 int gp_hint(gp_t* gp, card_t* cards, int len);
 
 /* 出牌搜索 */
-int gp_analyse_search(gp_t* gp, cd_analyse* analyse, hand_type* ht_in, hand_type* ht_out, card_t* cards, int len);
+int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int len);
 
 /*
  * 将特定的rank值牌从src拷贝num张到dest中
