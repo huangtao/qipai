@@ -156,7 +156,7 @@ void cards_bucket(card_t* cards, int len, cd_bucket x[])
     if (!cards || len <= 0)
         return;
     for (i = 0; i < len; ++i) {
-        v = rank2logic(cards->rank);
+        v = card_rank2logic(cards->rank);
         x[v].rank = cards->rank;
         if (cards->suit == cdSuitSpade) {
             x[v].num_spade++;
@@ -206,22 +206,22 @@ int cards_have_rank(int rank, int x[], int size)
     return 0;
 }
 
-int card_logicvalue(card_t* card)
+int card_logic(card_t* card)
 {
     if (!card)
         return 0;
 
-    return rank2logic(card->rank);
+    return card_rank2logic(card->rank);
 }
 
-int rank2logic(int rank)
+int card_rank2logic(int rank)
 {
     if (rank >= 17) return 0;
 
     return rank_to_logic[rank];
 }
 
-int logic2rank(int logic)
+int card_logic2rank(int logic)
 {
     if (logic >= 19)
         return 0;

@@ -210,13 +210,13 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
         case 1:
             ht->type = GP_SINGLE;
             memcpy(&ht->type_card, p, sizeof(card_t));
-            ht->param = card_logicvalue(p);
+            ht->param1 = card_logic(p);
             return;
         case 2:
             if (p->rank == (p + 1)->rank) {
                 ht->type = GP_DOUBLE;
                 memcpy(&ht->type_card, p, sizeof(card_t));
-                ht->param = card_logicvalue(p);
+                ht->param1 = card_logic(p);
                 return;
             }
             return;
@@ -260,7 +260,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
             ht->type_card.rank = x[ar.v4[0]].rank;
             ht->type_card.suit = get_bucket_suit(&x[ar.v3[0]]);
             ht->type_card.id = (ht->type_card.suit - 1) * 13 + ht->type_card.rank;
-            ht->param = ar.v4[0];
+            ht->param1 = ar.v4[0];
             return;
         }
         if (ar.n4 == 1 && ht->num == 5) {
@@ -268,7 +268,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
             ht->type_card.rank = x[ar.v4[0]].rank;
             ht->type_card.suit = get_bucket_suit(&x[ar.v3[0]]);
             ht->type_card.id = (ht->type_card.suit - 1) * 13 + ht->type_card.rank;
-            ht->param = ar.v4[0];
+            ht->param1 = ar.v4[0];
             return;
         }
         if (gp->game_rule == GP_RULE_ZHUJI) {
@@ -277,7 +277,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
                 ht->type_card.rank = x[ar.v4[0]].rank;
                 ht->type_card.suit = get_bucket_suit(&x[ar.v3[0]]);
                 ht->type_card.id = (ht->type_card.suit - 1) * 13 + ht->type_card.rank;
-                ht->param = ar.v4[0];
+                ht->param1 = ar.v4[0];
                 return;
             }
         }
@@ -296,7 +296,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
             ht->type_card.rank = x[ar.v3[0]].rank;
             ht->type_card.suit = get_bucket_suit(&x[ar.v3[0]]);
             ht->type_card.id = (ht->type_card.suit - 1) * 13 + ht->type_card.rank;
-            ht->param = ar.v3[0];
+            ht->param1 = ar.v3[0];
             return;
         }
         if (ar.n3 == 1 && ht->num == 4) {
@@ -312,7 +312,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
             ht->type_card.rank = x[ar.v3[0]].rank;
             ht->type_card.suit = get_bucket_suit(&x[ar.v3[0]]);
             ht->type_card.id = (ht->type_card.suit - 1) * 13 + ht->type_card.rank;
-            ht->param = ar.v3[0];
+            ht->param1 = ar.v3[0];
             return;
         }
         if (ar.n3 == 1 && ar.n2 == 1 && ht->num == 5) {
@@ -320,7 +320,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
             ht->type_card.rank = x[ar.v3[0]].rank;
             ht->type_card.suit = get_bucket_suit(&x[ar.v3[0]]);
             ht->type_card.id = (ht->type_card.suit - 1) * 13 + ht->type_card.rank;
-            ht->param = ar.v3[0];
+            ht->param1 = ar.v3[0];
             return;
         }
         if (ar.n3 == 1 && ht->num == 6) {
@@ -329,7 +329,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
                 ht->type_card.rank = x[ar.v3[0]].rank;
                 ht->type_card.suit = get_bucket_suit(&x[ar.v3[0]]);
                 ht->type_card.id = (ht->type_card.suit - 1) * 13 + ht->type_card.rank;
-                ht->param = ar.v3[0];
+                ht->param1 = ar.v3[0];
                 return;
             }
         }
@@ -347,7 +347,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
                 ht->type_card.rank = x[ar.v3[0]].rank;
                 ht->type_card.suit = get_bucket_suit(&x[ar.v3[0]]);
                 ht->type_card.id = (ht->type_card.suit - 1) * 13 + ht->type_card.rank;
-                ht->param = ar.v3[0];
+                ht->param1 = ar.v3[0];
                 return;
             }
             if (ar.n3 * 5 == ht->num &&
@@ -360,7 +360,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
                 ht->type_card.rank = x[ar.v3[0]].rank;
                 ht->type_card.suit = get_bucket_suit(&x[ar.v3[0]]);
                 ht->type_card.id = (ht->type_card.suit - 1) * 13 + ht->type_card.rank;
-                ht->param = ar.v3[0];
+                ht->param1 = ar.v3[0];
                 return;
             }
         }
@@ -381,7 +381,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
             ht->type_card.rank = x[ar.v2[0]].rank;
             ht->type_card.suit = get_bucket_suit(&x[ar.v2[0]]);
             ht->type_card.id = (ht->type_card.suit - 1) * 13 + ht->type_card.rank;
-            ht->param = ar.v2[0];
+            ht->param1 = ar.v2[0];
             return;
         }
         return;
@@ -465,7 +465,7 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
         ht->type_card.rank = x[ar.v1[0]].rank;
         ht->type_card.suit = get_bucket_suit(&x[ar.v1[0]]);
         ht->type_card.id = (ht->type_card.suit - 1) * 13 + ht->type_card.rank;
-        ht->param = ar.v1[0];
+        ht->param1 = ar.v1[0];
         return;
     }
 
@@ -581,7 +581,7 @@ int gp_canplay(gp_t* gp, card_t* cards, int len)
             gp->last_hand_type.num != ht.num)
         return 0;
 
-    if(card_logicvalue(&(ht.type_card)) > card_logicvalue(&(gp->last_hand_type.type_card)))
+    if(card_logic(&(ht.type_card)) > card_logic(&(gp->last_hand_type.type_card)))
         return 1;
 
     return 0;
@@ -626,8 +626,7 @@ int gp_hint(gp_t* gp, card_t* cards, int len)
 {
     int i,j,n,rank;
     int ret;
-	card_t temp[GP_MAX_CARDS];
-	hand_type htype1,htype2;
+	hand_type htype;
     cd_analyse result;
 
     if (!gp || !cards || len < GP_MAX_CARDS)
@@ -636,27 +635,28 @@ int gp_hint(gp_t* gp, card_t* cards, int len)
 	ret = 0;
 	/* 分析扑克 */
     memset(cards, 0, sizeof(card_t) * len);
-    cards_analyse(gp->players[gp->curr_player_no].cards, GP_MAX_CARDS, result);
+    cards_analyse(gp->players[gp->curr_player_no].cards, GP_MAX_CARDS, &result);
     
 	if (gp->curr_player_no == gp->first_player_no) {
         /* 先出牌 */
 		/* 得到各种牌型最小的 */
-		memset(&htype1, 0, sizeof(hand_type));
+		memset(&htype, 0, sizeof(hand_type));
 		for (i = GP_SINGLE; i < GP_BOMB; ++i) {
-			if (result->valid_num != 4 && i == GP_THREE_P1)
+			if (result.valid_num != 4 && i == GP_THREE_P1)
 				continue;
-			htype1.type = i;
-			if (gp_analyse_search(&result, &htype1, &htype2)) {
-				memcpy(&htype1, &htype2, sizeof(hand_type));
+			htype.type = i;
+			if (gp_analyse_search(&result, &htype, cards, len)) {
+				ret = 1;
 				break;
 			}
 		}
-		if (htype1.type == GP_ERROR) {
+		if (ret == 0) {
 			/* 得到最小的一张 */
 			for (i = GP_MAX_CARDS - 1; i >= 0; --i) {
 				if (gp->players[gp->curr_player_no].cards[i].id != 0) {
 					memcpy(cards, 
-							gp->players[gp->curr_player_no].cards + i);
+							gp->players[gp->curr_player_no].cards + i,
+							sizeof(card_t));
 					break;
 				}
 			}
@@ -664,19 +664,17 @@ int gp_hint(gp_t* gp, card_t* cards, int len)
 		ret = 1;
     } else {
         /* 跟牌 */
-		if (gp_analyse_search(&result, &htype1, &htype2)) {
+		if (gp_analyse_search(&result, &htype, cards, len)) {
 			ret = 1;
 		} else {
             /* 有炸弹吗 */
-            memset(&htype1, 0, sizeof(hand_type));
-            htype1.type = GP_BOMB;
-            if (gp_analyse_search(&result, &htype1, &htype2)) {
+            memset(&htype, 0, sizeof(hand_type));
+            htype.type = GP_BOMB;
+            if (gp_analyse_search(&result, &htype, cards, len)) {
                 ret = 1;
             }
         }
 	}
-	if (ret > 0)
-		memcpy(cards, temp, sizeof(card_t) * GP_MAX_CARDS);
     return ret;
 }
 
@@ -686,10 +684,10 @@ int gp_hint(gp_t* gp, card_t* cards, int len)
  */
 int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int len)
 {
-	int i,ret,n;
+	int i,j,ret,n;
     int b_straight;
 
-	if (!gp || !card || !analyse || !ht_in)
+	if (!analyse || !ht_in || !cards)
 		return 0;
 
 	if (ht_in->type == GP_ERROR)
@@ -717,7 +715,7 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int 
 			return 0;
 		for (i = 3; i <= 13; ++i) {
 			if (analyse->count[i] == 2 && i > card_logic(&ht_in->type_card)) {
-                gp_copy_cards(anaylyse->raw_cards, cards, 0,
+                gp_copy_cards(analyse->raw_cards, cards, 0,
                         card_logic2rank(i), 2);
 				ret = 1;
 				break;
@@ -738,13 +736,13 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int 
         if (analyse->valid_num < ht_in->num)
             return 0;
         for (i = 3; i<= 10; ++i) {
-			if (result->count[i] == 0)
+			if (analyse->count[i] == 0)
 				continue;
 			if (i <= card_logic(&ht_in->type_card))
 				continue;
 			b_straight = 1;
 			for (j = i + 1; j < (i + ht_in->num); ++j) {
-				if (result->count[j] == 0) {
+				if (analyse->count[j] == 0) {
 					b_straight = 0;
 					break;
 				}
@@ -776,7 +774,7 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int 
 			if (b_straight) {
                 for (j = i; j < (i + ht_in->num); ++j) {
                     gp_copy_cards(analyse->raw_cards, cards, (j - i) * 2,
-                            cards_logic2rank(j), 2);
+                            card_logic2rank(j), 2);
                 }
 				ret = 1;
 				break;
@@ -800,7 +798,7 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int 
 			if (b_straight) {
                 for (j = i; j < (i + ht_in->num); ++j) {
                     gp_copy_cards(analyse->raw_cards, cards, (j - i) * 3,
-                            cards_logic2rank(j), 3);
+                            card_logic2rank(j), 3);
                 }
 				ret = 1;
 				break;
@@ -815,10 +813,10 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int 
 				continue;
             if (i > card_logic(&ht_in->type_card)) {
                 gp_copy_cards(analyse->raw_cards, cards, 0,
-                        cards_loigc2rank(i), 3);
+                        card_logic2rank(i), 3);
 				/* 找一对 */
 				for (j = 3; j <= 13; ++j) {
-					if (result->count[i] == 2) {
+					if (analyse->count[i] == 2) {
                         gp_copy_cards(analyse->raw_cards, cards, 3,
                                 card_logic2rank(j), 2);
                         ret = 1;
@@ -843,8 +841,6 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int 
                     }
                 }
                 if (b_straight) {
-                    ht_out->type = ht_in->type;
-                    card_int(&ht_out->type_card, cdSuitDiamond, card_logic2rank(i));
                     for (j = i; j < (i + n); ++j) {
                         gp_copy_cards(analyse->raw_cards, cards, (j - i) * 3,
                                 card_logic2rank(i), 3);
@@ -869,7 +865,7 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int 
                     for (j = i; j < (i + n); ++j) {
                         gp_copy_cards(analyse->raw_cards, cards,
                                 n * 3 + (j - i) * 2,
-                                card_loigc2rank(j), 2);
+                                card_logic2rank(j), 2);
                     }
                     ret = 1;
                     break;
@@ -913,9 +909,6 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int 
                     continue;
             }
             if (i > card_logic(&ht_in->type_card)) {
-                ht_out->type == ht_in->type;
-                card_init(&ht_out->type_card, cdSuitDiamond, card_logic2rank(i));
-                ht_out->num = 5;
                 gp_copy_cards(analyse->raw_cards, cards, 0,
                         card_logic2rank(i), 4);
                 for (j = 3; j <= 15 && j != i; ++j) {
@@ -941,11 +934,11 @@ int gp_copy_cards(card_t* src, card_t* dest, int offset, int rank, int num)
     int i,n;
 
     if (!src || !dest || num == 0)
-        return;
+        return 0;
     if (offset < 0 || offset >= GP_MAX_CARDS)
-        return;
+        return 0;
     if (rank == 0)
-        return;
+        return 0;
 
     n = 0;
     for (i = 0; i < GP_MAX_CARDS; i++) {

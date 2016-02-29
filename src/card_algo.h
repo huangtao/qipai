@@ -48,8 +48,8 @@ int get_bucket_suit(cd_bucket* item);
 int cards_have_rank(int rank, int x[], int size);
 int card_compare(const void* a, const void* b);
 int card_logic(card_t* card);
-int rank2logic(int rank);
-int logic2rank(int logic);
+int card_rank2logic(int rank);
+int card_logic2rank(int logic);
 
 #ifdef __cplusplus
 }

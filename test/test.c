@@ -67,82 +67,82 @@ void test_gp()
 	cards_from_string(cards, GP_MAX_CARDS, "SK");
 	cards_print(cards, GP_MAX_CARDS, 10);
 	gp_handtype(&gp, cards, GP_MAX_CARDS, &ht);
-	printf("hand type is %s:%d.\n", gp_htype_name(ht.type), ht.param);
+	printf("hand type is %s:%d.\n", gp_htype_name(ht.type), ht.param1);
 
 	/* 对子 */
 	cards_from_string(cards, GP_MAX_CARDS,
 			"D3,H3");
 	cards_print(cards, GP_MAX_CARDS, 10);
 	gp_handtype(&gp, cards, GP_MAX_CARDS, &ht);
-	printf("hand type is %s:%d.\n", gp_htype_name(ht.type), ht.param);
+	printf("hand type is %s:%d.\n", gp_htype_name(ht.type), ht.param1);
 
 	/* 三张 */
 	cards_from_string(cards, GP_MAX_CARDS,
 			"H9,D9,S9");
 	cards_print(cards, GP_MAX_CARDS, 10);
 	gp_handtype(&gp, cards, GP_MAX_CARDS, &ht);
-	printf("hand type is %s:%d.\n", gp_htype_name(ht.type), ht.param);
+	printf("hand type is %s:%d.\n", gp_htype_name(ht.type), ht.param1);
 
 	/* 三连 */
 	cards_from_string(cards, GP_MAX_CARDS,
 			"D3,H3,S3,D4,H4,S4");
 	cards_print(cards, GP_MAX_CARDS, 10);
 	gp_handtype(&gp, cards, GP_MAX_CARDS, &ht);
-	printf("hand type is %s:%d.\n", gp_htype_name(ht.type), ht.param);
+	printf("hand type is %s:%d.\n", gp_htype_name(ht.type), ht.param1);
 
 	/* 三带二 */
 	cards_from_string(cards, GP_MAX_CARDS,
 			"D9,H9,S9,DQ,CQ");
 	cards_print(cards, GP_MAX_CARDS, 10);
 	gp_handtype(&gp, cards, GP_MAX_CARDS, &ht);
-	printf("hand type is %s:%d.\n", gp_htype_name(ht.type), ht.param);
+	printf("hand type is %s:%d.\n", gp_htype_name(ht.type), ht.param1);
 
 	/* 三带一 */
 	cards_from_string(cards, GP_MAX_CARDS,
 			"D7,H9,S9,D9");
 	cards_print(cards, GP_MAX_CARDS, 10);
 	gp_handtype(&gp, cards, GP_MAX_CARDS, &ht);
-	printf("hand type is %s:%d.\n", gp_htype_name(ht.type), ht.param);
+	printf("hand type is %s:%d.\n", gp_htype_name(ht.type), ht.param1);
 
 	/* 炸弹 */
 	cards_from_string(cards, GP_MAX_CARDS,
 			"D9,H9,S9,C9,CQ");
 	cards_print(cards, GP_MAX_CARDS, 10);
 	gp_handtype(&gp, cards, GP_MAX_CARDS, &ht);
-	printf("hand type is %s:%d.\n", gp_htype_name(ht.type), ht.param);
+	printf("hand type is %s:%d.\n", gp_htype_name(ht.type), ht.param1);
 
 	/* 顺子 */
 	cards_from_string(cards, GP_MAX_CARDS,
 			"D9,H8,S7,D6,C5");
 	cards_print(cards, GP_MAX_CARDS, 10);
 	gp_handtype(&gp, cards, GP_MAX_CARDS, &ht);
-	printf("hand type is %s:%d.\n", gp_htype_name(ht.type), ht.param);
+	printf("hand type is %s:%d.\n", gp_htype_name(ht.type), ht.param1);
 
 	/* 连对 */
 	cards_from_string(cards, GP_MAX_CARDS,
 			"D9,H9,S8,D8");
 	cards_print(cards, GP_MAX_CARDS, 10);
 	gp_handtype(&gp, cards, GP_MAX_CARDS, &ht);
-	printf("hand type is %s:%d.\n", gp_htype_name(ht.type), ht.param);
+	printf("hand type is %s:%d.\n", gp_htype_name(ht.type), ht.param1);
 
 	/* K炸 */
 	cards_from_string(cards, GP_MAX_CARDS,
 			"DK,HK,SK,D3");
 	cards_print(cards, GP_MAX_CARDS, 10);
 	gp_handtype(&gp, cards, GP_MAX_CARDS, &ht);
-	printf("hand type is %s:%d.\n", gp_htype_name(ht.type), ht.param);
+	printf("hand type is %s:%d.\n", gp_htype_name(ht.type), ht.param1);
 
 	/* 飞机 */
 	cards_from_string(cards, GP_MAX_CARDS,
 			"D9,H9,S9,D8,H8,S8,D3,H3,S4,C4");
 	cards_print(cards, GP_MAX_CARDS, 10);
 	gp_handtype(&gp, cards, GP_MAX_CARDS, &ht);
-	printf("hand type is %s:%d.\n", gp_htype_name(ht.type), ht.param);
+	printf("hand type is %s:%d.\n", gp_htype_name(ht.type), ht.param1);
 
 	/* 四张 */
 	cards_from_string(cards, GP_MAX_CARDS,
 			"D5,H5,S5,C5");
 	cards_print(cards, GP_MAX_CARDS, 10);
 	gp_handtype(&gp, cards, GP_MAX_CARDS, &ht);
-	printf("hand type is %s:%d.\n", gp_htype_name(ht.type), ht.param);
+	printf("hand type is %s:%d.\n", gp_htype_name(ht.type), ht.param1);
 }

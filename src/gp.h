@@ -10,6 +10,7 @@ extern "C" {
 #endif
 
 #include "card.h"
+#include "card_algo.h"
 
 #define GP_MIN_PLAYER   2
 #define GP_MAX_PLAYER   3
