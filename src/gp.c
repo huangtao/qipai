@@ -646,7 +646,7 @@ int gp_hint(gp_t* gp, card_t* cards, int len)
 			if (result->valid_num != 4 && i == GP_THREE_P1)
 				continue;
 			htype1.type = i;
-			if (gp_analyse_search(&result, &htype1, &htype2, temp, len)) {
+			if (gp_analyse_search(&result, &htype1, &htype2)) {
 				memcpy(&htype1, &htype2, sizeof(hand_type));
 				break;
 			}
@@ -664,9 +664,16 @@ int gp_hint(gp_t* gp, card_t* cards, int len)
 		ret = 1;
     } else {
         /* 跟牌 */
-		if (gp_analyse_search(&result, &gp->last_hand_type, &htype1, temp, len)) {
+		if (gp_analyse_search(&result, &htype1, &htype2)) {
 			ret = 1;
-		}
+		} else {
+            /* 有炸弹吗 */
+            memset(&htype1, 0, sizeof(hand_type));
+            htype1.type = GP_BOMB;
+            if (gp_analyse_search(&result, &htype1, &htype2)) {
+                ret = 1;
+            }
+        }
 	}
 	if (ret > 0)
 		memcpy(cards, temp, sizeof(card_t) * GP_MAX_CARDS);
@@ -674,11 +681,13 @@ int gp_hint(gp_t* gp, card_t* cards, int len)
 }
 
 /*
- * 查找比htout大的牌组,没有返回0
+ * 查找和ht_in同牌型且比ht_in打的牌组,没有返回0
+ * 注意不找炸弹
  */
-int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, hand_type* ht_out)
+int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, hand_type* ht_out, card_t* cards, int len)
 {
 	int i,ret,n;
+    int b_straight;
 
 	if (type == GP_ERROR)
 		return 0;
@@ -731,6 +740,8 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, hand_type* ht_out)
 			}
 		}
     } else if (ht_in->type == GP_STRAIGHT) {
+        if (analyse->valid_num < ht_in->num)
+            return 0;
         for (i = 3; i<= 10; ++i) {
 			if (result->count[i] == 0)
 				continue;
@@ -752,14 +763,16 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, hand_type* ht_out)
 			}
 		}
     } else if (ht_in->type == GP_D_STRAIGHT) {
+        if (analyse->valid_num < ht_in->num)
+            return 0;
 		for (i = 3; i<= 10; ++i) {
-            if (result->count[i] < 2)
+            if (analyse->count[i] < 2)
 				continue;
             if (i <= card_logic(&ht_in->type_card))
                 continue;
 			b_straight = 1;
 			for (j = i + 1; j < (i + ht_in->num); ++j) {
-				if (result->count[j] < 2) {
+				if (analyse->count[j] < 2) {
 					b_straight = 0;
 					break;
 				}
@@ -773,16 +786,16 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, hand_type* ht_out)
 			}
 		}
     } else if (ht_in->type == GP_T_STRAIGHT) {
-        if (result->num_2 < ht_in->num)
+        if ((analyse->num_2 * 2) < ht_in->num)
 			return 0;
 		for (i = 3; i<= 10; ++i) {
-            if (result->count[i] < 3)
+            if (analyse->count[i] < 3)
 				continue;
             if (i <= card_logic(&ht_in->type_card))
                 continue;
             b_straight = 1;
             for (j = i + 1; j < (i + ht_in->num); ++j) {
-                if (result->count[j] < 3) {
+                if (analyse->count[j] < 3) {
 					b_straight = 0;
                     break;
                 }
@@ -796,11 +809,11 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, hand_type* ht_out)
 			}
 		}
     } else if (ht_in->type == GP_THREE_P2) {
-		if (result->num_3 == 0 || result->num_2 == 0)
+		if (analyse->num_3 == 0 || analyse->num_2 == 0)
 			return 0;
 		/* 先找到3个 */
         for (i = 3; i <= 12; ++i) {
-            if (result->count[i] < 3)
+            if (analyse->count[i] < 3)
 				continue;
             if (i > card_logic(&ht_in->type_card)) {
 				ht_out->type = ht_in->type;
@@ -809,7 +822,7 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, hand_type* ht_out)
 				/* 找一对 */
 				for (j = 3; j <= 13; ++j) {
 					if (result->count[i] == 2) {
-						ht_out->param1 = j;
+						ht_out->param1 = card_logic2rank(j);
 						break;
 					}
 				}
@@ -825,7 +838,111 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, hand_type* ht_out)
                 }
             }
 		}
+    } else if (ht_in->type == GP_PLANE) {
+        n = ht_in->num / 5;
+        if (analyse->num_3 < n || analyse->num_2 < n)
+            return 0;
+        for (i = 3; i < (13 - n); ++i) {
+            b_straight = 1;
+            if (analyse->count[i] == 3 &&
+                    i > card_logic(&ht_in->type_card)) {
+                /* 判断3个连续数量 */
+                for (j = i + 1; j < (i + n); ++j) {
+                    if (analyse->count[j] != 3) {
+                        b_straight = 0;
+                        break;
+                    }
+                }
+                if (b_straight) {
+                    ht_out->type = ht_in->type;
+                    card_int(&ht_out->type_card, cdSuitDiamond, card_logic2rank(i));
+                    break;
+                }
+            }
+        }
+        if (b_straight) {
+            /* 有带的2对吗 */
+            for (i = 3; i < (13 - n); ++i) {
+                if (analyse->count[i] != 2)
+                    continue;
+                b_straight = 1;
+                for (j = i + 1; j < (i + n); ++j) {
+                    if (analyse->count[j] != 2) {
+                        b_straight = 0;
+                        break;
+                    }
+                }
+                if (b_straight) {
+                    ht_out->param1 = card_logic2rank(i);
+                    break;
+                }
+            }
+        }
+        if (ht_out->type != ht_in->type || ht_out->param1 == 0) {
+            memset(&ht_out, 0, sizeof(hand_type));
+        } else {
+            ret = 1;
+        }
+    } else if (ht_in->type == GP_FOUR_P3) {
+        if (analyse->num_4 == 0)
+            return 0;
+        if (analyse->valid_num < 7)
+            return 0;
+        for (i = 3; i < 13; ++i) {
+            if (analyse->count[i] != 4)
+                continue;
+            if (i > card_logic(&ht_in->type_card)) {
+                ht_out->type = ht_in->type;
+                card_init(&ht_out->type_card, cdSuitDiamond, i);
+                n = 0;
+                for (j = 3; j <= 13 && j != i; ++j) {
+                    if (analyse->count[j] > 0 && analyse->count[j] < 4) {
+                        n += analyse->count[j];
+                        if (ht_out->parma1 == 0)
+                            ht_out->parma1 = card_logic2rank(j);
+                        else if (ht_out->parma2 == 0)
+                            ht_out->parma2 = card_logic2rank(j);
+                        else
+                            ht_out->param3 = card_logic2rank(j);
+                        if (n >= 3) {
+                            break;
+                        }
+                    }
+                }
+                ht_out->num = 7;
+                ret = 1;
+                break;
+            }
+        }
+    } else if (ht_in->type == GP_BOMB) {
+        if (analyse->valid_num < 5)
+            return 0;
+        if (analyse->num_4 == 0 || analyse->num_3 == 0)
+            return 0;
+        for (i = 3; i <= 13; ++i) {
+            if (analyse->count[i] == 3 && i != cdRankK)
+                continue;
+            if (analyse->count[i] < 3)
+                continue;
+            if (i > card_logic(&ht_in->type_card)) {
+                ht_out->type == ht_in->type;
+                card_init(&ht_out->type_card, cdSuitDiamond, card_logic2rank(i));
+                ht_out->num = 5;
+                for (j = 3; j <= 15; ++j) {
+                    if (analyse->count[j] > 0) {
+                        ht_out->param1 = card_logic2rank(j);
+                        break;
+                    }
+                }
+                ret = 1;
+                break;
+            }
+        }
+    } else {
+        return 0;
     }
+
+    return ret;
 }
 
 int gp_copy_cards(card_t* src, card_t* dest, int offset, int rank, int num)

@@ -17,13 +17,13 @@ extern "C" {
 #define GP_DECK_FU      1
 
 /* gp rule */
-typedef enum gp_rule_e{
+typedef enum gp_rule_e {
     GP_RULE_DEFAULT,     /* like QQ game's gp */
     GP_RULE_ZHUJI        /* zhejiang zhuji rule */
 }GP_RULE;
 
 /* gp card type */
-typedef enum gp_type_e{
+typedef enum gp_type_e {
     GP_ERROR = 0,
     GP_SINGLE,      /* single */
     GP_DOUBLE,      /* double */
@@ -40,17 +40,16 @@ typedef enum gp_type_e{
 }GP_TYPE;
 
 /* for hand type calc */
-typedef struct hand_type_s{
+typedef struct hand_type_s {
     int type;           /* type enum */
     card_t type_card;   /* type card */
     int num;            /* number */
-    int param;
     int param1;	        /* logic value */
     int param2;
     int param3;
 }hand_type;
 
-typedef enum gp_gamestate_e{
+typedef enum gp_gamestate_e {
     GP_GAME_END = 0,   /* game end */
     GP_GAME_PLAY       /* playing card */
 }GP_GAMESTATE;
@@ -71,7 +70,7 @@ typedef struct gp_player_s {
     int num_valid_card;
 }GP_PLAYER;
 
-typedef struct gp_s{
+typedef struct gp_s {
     int debug;          /* output debug info */
     int mode;           /* client or server mode */
     int game_state;     /* game state */
@@ -111,6 +110,9 @@ int gp_pass(gp_t* gp, int player_no);
 
 /* simple hint for play */
 int gp_hint(gp_t* gp, card_t* cards, int len);
+
+/* 出牌搜索 */
+int gp_analyse_search(gp_t* gp, cd_analyse* analyse, hand_type* ht_in, hand_type* ht_out, card_t* cards, int len);
 
 /*
  * 将特定的rank值牌从src拷贝num张到dest中
