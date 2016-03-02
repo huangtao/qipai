@@ -620,11 +620,11 @@ int gp_pass(gp_t* gp, int player_no)
     return 1;
 }
 
-/* 出牌提示 */
+/* 出牌提示,返回可以出牌的张数 */
 /* 专业AI请联系作者 */
 int gp_hint(gp_t* gp, card_t* cards, int len)
 {
-    int i,j,n,rank;
+    int i;
     int ret;
 	hand_type htype;
     cd_analyse result;
@@ -633,11 +633,19 @@ int gp_hint(gp_t* gp, card_t* cards, int len)
         return 0;
     
 	ret = 0;
+    /* 全部可以打出吗 */
+    memcpy(cards, gp->players[gp->curr_player_no].cards,
+            sizeof(card_t) * GP_MAX_CARDS);
+    if (gp_canplay(gp, cards, GP_MAX_CARDS)) {
+        ret = cards_num(cards, GP_MAX_CARDS);
+        return ret;
+    }
+
 	/* 分析扑克 */
     memset(cards, 0, sizeof(card_t) * len);
     cards_analyse(gp->players[gp->curr_player_no].cards, GP_MAX_CARDS, &result);
     
-	if (gp->curr_player_no == gp->first_player_no) {
+    if (gp->last_hand_type.type == GP_ERROR) {
         /* 先出牌 */
 		/* 得到各种牌型最小的 */
 		memset(&htype, 0, sizeof(hand_type));
@@ -645,8 +653,8 @@ int gp_hint(gp_t* gp, card_t* cards, int len)
 			if (result.valid_num != 4 && i == GP_THREE_P1)
 				continue;
 			htype.type = i;
-			if (gp_analyse_search(&result, &htype, cards, len)) {
-				ret = 1;
+            ret = gp_analyse_search(&result, &htype, cards, len);
+            if (ret > 0) {
 				break;
 			}
 		}
@@ -657,22 +665,20 @@ int gp_hint(gp_t* gp, card_t* cards, int len)
 					memcpy(cards, 
 							gp->players[gp->curr_player_no].cards + i,
 							sizeof(card_t));
-					break;
+                    ret = 1;
+                    break;
 				}
 			}
 		}
-		ret = 1;
     } else {
         /* 跟牌 */
-		if (gp_analyse_search(&result, &htype, cards, len)) {
-			ret = 1;
-		} else {
+        memcpy(&htype, &gp->last_hand_type, sizeof(hand_type));
+        ret = gp_analyse_search(&result, &htype, cards, len);
+        if (ret == 0) {
             /* 有炸弹吗 */
             memset(&htype, 0, sizeof(hand_type));
             htype.type = GP_BOMB;
-            if (gp_analyse_search(&result, &htype, cards, len)) {
-                ret = 1;
-            }
+            ret = gp_analyse_search(&result, &htype, cards, len);
         }
 	}
     return ret;
@@ -685,6 +691,7 @@ int gp_hint(gp_t* gp, card_t* cards, int len)
 int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int len)
 {
 	int i,j,ret,n;
+    int n_left,n_right;
     int b_straight;
 
 	if (!analyse || !ht_in || !cards)
@@ -701,15 +708,36 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int 
 		/* logic value 3~15 */
 		ret = 0;
         for (i = 3; i <= 15; ++i) {
-            if (analyse->count[i] == 1 && analyse->count[i-1] == 0 &&
-					analyse->count[i+1] == 0 &&
-					i > card_logic(&ht_in->type_card)) {
-                gp_copy_cards(analyse->raw_cards, cards, 0,
-                        card_logic2rank(i), 1);
-				ret = 1;
-				break;
+            if (analyse->count[i] == 1 && i > card_logic(&ht_in->type_card)) {
+                /* 是单张 */
+                n_left = n_right = 0;
+                for (j = i - 1; j >= 3; j--) {
+                    if (analyse->count[j] > 0)
+                        n_right++;
+                }
+                for (j = i + 1; j <= 13; j++) {
+                    if (analyse->count[j] > 0)
+                        n_left++;
+                }
+                if ((n_left + n_right + 1) < 5) {
+                    gp_copy_cards(analyse->raw_cards, cards, 0,
+                                  card_logic2rank(i), 1);
+                    ret = 1;
+                    break;
+                }
 			}
 		}
+        if (ret == 0) {
+            /* 选张大的 */
+            for (i = 3; i <= 15; ++i) {
+                if (analyse->count[i] > 0 && i > card_logic(&ht_in->type_card)) {
+                    gp_copy_cards(analyse->raw_cards, cards, 0,
+                                  card_logic2rank(i), 1);
+                    ret = 1;
+                    break;
+                }
+            }
+        }
     } else if (ht_in->type == GP_DOUBLE) {
 		if (analyse->num_2 == 0)
 			return 0;
@@ -717,7 +745,7 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int 
 			if (analyse->count[i] == 2 && i > card_logic(&ht_in->type_card)) {
                 gp_copy_cards(analyse->raw_cards, cards, 0,
                         card_logic2rank(i), 2);
-				ret = 1;
+                ret = 2;
 				break;
 			}
 		}
@@ -728,7 +756,7 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int 
 			if (analyse->count[i] == 3 && i > card_logic(&ht_in->type_card)) {
                 gp_copy_cards(analyse->raw_cards, cards, 0,
                         card_logic2rank(i), 3);
-				ret = 1;
+                ret = 3;
 				break;
 			}
 		}
@@ -738,8 +766,8 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int 
         for (i = 3; i<= 10; ++i) {
 			if (analyse->count[i] == 0)
 				continue;
-			if (i <= card_logic(&ht_in->type_card))
-				continue;
+            if ((i + ht_in->num -1) <= card_logic(&ht_in->type_card))
+                continue;
 			b_straight = 1;
 			for (j = i + 1; j < (i + ht_in->num); ++j) {
 				if (analyse->count[j] == 0) {
@@ -747,60 +775,60 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int 
 					break;
 				}
 			}
-			if (b_straight) {
+            if (b_straight) {
                 for (j = i; j < (i + ht_in->num); ++j) {
                     gp_copy_cards(analyse->raw_cards, cards, j - i,
                             card_logic2rank(j), 1);
                 }
-				ret = 1;
+                ret = ht_in->num;
 				break;
 			}
 		}
     } else if (ht_in->type == GP_D_STRAIGHT) {
-        if (analyse->valid_num < ht_in->num)
+        if ((analyse->num_2 * 2) < ht_in->num)
             return 0;
-		for (i = 3; i<= 10; ++i) {
+        for (i = 3; i<= (14 - ht_in->num / 2); ++i) {
             if (analyse->count[i] < 2)
 				continue;
-            if (i <= card_logic(&ht_in->type_card))
+            if ((i + ht_in->num - 1) <= card_logic(&ht_in->type_card))
                 continue;
 			b_straight = 1;
-			for (j = i + 1; j < (i + ht_in->num); ++j) {
+            for (j = i + 1; j < (i + ht_in->num / 2); ++j) {
 				if (analyse->count[j] < 2) {
 					b_straight = 0;
 					break;
 				}
 			}
 			if (b_straight) {
-                for (j = i; j < (i + ht_in->num); ++j) {
+                for (j = i; j < (i + ht_in->num / 2); ++j) {
                     gp_copy_cards(analyse->raw_cards, cards, (j - i) * 2,
                             card_logic2rank(j), 2);
                 }
-				ret = 1;
+                ret = ht_in->num;
 				break;
 			}
 		}
     } else if (ht_in->type == GP_T_STRAIGHT) {
-        if ((analyse->num_2 * 2) < ht_in->num)
+        if ((analyse->num_3 * 3) < ht_in->num)
 			return 0;
-		for (i = 3; i<= 10; ++i) {
+        for (i = 3; i<= (14 - ht_in->num / 3); ++i) {
             if (analyse->count[i] < 3)
 				continue;
-            if (i <= card_logic(&ht_in->type_card))
+            if ((i + ht_in->num - 1) <= card_logic(&ht_in->type_card))
                 continue;
             b_straight = 1;
-            for (j = i + 1; j < (i + ht_in->num); ++j) {
+            for (j = i + 1; j < (i + ht_in->num / 3); ++j) {
                 if (analyse->count[j] < 3) {
 					b_straight = 0;
                     break;
                 }
             }
 			if (b_straight) {
-                for (j = i; j < (i + ht_in->num); ++j) {
+                for (j = i; j < (i + ht_in->num / 3); ++j) {
                     gp_copy_cards(analyse->raw_cards, cards, (j - i) * 3,
                             card_logic2rank(j), 3);
                 }
-				ret = 1;
+                ret = ht_in->num;
 				break;
 			}
 		}
@@ -819,7 +847,7 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int 
 					if (analyse->count[i] == 2) {
                         gp_copy_cards(analyse->raw_cards, cards, 3,
                                 card_logic2rank(j), 2);
-                        ret = 1;
+                        ret = ht_in->num;
 						break;
 					}
 				}
@@ -830,23 +858,24 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int 
         if (analyse->num_3 < n || analyse->num_2 < n)
             return 0;
         for (i = 3; i < (13 - n); ++i) {
+            if (analyse->count[i] < 3)
+                continue;
+            if ((i + ht_in->num - 1) <= card_logic(&ht_in->type_card))
+                continue;
             b_straight = 1;
-            if (analyse->count[i] == 3 &&
-                    i > card_logic(&ht_in->type_card)) {
-                /* 判断3个连续数量 */
-                for (j = i + 1; j < (i + n); ++j) {
-                    if (analyse->count[j] != 3) {
-                        b_straight = 0;
-                        break;
-                    }
-                }
-                if (b_straight) {
-                    for (j = i; j < (i + n); ++j) {
-                        gp_copy_cards(analyse->raw_cards, cards, (j - i) * 3,
-                                card_logic2rank(i), 3);
-                    }
+            /* 判断3个连续数量 */
+            for (j = i + 1; j < (i + n); ++j) {
+                if (analyse->count[j] != 3) {
+                    b_straight = 0;
                     break;
                 }
+            }
+            if (b_straight) {
+                for (j = i; j < (i + n); ++j) {
+                    gp_copy_cards(analyse->raw_cards, cards, (j - i) * 3,
+                            card_logic2rank(i), 3);
+                }
+                break;
             }
         }
         if (b_straight) {
@@ -867,7 +896,7 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int 
                                 n * 3 + (j - i) * 2,
                                 card_logic2rank(j), 2);
                     }
-                    ret = 1;
+                    ret = ht_in->num;
                     break;
                 }
             }
@@ -894,14 +923,15 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int 
                         }
                     }
                 }
-                ret = 1;
+                ret = 7;
                 break;
             }
         }
     } else if (ht_in->type == GP_BOMB) {
         if (analyse->valid_num < 5)
             return 0;
-        if (analyse->num_4 == 0 || analyse->num_3 == 0)
+        n = analyse->num_4 + analyse->num_3;
+        if (n == 0)
             return 0;
         for (i = 3; i <= 13; ++i) {
             if (analyse->count[i] != 4) {
@@ -918,7 +948,10 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int 
                         break;
                     }
                 }
-                ret = 1;
+                if (i == cdRankK)
+                    ret = 4;
+                else
+                    ret = 5;
                 break;
             }
         }
@@ -941,7 +974,8 @@ int gp_copy_cards(card_t* src, card_t* dest, int offset, int rank, int num)
         return 0;
 
     n = 0;
-    for (i = 0; i < GP_MAX_CARDS; i++) {
+    /* 从小到大查找 */
+    for (i = GP_MAX_CARDS - 1; i >= 0; --i) {
         if (src[i].rank == rank) {
             memcpy(dest+offset+n, src+i, sizeof(card_t));
             n++;
