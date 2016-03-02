@@ -40,13 +40,15 @@ void test_gp()
     printf("gp game state:%d\n", gp.game_state);
     printf("first player:%d\n", gp.first_player_no);
 
+	card_t cards[GP_MAX_CARDS];
+	gp_hint(&gp, cards, GP_MAX_CARDS);
+	cards_print(cards, GP_MAX_CARDS, 10);
 	//printf("sort player0's cards and dump:\n");
     //gp_sort(gp.players[0].cards, GP_MAX_CARDS);
     //cards_dump(gp.players[0].cards, GP_MAX_CARDS, 10);
 
 	/* 牌型判断 */
 	printf("===start hand type test===\n");
-	card_t cards[GP_MAX_CARDS];
 	hand_type ht;
 
 	/* 非法类型 */

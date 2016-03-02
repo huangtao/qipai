@@ -624,8 +624,7 @@ int gp_pass(gp_t* gp, int player_no)
 /* 专业AI请联系作者 */
 int gp_hint(gp_t* gp, card_t* cards, int len)
 {
-    int i;
-    int ret;
+    int i,j,n,ret;
 	hand_type htype;
     cd_analyse result;
 
@@ -647,14 +646,33 @@ int gp_hint(gp_t* gp, card_t* cards, int len)
     
     if (gp->last_hand_type.type == GP_ERROR) {
         /* 先出牌 */
-		/* 得到各种牌型最小的 */
-		memset(&htype, 0, sizeof(hand_type));
-		for (i = GP_SINGLE; i < GP_BOMB; ++i) {
-			if (result.valid_num != 4 && i == GP_THREE_P1)
-				continue;
-			htype.type = i;
-            ret = gp_analyse_search(&result, &htype, cards, len);
-            if (ret > 0) {
+		/* 根据最小一张的数量来出 */
+		for (i = 3; i <= 13; ++i) {
+			if (result.count[i] == 1) {
+				n = 1;
+				for (j = i + 1; j <= 13; ++j) {
+					if (result.count[j] == 0)
+						break;
+					n++;
+				}
+				if (n >= 5) {
+					/* 有顺子 */
+					for (j = i; j < (i + n); ++j) {
+						gp_copy_cards(result.raw_cards, cards, j - i,
+								card_logic2rank(j), 1);
+						ret = n;
+					}
+					break;
+				}
+			} else if (result.count[i] == 2) {
+				gp_copy_cards(result.raw_cards, cards, 0,
+						card_logic2rank(i), 2);
+				ret = 2;
+				break;
+			} else if (result.count[i] == 3) {
+				gp_copy_cards(result.raw_cards, cards, 0,
+						card_logic2rank(i), 3);
+				ret = 3;
 				break;
 			}
 		}
