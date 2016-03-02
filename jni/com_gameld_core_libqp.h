@@ -97,6 +97,14 @@ JNIEXPORT void JNICALL Java_com_gameld_core_libqp_gpPass
 
 /*
  * Class:     com_gameld_core_libqp
+ * Method:    gpHint
+ * Signature: ()[B
+ */
+JNIEXPORT jbyteArray JNICALL Java_com_gameld_core_libqp_gpHint
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     com_gameld_core_libqp
  * Method:    gpGetCurrentNo
  * Signature: ()I
  */
