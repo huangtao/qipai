@@ -552,26 +552,32 @@ int gp_canplay(gp_t* gp, card_t* cards, int len)
     if (!gp || !cards || len <= 0)
         return 0;
     gp_handtype(gp, cards, len, &ht);
-    if(ht.type == GP_ERROR)
+    if (ht.type == GP_ERROR)
         return 0;
-    if (gp->last_hand_type.num == 0) {
-        /* first play */
+    if (gp->game_rule == GP_RULE_ZHUJI) {
+        if (ht.type == GP_THREE_P1 || ht.type == GP_FOUR) {
+            /* 3带1最后一手可以出 */
+            if (gp->last_hand_type.type == GP_ERROR) {
+                remain_num = cards_num(gp->players[gp->curr_player_no].cards, GP_MAX_CARDS);
+                if (remain_num == 4)
+                    return 1;
+                else
+                    return 0;
+            } else {
+                return 0;
+            }
+        }
+    } else {
         if (ht.type == GP_THREE_P1)
             return 0;
-        else
-            return 1;
     }
-    if (gp->largest_player_no == gp->curr_player_no) {
-        remain_num = cards_num(gp->players[gp->curr_player_no].cards, GP_MAX_CARDS);
-        if ((ht.type == GP_THREE_P1 || ht.type == GP_FOUR)) {
-            if (remain_num == 4)
-                return 1;
-            else
-                return 0;
-          }
+
+    if (gp->last_hand_type.type == GP_ERROR) {
+        /* 先手 */
         return 1;
     }
 
+    /* 跟牌 */
     if (gp->last_hand_type.type == GP_BOMB && ht.type != GP_BOMB)
         return 0;
     if (gp->last_hand_type.type != GP_BOMB && ht.type == GP_BOMB)
