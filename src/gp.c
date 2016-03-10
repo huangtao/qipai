@@ -683,14 +683,31 @@ int gp_hint(gp_t* gp, card_t* cards, int len)
 			}
 		}
 		if (ret == 0) {
-			/* 得到最小的一张 */
-			for (i = GP_MAX_CARDS - 1; i >= 0; --i) {
-				if (gp->players[gp->curr_player_no].cards[i].id != 0) {
-					memcpy(cards, 
-							gp->players[gp->curr_player_no].cards + i,
-							sizeof(card_t));
-                    ret = 1;
-                    break;
+			j = gp->curr_player_no + 1;
+			if (j >= gp->player_num)
+				j = 0;
+			n = cards_num(gp->players[j].cards, GP_MAX_CARDS);
+			if (n == 1) {
+				/* 对面只有一张了从大出 */
+				for (i = 0; i < GP_MAX_CARDS; ++i) {
+					if (gp->players[j].cards[i].id != 0) {
+						memcpy(cards,
+								gp->players[j].cards + i,
+								sizeof(card_t));
+						ret = 1;
+						break;
+					}
+				}
+			} else {
+				/* 得到最小的一张 */
+				for (i = GP_MAX_CARDS - 1; i >= 0; --i) {
+					if (gp->players[gp->curr_player_no].cards[i].id != 0) {
+						memcpy(cards, 
+								gp->players[gp->curr_player_no].cards + i,
+								sizeof(card_t));
+						ret = 1;
+						break;
+					}
 				}
 			}
 		}
