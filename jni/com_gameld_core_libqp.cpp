@@ -162,8 +162,11 @@ void Java_com_gameld_core_libqp_gpSetPlayedCards(JNIEnv *env, jclass,
     }
     env->ReleaseByteArrayElements(jarray, p, 0);
     if (size > 0) {
-        gp_handtype(&g_gp, g_gp.players[no].cards_played,
-            GP_MAX_CARDS, &g_gp.last_hand_type);
+        memcpy(g_gp.last_hand, g_gp.players[no].cards_played,
+            sizeof(card_t) * GP_MAX_CARDS);
+        gp_handtype(&g_gp, g_gp.players[no].cards_played, GP_MAX_CARDS,
+            &g_gp.last_hand_type);
+        g_gp.largest_player_no = no;
     }
 }
 
