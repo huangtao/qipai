@@ -690,9 +690,9 @@ int gp_hint(gp_t* gp, card_t* cards, int len)
 			if (n == 1) {
 				/* 对面只有一张了从大出 */
 				for (i = 0; i < GP_MAX_CARDS; ++i) {
-					if (gp->players[j].cards[i].id != 0) {
+                    if (gp->players[gp->curr_player_no].cards[i].id != 0) {
 						memcpy(cards,
-								gp->players[j].cards + i,
+                                gp->players[gp->curr_player_no].cards + i,
 								sizeof(card_t));
 						ret = 1;
 						break;

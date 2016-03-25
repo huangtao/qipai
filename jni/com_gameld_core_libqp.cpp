@@ -53,42 +53,63 @@ void Java_com_gameld_core_libqp_gpSetState(JNIEnv *, jclass, jint state)
 }
 
 void Java_com_gameld_core_libqp_gpStart(JNIEnv *env, jclass,
-    jint player_num, jint my_seat, jbyteArray jarray, jint fno)
+    jbyteArray jarray0, jbyteArray jarray1, jint fno, jint pno, jbyteArray jarr_played)
 {
     card_t* card;
 
-    g_gp.player_num = player_num;
+    g_gp.player_num = 2;
     gp_start(&g_gp);
     g_gp.curr_player_no = fno;
     g_gp.first_player_no = fno;
 
-    jbyte* p = env->GetByteArrayElements(jarray, NULL);
-    jsize size = env->GetArrayLength(jarray);
-    card = g_gp.players[my_seat].cards;
+    jbyte* p = env->GetByteArrayElements(jarray0, NULL);
+    jsize size = env->GetArrayLength(jarray0);
+    card = g_gp.players[0].cards;
     for (int i = 0; i < size && i < GP_MAX_CARDS; i++) {
         if (p[i] > 0) {
             n55_to_card(p[i], card);
             card++;
         }
     }
-    env->ReleaseByteArrayElements(jarray, p, 0);
+    env->ReleaseByteArrayElements(jarray0, p, 0);
+    gp_sort(g_gp.players[0].cards, GP_MAX_CARDS);
 
-    gp_sort(g_gp.players[my_seat].cards, GP_MAX_CARDS);
-
-    int st = my_seat + 1;
-    if (st >= g_gp.player_num)
-        st = 0;
-    card = g_gp.players[st].cards;
+    p = env->GetByteArrayElements(jarray1, NULL);
+    size = env->GetArrayLength(jarray1);
+    card = g_gp.players[1].cards;
     for (int i = 0; i < size && i < GP_MAX_CARDS; i++) {
-        card->id = CD_ID_UNKNOW;
-        card->rank = cdRankUnknow;
-        card->suit = cdSuitUnknow;
-        card++;
+        if (p[i] > 0) {
+            n55_to_card(p[i], card);
+            card++;
+        }
+    }
+    env->ReleaseByteArrayElements(jarray1, p, 0);
+    gp_sort(g_gp.players[1].cards, GP_MAX_CARDS);
+
+    if (pno >= 0 && pno < g_gp.player_num) {
+        p = env->GetByteArrayElements(jarr_played, NULL);
+        size = env->GetArrayLength(jarr_played);
+        card = g_gp.players[pno].cards_played;
+        for (int i = 0; i < size && i < GP_MAX_CARDS; i++) {
+            if (p[i] > 0) {
+                n55_to_card(p[i], card);
+                card++;
+            }
+        }
+        env->ReleaseByteArrayElements(jarr_played, p, 0);
+        if (size > 0) {
+            memcpy(g_gp.last_hand, g_gp.players[pno].cards_played,
+                sizeof(card_t) * GP_MAX_CARDS);
+            gp_handtype(&g_gp, g_gp.players[pno].cards_played, GP_MAX_CARDS,
+                &g_gp.last_hand_type);
+            g_gp.largest_player_no = pno;
+        }
     }
 
 #ifdef TAO_DEBUG
-    __android_log_print(ANDROID_LOG_INFO, "qipai", "my cards:%d",
-        cards_num(g_gp.players[my_seat].cards, GP_MAX_CARDS));
+    __android_log_print(ANDROID_LOG_INFO, "qipai", "cards0:%d,cards1:%d",
+        cards_num(g_gp.players[0].cards, GP_MAX_CARDS),
+        cards_num(g_gp.players[1].cards, GP_MAX_CARDS));
         //cards_to_string(g_gp.players[my_seat].cards, GP_MAX_CARDS));
 #endif
 }
@@ -281,4 +302,50 @@ int Java_com_gameld_core_libqp_gpGetCardPlayed(JNIEnv *env, jclass, int no, int 
         return 0;
     }
     return card_to_n55(g_gp.players[no].cards_played + index);
+}
+
+jbyteArray Java_com_gameld_core_libqp_gpGetCards(JNIEnv *env, jclass, int no)
+{
+    int i,n;
+    unsigned char data[GP_MAX_CARDS];
+
+    if (no >= g_gp.player_num) {
+        n = 0;
+    } else {
+        n = cards_num(g_gp.players[no].cards, GP_MAX_CARDS);
+    }
+
+    memset(data, 0, GP_MAX_CARDS);
+    if (n > 0) {
+        for (i = 0; i < n; ++i) {
+            data[i] = card_to_n55(g_gp.players[no].cards + i);
+        }
+    }
+    jbyteArray array = env->NewByteArray(n);
+    if (n > 0)
+        env->SetByteArrayRegion(array, 0, n, (jbyte*)data);
+    return array;
+}
+
+jbyteArray Java_com_gameld_core_libqp_gpGetCardsPlayed(JNIEnv *env, jclass, int no)
+{
+    int i,n;
+    unsigned char data[GP_MAX_CARDS];
+
+    if (no >= g_gp.player_num) {
+        n = 0;
+    } else {
+        n = cards_num(g_gp.players[no].cards_played, GP_MAX_CARDS);
+    }
+
+    memset(data, 0, GP_MAX_CARDS);
+    if (n > 0) {
+        for (i = 0; i < n; ++i) {
+            data[i] = card_to_n55(g_gp.players[no].cards_played + i);
+        }
+    }
+    jbyteArray array = env->NewByteArray(n);
+    if (n > 0)
+        env->SetByteArrayRegion(array, 0, n, (jbyte*)data);
+    return array;
 }
