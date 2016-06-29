@@ -225,13 +225,13 @@ void Java_com_gameld_core_libqp_gpPass(JNIEnv *env, jclass)
     gp_pass(&g_gp, g_gp.curr_player_no);
 }
 
-jbyteArray Java_com_gameld_core_libqp_gpHint(JNIEnv *env, jclass)
+jbyteArray Java_com_gameld_core_libqp_gpHint(JNIEnv *env, jclass, jint flag)
 {
     int i,n;
     unsigned char data[GP_MAX_CARDS];
     card_t cards[GP_MAX_CARDS];
 
-    n = gp_hint(&g_gp, cards, GP_MAX_CARDS);
+    n = gp_hint(&g_gp, cards, GP_MAX_CARDS, flag);
     memset(data, 0, GP_MAX_CARDS);
     if (n > 0) {
         for (i = 0; i < n; ++i) {

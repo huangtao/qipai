@@ -110,7 +110,7 @@ void gp_next_player(gp_t* gp);
 int gp_pass(gp_t* gp, int player_no);
 
 /* simple hint for play */
-int gp_hint(gp_t* gp, card_t* cards, int len);
+int gp_hint(gp_t* gp, card_t* cards, int len, int flag);
 
 /* 出牌搜索 */
 int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int len);
