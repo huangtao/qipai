@@ -338,6 +338,17 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
             flag = cards_rank_num(cards, len, cdRank2);
             if (flag)
                 return;
+            /* like KKK+333 */
+            if (gp->game_rule == GP_RULE_ZHUJI) {
+                if ((x[ar.v3[0]].rank == cdRankK) && ht->num == 6) {
+                    ht->type = GP_FOUR_P3;
+                    ht->type_card.rank = x[ar.v3[0]].rank;
+                    ht->type_card.suit = get_bucket_suit(&x[ar.v3[0]]);
+                    ht->type_card.id = (ht->type_card.suit - 1) * 13 + ht->type_card.rank;
+                    ht->param1 = ar.v3[0];
+                    return;
+                }
+            }
             for (i = 0; i < (ar.n3 - 1); ++i) {
                 if((ar.v3[i] - (ar.v3[i+1])) != 1)
                     return;
@@ -532,6 +543,8 @@ int gp_play(gp_t* gp, int player_no, card_t* cards, int len)
     memcpy(&gp->last_hand_type, &htype, sizeof(hand_type));
     memcpy(gp->players[player_no].cards_played, gp->last_hand,
            sizeof(card_t) * GP_MAX_CARDS);
+	cards_sort(gp->players[player_no].cards_played, GP_MAX_CARDS);
+		   
     gp->largest_player_no = player_no;
     cards_trim(gp->players[player_no].cards, GP_MAX_CARDS);
     if (cards_num(gp->players[player_no].cards, GP_MAX_CARDS))
@@ -836,17 +849,17 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int 
             }
         }
     } else if (ht_in->type == GP_D_STRAIGHT) {
-        n = analyse->num_2 + analyse->num_3;
-        if ((n * 2) < ht_in->num)
+        if (analyse->num_2 < ht_in->num)
             return 0;
-        for (i = 3; i<= (14 - ht_in->num / 2); ++i) {
+		n = ht_in->num / 2;
+        for (i = 3; i <= (14 - n); ++i) {
             if (analyse->count[i] < 2)
                 continue;
             /* 特征牌比较 */
-            if ((i + ht_in->num - 1) <= card_logic(&ht_in->type_card))
+            if ((i + n - 1) <= card_logic(&ht_in->type_card))
                 continue;
             b_straight = 1;
-            for (j = i + 1; j < (i + ht_in->num / 2); ++j) {
+            for (j = i + 1; j < (i + n); ++j) {
                 if (analyse->count[j] < 2) {
                     b_straight = 0;
                     break;
@@ -857,7 +870,7 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int 
                 }
             }
             if (b_straight) {
-                for (j = i; j < (i + ht_in->num / 2); ++j) {
+                for (j = i; j < (i + n); ++j) {
                     gp_copy_cards(analyse->raw_cards, cards, (j - i) * 2,
                                   card_logic2rank(j), 2);
                 }
@@ -866,22 +879,23 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int 
             }
         }
     } else if (ht_in->type == GP_T_STRAIGHT) {
-        if ((analyse->num_3 * 3) < ht_in->num)
+		n = ht_in->num / 3;
+        if (analyse->num_3 < n)
             return 0;
-        for (i = 3; i<= (14 - ht_in->num / 3); ++i) {
+        for (i = 3; i<= (14 - n); ++i) {
             if (analyse->count[i] < 3)
                 continue;
-            if ((i + ht_in->num - 1) <= card_logic(&ht_in->type_card))
+            if ((i + n - 1) <= card_logic(&ht_in->type_card))
                 continue;
             b_straight = 1;
-            for (j = i + 1; j < (i + ht_in->num / 3); ++j) {
+            for (j = i + 1; j < (i + n); ++j) {
                 if (analyse->count[j] < 3) {
                     b_straight = 0;
                     break;
                 }
             }
             if (b_straight) {
-                for (j = i; j < (i + ht_in->num / 3); ++j) {
+                for (j = i; j < (i + n); ++j) {
                     gp_copy_cards(analyse->raw_cards, cards, (j - i) * 3,
                                   card_logic2rank(j), 3);
                 }
@@ -899,11 +913,12 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int 
                               card_logic2rank(i), 3);
                 /* 找一对 */
                 for (j = 3; j <= 13; ++j) {
-                    if (analyse->count[i] == 4)
+                    if (j == i) continue;
+                    if (analyse->count[j] == 4)
                         continue;
-                    if (analyse->count[i] == 3 && j == 13)
+                    if (analyse->count[j] == 3 && j == 13)
                         continue;
-                    if (analyse->count[i] > 2) {
+                    if (analyse->count[j] > 2) {
                         gp_copy_cards(analyse->raw_cards, cards, 3,
                                       card_logic2rank(j), 2);
                         ret = ht_in->num;
@@ -919,7 +934,7 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int 
         for (i = 3; i < (13 - n); ++i) {
             if (analyse->count[i] < 3)
                 continue;
-            if ((i + ht_in->num - 1) <= card_logic(&ht_in->type_card))
+            if ((i + n - 1) <= card_logic(&ht_in->type_card))
                 continue;
             b_straight = 1;
             /* 判断3个连续数量 */
@@ -1004,7 +1019,8 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int 
                     n = 4;
                 gp_copy_cards(analyse->raw_cards, cards, 0,
                               card_logic2rank(i), n);
-                for (j = 3; j <= 15 && j != i; ++j) {
+                for (j = 3; j <= 15; ++j) {
+                    if (j == i) continue;
                     if (analyse->count[j] > 0) {
                         gp_copy_cards(analyse->raw_cards, cards, n,
                                       card_logic2rank(j), 1);
