@@ -41,7 +41,7 @@ void test_gp()
     printf("first player:%d\n", gp.first_player_no);
 
 	card_t cards[GP_MAX_CARDS];
-	gp_hint(&gp, cards, GP_MAX_CARDS);
+	gp_hint(&gp, cards, GP_MAX_CARDS, 0);
 	cards_print(cards, GP_MAX_CARDS, 10);
 	//printf("sort player0's cards and dump:\n");
     //gp_sort(gp.players[0].cards, GP_MAX_CARDS);
