@@ -5,6 +5,7 @@
  */
 #ifndef _MAJANG_H
 #define _MAJANG_H
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -13,6 +14,9 @@ extern "C" {
 
 /*
  * 麻将常用术语
+ * 完整的麻将牌共152张
+ * 字牌(28张)+花牌(8张)+序数牌(108张)+百搭牌(8张)
+ * 常用的不含百搭144张，若没有花牌为136张。
  * 顺子：由同花色三个连续的牌组成。
  * 刻子：又称“坎”，由三张或四张（又称杠子）相同的牌组成。
  * 面子：顺子和刻子的统称。
@@ -34,8 +38,9 @@ typedef enum majiang_suit {
     mjSuitDots = mjSuitTong,
     mjSuitFeng,                     /* 风牌 */
 	mjSuitWind = mjSuitFeng,
-    mjSuitZFB,                      /* 中发白 */
-	mjSuitDragon = mjSuitZFB,
+    mjSuitSanY,                     /* 三元牌(中发白) */
+    mjSuitZFB = mjSuitSanY,
+    mjSuitDragon = mjSuitSanY,
     mjSuitHua,                      /* 花牌 */
     mjSuitFlower = mjSuitHua,
     mjSuitSeason,
