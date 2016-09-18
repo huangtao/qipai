@@ -4,6 +4,75 @@
 #include <string.h>
 #include <stdio.h>
 
+void mjpai_init_id(mjpai_t* pai, int id)
+{
+    if (pai == NULL)
+        return;
+    if (id <= MJ_ID_EMPTY || id > MJ_ID_UNKNOW) {
+        pai->id = MJ_ID_EMPTY;
+        pai->sign = 0;
+        pai->suit = 0;
+        return;
+    }
+    pai->id = id;
+    if (id >= MJ_ID_1W && id <= MJ_ID_9W) {
+        pai->suit = mjSuitWan;
+        pai->sign = id - MJ_ID_1W + 1;
+    } else if (id >= MJ_ID_1S && id <= MJ_ID_9S) {
+        pai->suit = mjSuitTiao;
+        pai->sign = id - MJ_ID_1S + 1;
+    } else if (id >= MJ_ID_1T && id <= MJ_ID_9T) {
+        pai->suit = mjSuitTong;
+        pai->sign = id - MJ_ID_1T + 1;
+    } else if (id >= MJ_ID_DONG && id <= MJ_ID_BEI) {
+        pai->suit = mjSuitFeng;
+        pai->sign = id - MJ_ID_DONG + 1;
+    } else if (id >= MJ_ID_ZHONG && id <= MJ_ID_BAI) {
+        pai->suit = mjSuitZFB;
+        pai->sign = id - MJ_ID_ZHONG + 1;
+    } else if (id >= MJ_ID_MEI && id <= MJ_ID_JU) {
+        pai->suit = mjSuitHua;
+        pai->sign = id - MJ_ID_MEI + 1;
+    } else if (id >= MJ_ID_CUN && id <= MJ_ID_DON) {
+        pai->suit = mjSuitSeason;
+        pai->sign = id - MJ_ID_CUN + 1;
+    } else {
+        pai->suit = 0;
+        pai->sign = 0;
+    }
+}
+
+void mjpai_init_ss(mjpai_t* pai, int suit, int sign)
+{
+    if (pai == NULL)
+        return;
+    if (suit <= mjSuitNone || suit > mjSuitUnknow) {
+        pai->id = 0;
+        pai->suit = 0;
+        pai->sign = 0;
+        return;
+    }
+    pai->sign = sign;
+    pai->suit = suit;
+    if (suit == mjSuitWan) {
+        pai->id = MJ_ID_1W + sign - 1;
+    } else if (suit == mjSuitTiao) {
+        pai->id = MJ_ID_1S + sign - 1;
+    } else if (suit == mjSuitTong) {
+        pai->id = MJ_ID_1T + sign - 1;
+    } else if (suit == mjSuitFeng) {
+        pai->id = MJ_ID_DONG + sign - 1;
+    } else if (suit == mjSuitZFB) {
+        pai->id = MJ_ID_ZHONG + sign - 1;
+    } else if (suit == mjSuitHua) {
+        pai->id = MJ_ID_MEI + sign - 1;
+    } else if (suit == mjSuitSeason) {
+        pai->id = MJ_ID_CUN + sign - 1;
+    } else {
+        pai->id = MJ_ID_UNKNOW;
+    }
+}
+
 int mjpai_equal(mjpai_t* a, mjpai_t* b)
 {
     if (a && b) {

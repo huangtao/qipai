@@ -22,45 +22,20 @@ void mjhz_init(mjhz_t* mj, int mode, int player_num)
     mj->inning = 0;
     mj->turn_time = 30;
 
-    /* 杭州麻将使用136张牌 */
-    /* 序数牌 */
+    /* 杭州麻将使用136张牌,108张序数+28张字牌 */
     n = 0;
     for (i = 0; i < 4; i++) {
-        for (j = 0; j < 10; j++) {
-            mj->deck[n].suit = mjSuitWan;
-            mj->deck[n].sign = mj1 + j;
-            n++;
-            mj->deck[n].suit = mjSuitSuo;
-            mj->deck[n].sign = mj1 + j;
-            n++;
-            mj->deck[n].suit = mjSuitTong;
-            mj->deck[n].sign = mj1 + j;
+        /* 序数牌 */
+        /* 1W~9T 27张 */
+        for (j = 0; j < 27; j++) {
+            mjpai_init_id(&mj->deck[n], MJ_ID_1W + j);
             n++;
         }
-    }
-    /* 字牌 */
-    for (i = 0; i < 4; i++) {
-        mj->deck[n].suit = mjSuitFeng;
-        mj->deck[n].sign = mjEast;
-        n++;
-        mj->deck[n].suit = mjSuitFeng;
-        mj->deck[n].sign = mjSouth;
-        n++;
-        mj->deck[n].suit = mjSuitFeng;
-        mj->deck[n].sign = mjWest;
-        n++;
-        mj->deck[n].suit = mjSuitFeng;
-        mj->deck[n].sign = mjNorth;
-        n++;
-        mj->deck[n].suit = mjSuitZFB;
-        mj->deck[n].sign = mjZhong;
-        n++;
-        mj->deck[n].suit = mjSuitZFB;
-        mj->deck[n].sign = mjFa;
-        n++;
-        mj->deck[n].suit = mjSuitZFB;
-        mj->deck[n].sign = mjBai;
-        n++;
+        /* 字牌 */
+        for (j = 0; j < 7; j++) {
+            mjpai_init_id(&mj->deck[n], MJ_ID_DONG + j);
+            n++;
+        }
     }
     mj->deck_all_num = n;
 

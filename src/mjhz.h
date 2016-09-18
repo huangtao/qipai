@@ -21,7 +21,6 @@ extern "C" {
 
 #define MJHZ_LEN_JS			MJHZ_MAX_PAITYPE+1	/* 用于计数 */
 
-
 /* 游戏状态 */
 typedef enum mjhz_gamestate_e {
     MJHZ_GAME_END = 0,   /* game end */

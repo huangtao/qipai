@@ -19,7 +19,7 @@ extern "C" {
  * 常用的不含百搭144张，若没有花牌为136张。
  * 顺子：由同花色三个连续的牌组成。
  * 刻子：又称“坎”，由三张或四张（又称杠子）相同的牌组成。
- * 面子：顺子和刻子的统称。
+ * 面子：顺子和刻子的统称。·
  * 将头：又称“眼”，胡牌需要的对子。
  * 胡牌：一副牌必须凑满四（五）副面子及一组将，才可以胡牌。
  * 庄家：每局掷骰子决定开牌位置的人。
@@ -81,10 +81,10 @@ typedef enum majiang_flower {
     mjPlum = mjMei,
     mjLan,
     mjOrchid = mjLan,
-    mjJu,
-    mjChrysan = mjJu,
     mjZhu,
-    mjBamboo = mjZhu
+    mjBamboo = mjZhu,
+    mjJu,
+    mjChrysan = mjJu
 }mjFlower;
 
 typedef enum majiang_season {
@@ -104,7 +104,10 @@ typedef enum majiang_id {
 	MJ_ID_1S, MJ_ID_2S, MJ_ID_3S, MJ_ID_4S, MJ_ID_5S, MJ_ID_6S, MJ_ID_7S, MJ_ID_8S, MJ_ID_9S,
 	MJ_ID_1T, MJ_ID_2T, MJ_ID_3T, MJ_ID_4T, MJ_ID_5T, MJ_ID_6T, MJ_ID_7T, MJ_ID_8T, MJ_ID_9T,
 	MJ_ID_DONG, MJ_ID_NAN, MJ_ID_XI, MJ_ID_BEI,
-	MJ_ID_ZHONG, MJ_ID_FA, MJ_ID_BAI
+    MJ_ID_ZHONG, MJ_ID_FA, MJ_ID_BAI,
+    MJ_ID_MEI, MJ_ID_LAN, MJ_ID_ZHU, MJ_ID_JU,
+    MJ_ID_CUN, MJ_ID_XIA, MJ_ID_QIU, MJ_ID_DON,
+    MJ_ID_UNKNOW
 }mjID;
 
 /* 面子类型 */
@@ -133,8 +136,12 @@ typedef struct mj_melded_s {
     int player_no;  /* 吃碰目标玩家 */
 }mj_melded_t;
 
+void mjpai_init_id(mjpai_t* pai, int id);
+void mjpai_init_ss(mjpai_t* pai, int suit, int sign);
+/* get id from suit & sign */
+int mjpai_ss2id(int suit, int sign);
 int mjpai_equal(mjpai_t* a, mjpai_t* b);
-unsigned char mjpai_encode(mjpai_t* card);
+
 void mjpai_decode(mjpai_t* card, unsigned char x);
 
 void mj_shuffle(mjpai_t* cards, int len);

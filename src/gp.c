@@ -918,7 +918,7 @@ int gp_analyse_search(cd_analyse* analyse, hand_type* ht_in, card_t* cards, int 
                         continue;
                     if (analyse->count[j] == 3 && j == 13)
                         continue;
-                    if (analyse->count[j] > 2) {
+                    if (analyse->count[j] >= 2) {
                         gp_copy_cards(analyse->raw_cards, cards, 3,
                                       card_logic2rank(j), 2);
                         ret = ht_in->num;
