@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include "ht_lch.h"
+#include "qp_error.h"
 
 /**
  * texas allin mode
@@ -59,11 +59,11 @@ void _deck_shuffle(texas_t* texas)
 
 int _deck_deal(texas_t* texas, card_t* card)
 {
-    if(!texas || !card)
-        return HTERR_PARAM;
+    if (!texas || !card)
+        return QIPAI_PARAM;
 
-    if(texas->deal_index >= TEXAS_DECK_NUM)
-        return HTERR_NOCARD;
+    if (texas->deal_index >= TEXAS_DECK_NUM)
+        return QIPAI_NOCARD;
 
     card->rank = texas->deck[texas->deal_index].rank;
     card->suit = texas->deck[texas->deal_index].suit;
@@ -76,7 +76,7 @@ void texas_init(texas_t* texas)
 {
     int i,j;
 
-    if(!texas)
+    if (!texas)
         return;
     _deck_init(texas);
     texas->round = 0;
@@ -100,32 +100,32 @@ void texas_init(texas_t* texas)
     texas->turn_max_chip = 0;
     texas->min_raise = 0;
 
-    for(i = 0; i < 5; i++){
+    for (i = 0; i < 5; i++) {
         texas->board[i].rank = 0;
         texas->board[i].suit = 0;
     }
 
-    for(i = 0; i < TEXAS_MAX_PLAYER; i++){
+    for (i = 0; i < TEXAS_MAX_PLAYER; i++) {
         texas->players[i].state = 0;
         texas->players[i].gold = 0;
         texas->players[i].score = 0;
         texas->players[i].param1 = 0;
         texas->players[i].param2 = 0;
         texas->players[i].card_num = 0;
-        for(j = 0; j < TEXAS_MAX_CARDS; ++j){
+        for (j = 0; j < TEXAS_MAX_CARDS; ++j) {
             texas->players[i].mycards[j].rank = 0;
             texas->players[i].mycards[j].suit = 0;
         }
         texas->players[i].mytype.name = 0;
         texas->players[i].mytype.param1 = 0;
         texas->players[i].mytype.param2 = 0;
-        for(j = 0; j < 5; j++){
+        for (j = 0; j < 5; j++) {
             texas->players[i].mybest[j].rank = 0;
             texas->players[i].mybest[j].suit = 0;
         }
 
         texas->pots[i].total_chip = 0;
-        for(j = 0; j < TEXAS_MAX_PLAYER; j++){
+        for (j = 0; j < TEXAS_MAX_PLAYER; j++) {
             texas->pots[i].player_chip[j] = 0;
             texas->pots[i].win_flag[j] = 0;
         }
@@ -137,22 +137,22 @@ void texas_start(texas_t* texas)
     int i,j,k;
     card_t card;
 
-    if(!texas)
+    if (!texas)
         return;
-    if(texas->player_num < 2) {
+    if (texas->player_num < 2) {
         printf("texas must >= 2 player!\n");
         return;
     }
-    if(texas->player_num >= TEXAS_MAX_PLAYER) {
+    if (texas->player_num >= TEXAS_MAX_PLAYER) {
         printf("texas must < %d player!\n", TEXAS_MAX_PLAYER);
         return;
     }
-    if(texas->small_blind <= 0) {
+    if (texas->small_blind <= 0) {
         printf("small blind must > 0!\n");
         return;
     }
-    for(i = 0;i < texas->player_num; i++){
-        if(texas->players[i].gold < (texas->small_blind * 2)) {
+    for (i = 0;i < texas->player_num; i++) {
+        if (texas->players[i].gold < (texas->small_blind * 2)) {
             printf("player's gold < small blind!\n");
             return;
         }
@@ -164,52 +164,51 @@ void texas_start(texas_t* texas)
     texas->b_jump_end = 0;
     texas->game_state = TEXAS_GAME_PREFLOP;
     texas->last_state = texas->game_state;
-    for(i = 0; i < TEXAS_MAX_PLAYER; ++i){
+    for (i = 0; i < TEXAS_MAX_PLAYER; ++i) {
         texas->players[i].state = PLAYER_ACTION_WAIT;
         texas->players[i].card_num = 0;
-        for(j = 0; j < TEXAS_MAX_CARDS; ++j){
+        for (j = 0; j < TEXAS_MAX_CARDS; ++j) {
             texas->players[i].mycards[j].rank = 0;
             texas->players[i].mycards[j].suit = 0;
         }
         texas->players[i].mytype.name = TEXAS_HIGHCARD;
         texas->players[i].mytype.param1 = 0;
-        for(j = 0; j < 5; j++){
+        for (j = 0; j < 5; j++) {
             texas->players[i].mybest[j].rank = 0;
             texas->players[i].mybest[j].suit = 0;
         }
 
         texas->pots[i].total_chip = 0;
-        for(j = 0; j < TEXAS_MAX_PLAYER; ++j){
+        for (j = 0; j < TEXAS_MAX_PLAYER; ++j) {
             texas->pots[i].player_chip[j] = 0;
             texas->pots[i].win_flag[j] = 0;
         }
     }
 
     /* the button position */
-    if(!texas->inning)
+    if (!texas->inning)
         texas->dealer_player_no = rand() % texas->player_num;
-    else{
+    else {
         texas->dealer_player_no++;
         if(texas->dealer_player_no >= texas->player_num)
             texas->dealer_player_no = 0;
     }
     /* small,big position */
-    if(texas->player_num == 2){
+    if (texas->player_num == 2) {
         /* heads-up(1v1) */
         texas->small_blind_no = texas->dealer_player_no;
-    }
-    else{
+    } else {
         texas->small_blind_no = texas->dealer_player_no + 1;
-        if(texas->small_blind_no >= texas->player_num)
+        if (texas->small_blind_no >= texas->player_num)
             texas->small_blind_no = 0;
     }
     texas->big_blind_no = texas->small_blind_no + 1;
-    if(texas->big_blind_no >= texas->player_num)
+    if (texas->big_blind_no >= texas->player_num)
         texas->big_blind_no = 0;
     /* first position */
-    if(texas->player_num == 2)
+    if (texas->player_num == 2)
         texas->first_player_no = texas->small_blind_no;
-    else{
+    else {
         texas->first_player_no = texas->big_blind_no + 1;
         if(texas->first_player_no >= texas->player_num)
             texas->first_player_no = 0;
@@ -226,39 +225,38 @@ void texas_start(texas_t* texas)
     texas->players[texas->big_blind_no].gold -= texas->turn_max_chip;
 
     /* draw two cards for every player */
-    for(i = 0; i < 2; ++i){
+    for (i = 0; i < 2; ++i) {
         k = texas->dealer_player_no + 1;
-        if(k >= texas->player_num)
+        if (k >= texas->player_num)
             k = 0;
-        for(j = 0; j < texas->player_num; ++j){
+        for (j = 0; j < texas->player_num; ++j) {
             _deck_deal(texas, &texas->players[k].mycards[i]);
             texas->players[k].card_num++;
             k++;
-            if(k >= texas->player_num)
+            if (k >= texas->player_num)
                 k = 0;
         }
     }
 
     /* draw five board cards */
-    if(texas->b_burn){
+    if (texas->b_burn) {
         _deck_deal(texas, &card);
-        for(i = 0; i < 3; ++i){
+        for (i = 0; i < 3; ++i) {
             _deck_deal(texas, &texas->board[i]);
         }
         _deck_deal(texas, &card);
         _deck_deal(texas, &texas->board[3]);
         _deck_deal(texas, &card);
         _deck_deal(texas, &texas->board[4]);
-    }
-    else{
-        for(i = 0; i < 5; ++i){
+    } else {
+        for (i = 0; i < 5; ++i) {
             _deck_deal(texas, &texas->board[i]);
         }
     }
 
     /* add public 5 cards to player */
-    for(i = 0; i < texas->player_num; ++i){
-        for(j = 0; j < 5; j++){
+    for (i = 0; i < texas->player_num; ++i) {
+        for (j = 0; j < 5; j++) {
             texas->players[i].mycards[2+j].rank = texas->board[j].rank;
             texas->players[i].mycards[2+j].suit = texas->board[j].suit;
         }
@@ -270,7 +268,7 @@ void texas_start(texas_t* texas)
 
 void texas_set_burn(texas_t* texas, int burn)
 {
-    if(!texas)
+    if (!texas)
         return;
 
     texas->b_burn = burn;
@@ -278,11 +276,11 @@ void texas_set_burn(texas_t* texas, int burn)
 
 void texas_set_blind(texas_t* texas, unsigned int chip)
 {
-    if(!texas)
+    if (!texas)
         return;
 
     texas->small_blind = chip;
-    if(texas->small_blind == 0)
+    if (texas->small_blind == 0)
         texas->small_blind = 1;
     texas->min_raise = 2 * texas->small_blind;
 }
@@ -292,13 +290,13 @@ uint64_t texas_player_bet(texas_t* texas, int player_no)
     int i;
     uint64_t chip;
 
-    if(player_no >= texas->player_num || player_no < 0) {
+    if (player_no >= texas->player_num || player_no < 0) {
         printf("player_bet no error!\n");
         return 0;
     }
 
     chip = 0;
-    for(i = 0; i <= texas->curr_poti; i++){
+    for (i = 0; i <= texas->curr_poti; i++) {
         chip += texas->pots[i].player_chip[player_no];
     }
 
@@ -310,15 +308,15 @@ uint64_t texas_player_win(texas_t* texas, int player_no)
     int i;
     uint64_t chip;
 
-    if(!texas)
+    if (!texas)
         return 0;
-    if(player_no >= texas->player_num || player_no < 0) {
+    if (player_no >= texas->player_num || player_no < 0) {
         printf("player_win no error!\n");
         return 0;
     }
 
     chip = 0;
-    for(i = 0; i <= texas->curr_poti; i++){
+    for (i = 0; i <= texas->curr_poti; i++) {
         chip += texas_pot_win(texas, i, player_no);
     }
 
@@ -330,26 +328,25 @@ uint64_t texas_pot_win(texas_t* texas, int pot_index, int player_no)
     int i,n;
     uint64_t chip;
 
-    if(!texas)
+    if (!texas)
         return 0;
-    if(pot_index > texas->curr_poti || pot_index < 0) {
+    if (pot_index > texas->curr_poti || pot_index < 0) {
         printf("pot index error!\n");
         return 0;
     }
-    if(player_no >= texas->player_num || player_no < 0) {
+    if (player_no >= texas->player_num || player_no < 0) {
         printf("pot_win player no error!\n");
         return 0;
     }
 
-    if(texas->pots[pot_index].win_flag[player_no]){
+    if (texas->pots[pot_index].win_flag[player_no]){
         n = 0;
         for(i = 0; i < TEXAS_MAX_PLAYER; i++){
             if(texas->pots[pot_index].win_flag[i])
                 n++;
         }
         chip = texas->pots[pot_index].total_chip / n;
-    }
-    else{
+    } else {
         chip = 0;
     }
 
@@ -367,14 +364,14 @@ void texas_calc_type(texas_t* texas, int player_no)
     card_t tempc;
     card_t su_cards[4][7];
 
-    if(!texas)
+    if (!texas)
         return;
-    if(player_no >= texas->player_num || player_no < 0) {
+    if (player_no >= texas->player_num || player_no < 0) {
         printf("calc type player no error!\n");
         return;
     }
 
-    if(texas->players[player_no].card_num < 5) {
+    if (texas->players[player_no].card_num < 5) {
         printf("calc type card num must >= 5!\n");
         return;
     }
@@ -386,7 +383,7 @@ void texas_calc_type(texas_t* texas, int player_no)
     memset(su_num, 0, sizeof(int) * 4);
     memset(sub, 0, sizeof(int) * 5);
 
-    for(i = 0; i < texas->players[player_no].card_num; ++i){
+    for (i = 0; i < texas->players[player_no].card_num; ++i) {
         p = &texas->players[player_no].mycards[i];
         su_cards[p->suit-1][su_num[p->suit-1]].rank = p->rank;
         su_cards[p->suit-1][su_num[p->suit-1]].suit = p->suit;
@@ -397,31 +394,30 @@ void texas_calc_type(texas_t* texas, int player_no)
 
     /* Royal Straight Flush */
     /* Straight Flush */
-    for(i = 0; i < 4; i++){
+    for (i = 0; i < 4; i++) {
         if(su_num[i] < 5) continue;
         memset(x, 0, sizeof(int) * 20);
-        for(j = 0; j < su_num[i]; ++j){
+        for (j = 0; j < su_num[i]; ++j) {
             v = texas_logicvalue(&su_cards[i][j]);
             x[v]++;
             /* for A2345(min straight) */
-            if(su_cards[i][j].rank == cdRankAce){
+            if (su_cards[i][j].rank == cdRankAce) {
                 x[1]++;
             }
         }
-        for(j = 14; j >= 5; j--){
-            if(x[j] && x[j-1] && x[j-2] && x[j-3] && x[j-4]){
+        for (j = 14; j >= 5; j--) {
+            if (x[j] && x[j-1] && x[j-2] && x[j-3] && x[j-4]) {
                 /* best hand */
-                for(m = 0; m < 5; m++){
+                for (m = 0; m < 5; m++) {
                     texas->players[player_no].mybest[m].rank = x[j-m];
                     texas->players[player_no].mybest[m].suit = i+1;
                 }
 
-                if(j == 14){
+                if (j == 14) {
                     /* Royal Flush */
                     texas->players[player_no].mytype.name = TEXAS_ROYAL;
                     return;
-                }
-                else{
+                } else {
                     texas->players[player_no].mytype.name = TEXAS_STRAIGHT_FLUSH;
                     texas->players[player_no].mytype.param1 = j;
                     return;
@@ -431,8 +427,8 @@ void texas_calc_type(texas_t* texas, int player_no)
         /* Flush */
         texas->players[player_no].mytype.name = TEXAS_FLUSH;
         m = 0;
-        for(j = 14; j >= 0; j--){
-            if(x[j]){
+        for (j = 14; j >= 0; j--) {
+            if (x[j]) {
                 sub[m] = j;
                 m++;
                 if(m >= 5) break;
@@ -443,8 +439,8 @@ void texas_calc_type(texas_t* texas, int player_no)
 
         /* best hand */
         m = 0;
-        for(j = 14; j >= 0; j--){
-            if(x[j] == 0) continue;
+        for (j = 14; j >= 0; j--) {
+            if (x[j] == 0) continue;
             texas->players[player_no].mybest[m].rank = texas_rankvalue(j);
             texas->players[player_no].mybest[m].suit = i+1;
             m++;
@@ -454,7 +450,7 @@ void texas_calc_type(texas_t* texas, int player_no)
     }
 
     memset(x, 0, sizeof(int) * 20);
-    for(i = 0; i < texas->players[player_no].card_num; ++i){
+    for (i = 0; i < texas->players[player_no].card_num; ++i) {
         v = texas_logicvalue(&texas->players[player_no].mycards[i]);
         x[v]++;
         if(texas->players[player_no].mycards[i].rank == cdRankAce)
@@ -462,15 +458,15 @@ void texas_calc_type(texas_t* texas, int player_no)
     }
 
     /* four of kind */
-    for(i = 2; i < 15; i++){
-        if(x[i] == 4){
+    for (i = 2; i < 15; i++) {
+        if (x[i] == 4) {
             sub[0] = i;
             texas->players[player_no].mytype.name = TEXAS_FOUR;
             sub[1] = 0;
-            for(j = 0; j < texas->players[player_no].card_num; ++j){
+            for (j = 0; j < texas->players[player_no].card_num; ++j) {
                 v = texas_logicvalue(&texas->players[player_no].mycards[j]);
-                if(v == i) continue;
-                if(v > sub[1]){
+                if (v == i) continue;
+                if (v > sub[1]) {
                     sub[1] = v;
                     tempc.rank = texas->players[player_no].mycards[j].rank;
                     tempc.suit = texas->players[player_no].mycards[j].suit;
@@ -478,7 +474,7 @@ void texas_calc_type(texas_t* texas, int player_no)
             }
             texas->players[player_no].mytype.param1 = sub[0] << 4 | sub[1];
             /* best hand */
-            for(j = 0; j < 4; j++){
+            for (j = 0; j < 4; j++) {
                 texas->players[player_no].mybest[j].rank = texas_rankvalue(i);
                 texas->players[player_no].mybest[j].suit = j + 1;
             }
@@ -489,22 +485,22 @@ void texas_calc_type(texas_t* texas, int player_no)
     }
 
     /* straight */
-    for(j = 14; j >= 5; j--){
-        if(x[j] && x[j-1] && x[j-2] && x[j-3] && x[j-4]){
+    for (j = 14; j >= 5; j--) {
+        if (x[j] && x[j-1] && x[j-2] && x[j-3] && x[j-4]) {
             texas->players[player_no].mytype.name = TEXAS_STRAIGHT;
             texas->players[player_no].mytype.param1 = j;
 
-            for(m = 0; m < 5; m++){
-                for(i = 0; i < texas->players[player_no].card_num; i++){
+            for (m = 0; m < 5; m++) {
+                for (i = 0; i < texas->players[player_no].card_num; i++) {
                     v = texas_logicvalue(&texas->players[player_no].mycards[i]);
                     flag = 0;
-                    if((j-m) == v)
+                    if ((j-m) == v)
                         flag = 1;
-                    if(j == 5 && (j-m) == 1 &&
-                        texas->players[player_no].mycards[i].rank == cdRankAce){
+                    if (j == 5 && (j-m) == 1 &&
+                        texas->players[player_no].mycards[i].rank == cdRankAce) {
                             flag = 1;
                     }
-                    if(flag){
+                    if (flag) {
                         texas->players[player_no].mybest[m].rank = texas->players[player_no].mycards[i].rank;
                         texas->players[player_no].mybest[m].suit = texas->players[player_no].mycards[i].suit;
                         break;
@@ -519,61 +515,61 @@ void texas_calc_type(texas_t* texas, int player_no)
 
     /* full house,three */
     sub[0] = 0;
-    for(i = 14; i >= 0; i--){
-        if(x[i] == 3){
+    for (i = 14; i >= 0; i--) {
+        if (x[i] == 3) {
             sub[0] = i;
             break;
         }
     }
     sub[1] = 0;
-    for(i = 14; i >= 0; i--){
-        if(x[i] == 2 && i > sub[1]){
+    for (i = 14; i >= 0; i--) {
+        if (x[i] == 2 && i > sub[1]) {
             sub[1] = i;
         }
     }
-    if(sub[0] && sub[1]){
+    if (sub[0] && sub[1]) {
         texas->players[player_no].mytype.name = TEXAS_FULLHOUSE;
         texas->players[player_no].mytype.param1 = sub[0] << 4 | sub[1];
 
         m = 0;
-        for(j = 0; j < texas->players[player_no].card_num; j++){
+        for (j = 0; j < texas->players[player_no].card_num; j++) {
             v = texas_logicvalue(&texas->players[player_no].mycards[j]);
-            if(sub[0] == v || sub[1] == v){
+            if (sub[0] == v || sub[1] == v) {
                 texas->players[player_no].mybest[m].rank = texas->players[player_no].mycards[j].rank;
                 texas->players[player_no].mybest[m].suit = texas->players[player_no].mycards[j].suit;
                 m++;
             }
-            if(m >= 5)
+            if (m >= 5)
                 break;
         }
         return;
     }
-    if(sub[0] > 0 && sub[1] == 0){
+    if (sub[0] > 0 && sub[1] == 0) {
         texas->players[player_no].mytype.name = TEXAS_THREE;
         m = 0;
         sub[1] = sub[2] = 0;
-        for(i = 14; i >= 0; i--){
-            if(x[i] == 1){
-                if(m == 0)
+        for (i = 14; i >= 0; i--) {
+            if (x[i] == 1) {
+                if (m == 0)
                     sub[1] = i;
                 else
                     sub[2] = i;
                 m++;
-                if(m == 2)
+                if (m == 2)
                     break;
             }
         }
         texas->players[player_no].mytype.param1 = sub[0] << 8 | sub[1] << 4 | sub[2];
 
         m = 0;
-        for(j = 0; j < texas->players[player_no].card_num; j++){
+        for (j = 0; j < texas->players[player_no].card_num; j++) {
             v = texas_logicvalue(&texas->players[player_no].mycards[j]);
-            if(v == sub[0] || v == sub[1] || v == sub[2]){
+            if (v == sub[0] || v == sub[1] || v == sub[2]) {
                 texas->players[player_no].mybest[m].rank = texas->players[player_no].mycards[j].rank;
                 texas->players[player_no].mybest[m].suit = texas->players[player_no].mycards[j].suit;
                 m++;
             }
-            if(m >= 5)
+            if (m >= 5)
                 break;
         }
         return;
@@ -582,20 +578,20 @@ void texas_calc_type(texas_t* texas, int player_no)
     /* pair */
     j = 0;
     memset(sub, 0, sizeof(int) * 5);
-    for(i = 14; i >= 0; i--){
-        if(x[i] == 2){
+    for (i = 14; i >= 0; i--) {
+        if (x[i] == 2) {
             j++;
-            if(sub[0] == 0) sub[0] = i;
+            if (sub[0] == 0) sub[0] = i;
             else sub[1] = i;
-            if(j == 2)
+            if (j == 2)
                 break;
         }
     }
-    if(j == 2){
+    if (j == 2) {
         texas->players[player_no].mytype.name = TEXAS_PAIR2;
         sub[2] = 0;
-        for(i = 14; i >= 0; i--){
-            if(x[i] == 1){
+        for (i = 14; i >= 0; i--) {
+            if (x[i] == 1) {
                 sub[2] = i;
                 break;
             }
@@ -603,45 +599,45 @@ void texas_calc_type(texas_t* texas, int player_no)
         texas->players[player_no].mytype.param1 = sub[0] << 8 | sub[1] << 4 | sub[2];
 
         m = 0;
-        for(i = 0; i < texas->players[player_no].card_num; i++){
+        for (i = 0; i < texas->players[player_no].card_num; i++) {
             v = texas_logicvalue(&texas->players[player_no].mycards[i]);
-            if(sub[0] == v || sub[1] == v || sub[2] == v){
+            if (sub[0] == v || sub[1] == v || sub[2] == v) {
                 texas->players[player_no].mybest[m].rank = texas->players[player_no].mycards[i].rank;
                 texas->players[player_no].mybest[m].suit = texas->players[player_no].mycards[i].suit;
                 m++;
             }
-            if(m >= 5)
+            if (m >= 5)
                 break;
         }
         return;
     }
-    if(j == 1){
+    if (j == 1) {
         texas->players[player_no].mytype.name = TEXAS_PAIR1;
         m = 0;
-        for(i = 19; i >= 0; i--){
-            if(x[i] == 1){
-                if(m == 0)
+        for (i = 19; i >= 0; i--) {
+            if (x[i] == 1) {
+                if (m == 0)
                     sub[1] = i;
-                else if(m == 1)
+                else if (m == 1)
                     sub[2] = i;
                 else
                     sub[3] = i; 
                 m++;
-                if(m == 3)
+                if (m == 3)
                     break;
             }
         }
         texas->players[player_no].mytype.param1 = sub[0] << 12 | sub[1] << 8 | sub[2] << 4 | sub[3];
 
         m = 0;
-        for(j = 0; j < texas->players[player_no].card_num; j++){
+        for (j = 0; j < texas->players[player_no].card_num; j++) {
             v = texas_logicvalue(&texas->players[player_no].mycards[j]);
-            if(v == sub[0] || v == sub[1] || v == sub[2] || v == sub[3]){
+            if (v == sub[0] || v == sub[1] || v == sub[2] || v == sub[3]) {
                 texas->players[player_no].mybest[m].rank = texas->players[player_no].mycards[j].rank;
                 texas->players[player_no].mybest[m].suit = texas->players[player_no].mycards[j].suit;
                 m++;
             }
-            if(m >= 5)
+            if (m >= 5)
                 break;
         }
         return;
@@ -651,20 +647,20 @@ void texas_calc_type(texas_t* texas, int player_no)
     texas->players[player_no].mytype.name = TEXAS_HIGHCARD;
     m = 0;
     memset(sub, 0, sizeof(int) * 5);
-    for(i = 14; i >= 0; i--){
-        if(x[i] == 1){
-            if(m == 0)
+    for (i = 14; i >= 0; i--) {
+        if (x[i] == 1) {
+            if (m == 0)
                 sub[0] = i;
-            else if(m == 1)
+            else if (m == 1)
                 sub[1] = i;
-            else if(m == 2)
+            else if (m == 2)
                 sub[2] = i;
-            else if(m == 3)
+            else if (m == 3)
                 sub[3] = i;
-            else if(m == 4)
+            else if (m == 4)
                 sub[4] = i;
             m++;
-            if(m == 5)
+            if (m == 5)
                 break;
         }
     }
@@ -673,15 +669,15 @@ void texas_calc_type(texas_t* texas, int player_no)
 
     /* best hand */
     m = 0;
-    for(i = 0; i < texas->players[player_no].card_num; i++){
+    for (i = 0; i < texas->players[player_no].card_num; i++) {
         v = texas_logicvalue(&texas->players[player_no].mycards[i]);
-        if(v == sub[0] || v == sub[1] || v == sub[2]
-        || v == sub[3] || v == sub[4]){
+        if (v == sub[0] || v == sub[1] || v == sub[2]
+        || v == sub[3] || v == sub[4]) {
             texas->players[player_no].mybest[m].rank = texas->players[player_no].mycards[i].rank;
             texas->players[player_no].mybest[m].suit = texas->players[player_no].mycards[i].suit;
             m++;
         }
-        if(m >= 5) break;
+        if (m >= 5) break;
     }
 }
 
@@ -690,11 +686,11 @@ void texas_end(texas_t* texas)
     int i,j,n,live_num,flag;
     texas_type ttmax;
 
-    if(!texas)
+    if (!texas)
         return;
 
     live_num = 0;
-    for(i = 0; i < texas->player_num; i++){
+    for (i = 0; i < texas->player_num; i++) {
         if(texas->players[i].state != PLAYER_ACTION_FOLD)
             live_num++;
     }
