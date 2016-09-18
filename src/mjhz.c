@@ -3,8 +3,6 @@
 #include <string.h>
 #include <stdio.h>
 
-const int  MJHZ_ID_BAI = 34;	/* 白板 */
-
 void mjhz_init(mjhz_t* mj, int mode, int player_num)
 {
     int i,j,n;
@@ -413,7 +411,7 @@ int mjhz_can_gang(mjhz_t* mj, int player_no)
         for (i = 0; i < MJHZ_MAX_CARDS; ++i,p++) {
             if (p->suit == 0 || p->sign == 0)
                 continue;
-            x = mjpai_encode(p);
+            x = p->id;
             if (x >= MJHZ_LEN_JS) continue;
             js[x]++;
         }
@@ -433,7 +431,7 @@ int mjhz_can_gang(mjhz_t* mj, int player_no)
                             mj->players[player_no].tiles[j].sign ==
                             mj->players[player_no].mj_sets[i].card.sign) {
                         /* 此牌可以加杠 */
-                        x = mjpai_encode(&mj->players[player_no].mj_sets[i].card);
+                        x = mj->players[player_no].mj_sets[i].card.id;
                         mask |= x << (num * 8);
                         num++;
                     }
@@ -476,9 +474,9 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
     for (i = 0; i < MJHZ_MAX_CARDS; ++i,p++) {
         if (p->suit == 0 || p->sign == 0)
             continue;
-        x = mjpai_encode(p);
+        x = p->id;
         if (x >= MJHZ_LEN_JS) continue;
-        if (x == MJHZ_ID_BAI) {
+        if (x == MJ_ID_BAI) {
             n_joker++;
             continue;
         }
@@ -486,7 +484,7 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
         n++;
     }
     if (mj->curr_player_no != player_no) {
-        x = mjpai_encode(&mj->last_played_mj);
+        x = mj->last_played_mj.id;
         if (x < MJHZ_LEN_JS)
             js[x]++;
     }
@@ -506,7 +504,7 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
             }
         }
         if (left_joker > 0) {
-            js_joker[MJHZ_ID_BAI] += left_joker;
+            js_joker[MJ_ID_BAI] += left_joker;
         }
     }
     if (mj_pair7(js_joker, MJHZ_LEN_JS)) {

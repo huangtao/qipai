@@ -29,7 +29,7 @@ extern "C" {
 /* majiang tile suit */
 typedef enum majiang_suit {
     mjSuitNone,
-	mjSuitWan,                      /* 万子 */
+    mjSuitWan,                      /* 万子 */
     mjSuitCharacters = mjSuitWan,
     mjSuitTiao,                     /* 条子 */
     mjSuitSuo = mjSuitTiao,
@@ -37,14 +37,14 @@ typedef enum majiang_suit {
     mjSuitTong,                     /* 筒子 */
     mjSuitDots = mjSuitTong,
     mjSuitFeng,                     /* 风牌 */
-	mjSuitWind = mjSuitFeng,
+    mjSuitWind = mjSuitFeng,
     mjSuitSanY,                     /* 三元牌(中发白) */
     mjSuitZFB = mjSuitSanY,
     mjSuitDragon = mjSuitSanY,
     mjSuitHua,                      /* 花牌 */
     mjSuitFlower = mjSuitHua,
     mjSuitSeason,
-	mjSuitUnknow
+    mjSuitUnknow
 }mjSuit;
 
 /* majiang ordinal */
@@ -99,11 +99,11 @@ typedef enum majiang_season {
 }mjSeason;
 
 typedef enum majiang_id {
-	MJ_ID_EMPTY,
-	MJ_ID_1W, MJ_ID_2W, MJ_ID_3W, MJ_ID_4W, MJ_ID_5W, MJ_ID_6W, MJ_ID_7W, MJ_ID_8W, MJ_ID_9W,
-	MJ_ID_1S, MJ_ID_2S, MJ_ID_3S, MJ_ID_4S, MJ_ID_5S, MJ_ID_6S, MJ_ID_7S, MJ_ID_8S, MJ_ID_9S,
-	MJ_ID_1T, MJ_ID_2T, MJ_ID_3T, MJ_ID_4T, MJ_ID_5T, MJ_ID_6T, MJ_ID_7T, MJ_ID_8T, MJ_ID_9T,
-	MJ_ID_DONG, MJ_ID_NAN, MJ_ID_XI, MJ_ID_BEI,
+    MJ_ID_EMPTY,
+    MJ_ID_1W, MJ_ID_2W, MJ_ID_3W, MJ_ID_4W, MJ_ID_5W, MJ_ID_6W, MJ_ID_7W, MJ_ID_8W, MJ_ID_9W,
+    MJ_ID_1S, MJ_ID_2S, MJ_ID_3S, MJ_ID_4S, MJ_ID_5S, MJ_ID_6S, MJ_ID_7S, MJ_ID_8S, MJ_ID_9S,
+    MJ_ID_1T, MJ_ID_2T, MJ_ID_3T, MJ_ID_4T, MJ_ID_5T, MJ_ID_6T, MJ_ID_7T, MJ_ID_8T, MJ_ID_9T,
+    MJ_ID_DONG, MJ_ID_NAN, MJ_ID_XI, MJ_ID_BEI,
     MJ_ID_ZHONG, MJ_ID_FA, MJ_ID_BAI,
     MJ_ID_MEI, MJ_ID_LAN, MJ_ID_ZHU, MJ_ID_JU,
     MJ_ID_CUN, MJ_ID_XIA, MJ_ID_QIU, MJ_ID_DON,
