@@ -21,16 +21,16 @@ OBJS = src/card.o \
        src/mj.o \
        src/mjhz.o
 
-TEST_OBJS = test/test.o
+TEST_OBJS = test/test_gp.o
 
 # build library and test app
-all: libqipai.a mytest
+all: libqipai.a test_gp
 .PHONY: all
 
 libqipai.a: $(OBJS)
 	$(AR) crs $@ $^
 
-mytest: $(TEST_OBJS) $(OBJS)
+test_gp: $(TEST_OBJS) $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^
 
 %.o: %.c $(INCLUDES)
