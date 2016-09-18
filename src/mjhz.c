@@ -9,7 +9,7 @@ void mjhz_init(mjhz_t* mj, int mode, int player_num)
 {
     int i,j,n;
 
-    if(!mj)
+    if (!mj)
         return;
     memset(mj, 0, sizeof(mjhz_t));
 
@@ -39,7 +39,7 @@ void mjhz_init(mjhz_t* mj, int mode, int player_num)
     }
     mj->deck_all_num = n;
 
-    for(i = 0; i < MJHZ_MAX_PLAYERS; i++){
+    for (i = 0; i < MJHZ_MAX_PLAYERS; i++) {
         mj->players[i].position = i;
     }
 }
@@ -48,7 +48,7 @@ void mjhz_start(mjhz_t* mj)
 {
     int i,direct,m,n;
 
-    if(!mj)
+    if (!mj)
         return;
     mj->round = 0;
     mj->game_state = MJHZ_GAME_PLAY;
@@ -58,8 +58,7 @@ void mjhz_start(mjhz_t* mj)
     mj->dice2 = rand() % 6 + 1;
 
     /* 白板是财神 */
-    mj->joker.suit = mjSuitZFB;
-    mj->joker.sign = mjBai;
+    mjpai_init_id(&mj->joker, MJ_ID_BAI);
 
     mj->last_played_mj.suit = 0;
     mj->last_played_mj.sign = 0;
