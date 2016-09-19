@@ -11,11 +11,20 @@ extern "C" {
 
 #include "mj.h"
 
+/* 根据计数索引数组返回对子数量 */
+int mj_pair_count(int* array, int len);
+
 /* 断幺九 */
 int mj_duan19(mjpai_t* pais, int length);
 
 /* 清一色(Pure hand) */
 int mj_qys(mjpai_t* pais, int length);
+
+/* 混一色(Clean hand) */
+int mj_hys(mjpai_t* pais, int length);
+
+/* 7对子 */
+int mj_pair7(int* array, int len);
 
 #ifdef __cplusplus
 }

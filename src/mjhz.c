@@ -73,7 +73,7 @@ void mjhz_start(mjhz_t* mj)
         /* 顺时针,每人抓12张,庄家先抓,一次4张 */
         m = n = 0;
         for (j = 0; j < 3; ++j) {
-            for (i = 0; i < MJHZ_MAX_PLAYERS; i++) {
+            for (i = 0; i < MJHZ_MAX_PLAYERS; ++i) {
                 direct = (mj->banker_no + i) % MJHZ_MAX_PLAYERS;
                 memcpy(mj->players[direct].tiles + m, mj->deck + n, 4 * sizeof(mjpai_t));
                 n += 4;
@@ -85,11 +85,28 @@ void mjhz_start(mjhz_t* mj)
         mjpai_copy(mj->players[mj->banker_no].tiles + m, mj->deck + n);
         mjpai_copy(mj->players[mj->banker_no].tiles + m + 1, mj->deck + n + 4);
         n++;
-        for (i = 0; i < MJHZ_MAX_PLAYERS; i++) {
+        for (i = 0; i < MJHZ_MAX_PLAYERS; ++i) {
             if (i == mj->banker_no) continue;
             direct = (mj->banker_no + i) % MJHZ_MAX_PLAYERS;
             mjpai_copy(mj->players[direct].tiles + m, mj->deck + n);
         }
+
+        /* 初始化分析数据 */
+        for (i = 0; i < MJHZ_MAX_PLAYERS; ++i) {
+            if (i == mj->banker_no)
+                m = 14;
+            else
+                m = 13;
+            for (j = 0; j < m; ++j) {
+                n = mj->players[i].tiles[j].id;
+                if (n <= 0 || n > MJHZ_MAX_PAITYPE) {
+                    printf("!!!error:find mjpai index > MJHZ_MAX_PAITYPE!\n");
+                    continue;
+                }
+                mj->players[i].tiles_js[n]++;
+            }
+        }
+
         /* the first player */
         mj->first_player_no = mj->banker_no;
         mj->curr_player_no = mj->first_player_no;

@@ -50,6 +50,7 @@ typedef struct mjhz_player_s {
     mjpai_t tiles[MJHZ_MAX_CARDS];
     mjpai_t tiles_played[MJHZ_DECK_CARDS/2];
     mj_melded_t mj_sets[MJHZ_MAX_SETS];
+    int tiles_js[MJHZ_LEN_JS];                  /* 用于分析麻将 */
     int last_played;
 	int can_chi;
 	int can_peng;
