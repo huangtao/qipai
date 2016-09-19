@@ -24,6 +24,7 @@ extern "C" {
  * 胡牌：一副牌必须凑满四（五）副面子及一组将，才可以胡牌。
  * 庄家：每局掷骰子决定开牌位置的人。
  * 连庄：庄家胡牌或者流局即可连庄。
+ * 番：也称台头，日语里面为役。
  */
 
 /* majiang tile suit */
@@ -138,10 +139,11 @@ typedef struct mj_melded_s {
 
 void mjpai_init_id(mjpai_t* pai, int id);
 void mjpai_init_ss(mjpai_t* pai, int suit, int sign);
+void mjpai_zero(mjpai_t* pai);
 /* get id from suit & sign */
 int mjpai_ss2id(int suit, int sign);
 int mjpai_equal(mjpai_t* a, mjpai_t* b);
-
+void mjpai_copy(mjpai_t* dest, mjpai_t* src);
 void mjpai_decode(mjpai_t* card, unsigned char x);
 
 void mj_shuffle(mjpai_t* cards, int len);
