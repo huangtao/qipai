@@ -14,6 +14,7 @@ SOURCES += ../src/card.c \
     ../src/gp.c \
     ../src/card_algo.c \
     ../src/mj.c \
+    ../src/mj_algo.c \
     ../src/mjhz.c
 
 HEADERS += ../src/card.h \
@@ -22,6 +23,7 @@ HEADERS += ../src/card.h \
     ../src/card_algo.h \
     ../src/qp_error.h \
     ../src/mj.h \
+    ../src/mj_algo.h \
     ../src/mjhz.h
 
 unix {
