@@ -73,6 +73,15 @@ void mjpai_init_ss(mjpai_t* pai, int suit, int sign)
     }
 }
 
+void mjpai_zero(mjpai_t* pai)
+{
+    if (pai) {
+        pai->id = 0;
+        pai->suit = 0;
+        pai->sign = 0;
+    }
+}
+
 int mjpai_equal(mjpai_t* a, mjpai_t* b)
 {
     if (a && b) {
@@ -82,6 +91,15 @@ int mjpai_equal(mjpai_t* a, mjpai_t* b)
         }
     }
     return -1;
+}
+
+void mjpai_copy(mjpai_t* dest, mjpai_t* src)
+{
+    if (src && dest) {
+        dest->id = src->id;
+        dest->suit = src->suit;
+        dest->sign = src->sign;
+    }
 }
 
 unsigned char mjpai_encode(mjpai_t* pai)

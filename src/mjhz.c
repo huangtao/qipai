@@ -17,8 +17,6 @@ void mjhz_init(mjhz_t* mj, int mode, int player_num)
         mj->mode = MJHZ_MODE_CLIENT;
     mj->player_num = player_num;
     mj->game_state = MJHZ_GAME_END;
-    mj->inning = 0;
-    mj->turn_time = 30;
 
     /* 杭州麻将使用136张牌,108张序数+28张字牌 */
     n = 0;
@@ -44,7 +42,7 @@ void mjhz_init(mjhz_t* mj, int mode, int player_num)
 
 void mjhz_start(mjhz_t* mj)
 {
-    int i,direct,m,n;
+    int i,j,direct,m,n;
 
     if (!mj)
         return;
@@ -57,10 +55,7 @@ void mjhz_start(mjhz_t* mj)
 
     /* 白板是财神 */
     mjpai_init_id(&mj->joker, MJ_ID_BAI);
-
-    mj->last_played_mj.suit = 0;
-    mj->last_played_mj.sign = 0;
-
+    mjpai_zero(&mj->last_played_mj);
     if (mj->mode == MJHZ_MODE_SERVER) {
         /* 洗牌 */
         mj_shuffle(mj->deck, mj->deck_all_num);
@@ -75,25 +70,25 @@ void mjhz_start(mjhz_t* mj)
                 - 20) % mj->deck_all_num;
         mj->deck_valid_num = mj->deck_all_num - 20;
 
-        /* 顺时针,每人抓12张,庄家先抓 */
+        /* 顺时针,每人抓12张,庄家先抓,一次4张 */
         m = n = 0;
-        for (i = 0; i < MJHZ_MAX_PLAYERS; i++) {
-            direct = (mj->banker_no + i) % MJHZ_MAX_PLAYERS;
-            memcpy(mj->players[direct].tiles + m, mj->deck + n, 4 * sizeof(mjpai_t));
-            n += 4;
+        for (j = 0; j < 3; ++j) {
+            for (i = 0; i < MJHZ_MAX_PLAYERS; i++) {
+                direct = (mj->banker_no + i) % MJHZ_MAX_PLAYERS;
+                memcpy(mj->players[direct].tiles + m, mj->deck + n, 4 * sizeof(mjpai_t));
+                n += 4;
+            }
+            m += 4;
         }
-        m += 12;
+
         /* 庄家跳牌2张,其他人一张 */
-        mj->players[mj->banker_no].tiles[m].suit = mj->deck[n].suit;
-        mj->players[mj->banker_no].tiles[m].sign = mj->deck[n].sign;
-        mj->players[mj->banker_no].tiles[m+1].suit = mj->deck[n+4].suit;
-        mj->players[mj->banker_no].tiles[m+1].sign = mj->deck[n+4].sign;
+        mjpai_copy(mj->players[mj->banker_no].tiles + m, mj->deck + n);
+        mjpai_copy(mj->players[mj->banker_no].tiles + m + 1, mj->deck + n + 4);
         n++;
         for (i = 0; i < MJHZ_MAX_PLAYERS; i++) {
             if (i == mj->banker_no) continue;
             direct = (mj->banker_no + i) % MJHZ_MAX_PLAYERS;
-            mj->players[direct].tiles[m].suit = mj->deck[n].suit;
-            mj->players[direct].tiles[m].suit = mj->deck[n].sign;
+            mjpai_copy(mj->players[direct].tiles + m, mj->deck + n);
         }
         /* the first player */
         mj->first_player_no = mj->banker_no;
