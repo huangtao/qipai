@@ -21,16 +21,20 @@ OBJS = src/card.o \
        src/mj.o \
        src/mjhz.o
 
-TEST_OBJS = test/test_gp.o
+TEST_GP_OBJS = test/test_gp.o
+TEST_MJHZ_OBJS = test/test_mjhz.o
 
 # build library and test app
-all: libqipai.a test_gp
+all: libqipai.a test_gp test_mjhz
 .PHONY: all
 
 libqipai.a: $(OBJS)
 	$(AR) crs $@ $^
 
-test_gp: $(TEST_OBJS) $(OBJS)
+test_gp: $(TEST_GP_OBJS) $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $^
+
+test_mjhz: $(TEST_MJHZ_OBJS) $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^
 
 %.o: %.c $(INCLUDES)

@@ -249,6 +249,8 @@ const char* mjpai_string(mjpai_t* pai)
                 strcpy(str, "XF");
             } else if (pai->sign == mjNorth) {
                 strcpy(str, "BF");
+            } else {
+                strcpy(str, "@@");
             }
         } else if (pai->suit == mjSuitZFB) {
             if (pai->sign == mjZhong) {
@@ -257,6 +259,8 @@ const char* mjpai_string(mjpai_t* pai)
                 strcpy(str, "FC");
             } else if (pai->sign == mjBai) {
                 strcpy(str, "BB");
+            } else {
+                strcpy(str, "@@");
             }
         } else if (pai->suit == mjSuitFlower) {
             if (pai->sign == mjMei) {
@@ -267,7 +271,9 @@ const char* mjpai_string(mjpai_t* pai)
                 strcpy(str, "JH");
             } else if (pai->sign == mjZhu) {
                 strcpy(str, "ZH");
-			}
+            } else {
+                strcpy(str, "@@");
+            }
         } else if (pai->suit == mjSuitSeason) {
             if (pai->sign == mjCun) {
                 strcpy(str, "CT");
@@ -277,7 +283,13 @@ const char* mjpai_string(mjpai_t* pai)
                 strcpy(str, "QT");
             } else if (pai->sign == mjDong) {
                 strcpy(str, "DT");
+            } else {
+                strcpy(str, "@@");
             }
+        } else if (pai->suit == mjSuitUnknow) {
+            strcpy(str, "??");
+        } else {
+            strcpy(str, "@@");
         }
     }
     return str;
