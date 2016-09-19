@@ -12,6 +12,7 @@ INCLUDES = src/card.h \
            src/card_algo.h \
            src/gp.h \
            src/mj.h \
+           src/mj_algo.h \
            src/mjhz.h
 
 OBJS = src/card.o \
@@ -19,6 +20,7 @@ OBJS = src/card.o \
        src/texas.o \
        src/card_algo.o \
        src/mj.o \
+       src/mj_algo.o \
        src/mjhz.o
 
 TEST_GP_OBJS = test/test_gp.o

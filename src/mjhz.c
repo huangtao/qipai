@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "mj_algo.h"
 
 void mjhz_init(mjhz_t* mj, int mode, int player_num)
 {
@@ -191,6 +192,7 @@ int mjhz_play(mjhz_t* mj, int player_no, mjpai_t* pai)
 {
     int i,n,flag;
     mjpai_t* p;
+    int gang_id[4];
 
     if(!mj || !pai)
         return -1;
@@ -245,7 +247,7 @@ int mjhz_play(mjhz_t* mj, int player_no, mjpai_t* pai)
     for (i = 0; i < mj->player_num; ++i) {
         if (i != player_no) {
             mj->players[i].can_hu = mjhz_can_hu(mj, i);
-            mj->players[i].can_gang = mjhz_can_gang(mj, i);
+            mj->players[i].can_gang = mjhz_can_gang(mj, i, gang_id);
             mj->players[i].can_peng = mjhz_can_peng(mj, i);
             mj->players[i].can_chi = mjhz_can_chi(mj, i);
         } else {
@@ -382,11 +384,10 @@ int mjhz_can_peng(mjhz_t* mj, int player_no)
 }
 
 /* 返回可以杠牌的数量 */
-int mjhz_can_gang(mjhz_t* mj, int player_no)
+int mjhz_can_gang(mjhz_t* mj, int player_no, int pai_gang[4])
 {
     int i,j,num,x;
     int mask;
-    int js[MJHZ_LEN_JS];
     mjpai_t* p;
 
     if (!mj)
@@ -395,6 +396,8 @@ int mjhz_can_gang(mjhz_t* mj, int player_no)
         return 0;
     if (mj->curr_player_no == player_no)
         return 0;
+    num = 0;
+    memset(pai_gang, 0, sizeof(int) * 4);
 
     if (mj->last_played_mj.suit > 0 &&
             mj->last_played_mj.sign > 0) {
@@ -418,42 +421,23 @@ int mjhz_can_gang(mjhz_t* mj, int player_no)
             return 0;
     } else {
         /* 暗杠或者加杠 */
-        memset(js, 0, sizeof(int) * MJHZ_LEN_JS);
-        p = mj->players[player_no].tiles;
-        for (i = 0; i < MJHZ_MAX_CARDS; ++i,p++) {
-            if (p->suit == 0 || p->sign == 0)
-                continue;
-            x = p->id;
-            if (x >= MJHZ_LEN_JS) continue;
-            js[x]++;
-        }
         /* 有没有暗杠 */
         for (i = 1; i < MJHZ_LEN_JS; i++) {
-            if (js[i] == 4) {
-                return 1;
+            if (mj->players[player_no].tiles_js[i] == 4) {
+                pai_gang[num++] = i;
             }
         }
-        num = 0;
-        mask = 0;
+        /* 加杠(已经碰了，再摸一张) */
         for (i = 0; i < MJHZ_MAX_SETS; ++i) {
             if (mj->players[player_no].mj_sets[i].type == mjMeldPeng) {
-                for (j = 0; j < MJHZ_MAX_CARDS; ++j) {
-                    if (mj->players[player_no].tiles[j].suit ==
-                            mj->players[player_no].mj_sets[i].card.suit &&
-                            mj->players[player_no].tiles[j].sign ==
-                            mj->players[player_no].mj_sets[i].card.sign) {
-                        /* 此牌可以加杠 */
-                        x = mj->players[player_no].mj_sets[i].card.id;
-                        mask |= x << (num * 8);
-                        num++;
-                    }
+                x = mj->players[player_no].mj_sets[i].card.id;
+                if (mj->players[player_no].tiles_js[x] > 0) {
+                    pai_gang[num++] = x;
                 }
             }
         }
-        if (num > 0)
-            return mask;
     }
-    return 0;
+    return num;
 }
 
 /*

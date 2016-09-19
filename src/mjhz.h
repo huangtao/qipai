@@ -98,8 +98,13 @@ int mjhz_play(mjhz_t* mj, int player_no, mjpai_t* card);
 void mjhz_draw(mjhz_t* mj, int is_gang);
 int mjhz_can_chi(mjhz_t* mj, int player_no);
 int mjhz_can_peng(mjhz_t* mj, int player_no);
-int mjhz_can_gang(mjhz_t* mj, int player_no);
+
+/* 杠判定。返回可以杠的数量,pai_gang返回杠的牌。 */
+int mjhz_can_gang(mjhz_t* mj, int player_no, int pai_gang[4]);
+
+/* 和(胡)判定 */
 int mjhz_can_hu(mjhz_t* mj, int player_no);
+
 int mjhz_chi(mjhz_t* mj, int player_no);
 int mjhz_peng(mjhz_t* mj, int player_no);
 int mjhz_gang(mjhz_t* mj, int player_no);

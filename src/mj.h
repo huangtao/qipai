@@ -142,7 +142,6 @@ void mjpai_init_ss(mjpai_t* pai, int suit, int sign);
 void mjpai_zero(mjpai_t* pai);
 /* get id from suit & sign */
 int mjpai_ss2id(int suit, int sign);
-int mjpai_equal(mjpai_t* a, mjpai_t* b);
 void mjpai_copy(mjpai_t* dest, mjpai_t* src);
 void mjpai_decode(mjpai_t* card, unsigned char x);
 
@@ -158,9 +157,6 @@ const char* mjpai_string(mjpai_t* card);
 int mj_all_melded(int* array, int len);
 /* 带百搭数量 */
 int mj_all_melded_joker(int* array, int len, int num_joker);
-
-/* 7对子判定 */
-int mj_pair7(int* array, int len);
 
 #ifdef __cplusplus
 }

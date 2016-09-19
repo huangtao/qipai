@@ -82,17 +82,6 @@ void mjpai_zero(mjpai_t* pai)
     }
 }
 
-int mjpai_equal(mjpai_t* a, mjpai_t* b)
-{
-    if (a && b) {
-        if (a->suit == b->suit &&
-                a->sign == b->sign) {
-            return 0;
-        }
-    }
-    return -1;
-}
-
 void mjpai_copy(mjpai_t* dest, mjpai_t* src)
 {
     if (src && dest) {
@@ -365,22 +354,5 @@ int mj_all_melded_joker(int* array, int len, int num_joker)
 	}
 
 	return yes;
-}
-
-int mj_pair7(int* array, int len)
-{
-    int i,n;
-
-    if (!array || len < 4)
-        return 0;
-
-    n = 0;
-    for (i = 0; i < len; ++i) {
-        if (*array == 2)
-            n++;
-        else if (*array == 4)
-            n += 2;
-    }
-    return n;
 }
 
