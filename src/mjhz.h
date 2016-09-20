@@ -14,7 +14,7 @@ extern "C" {
 #include "card_player.h"
 
 #define MJHZ_MAX_PLAYERS	4
-#define MJHZ_MAX_CARDS		17      /* 手上牌最大数量 */
+#define MJHZ_MAX_CARDS		14      /* 手上牌最大数量 */
 #define MJHZ_MAX_SETS       6       /* 面子最大数量 */
 #define MJHZ_DECK_CARDS     136		/* 杭州麻将麻将牌最大数量 */
 #define MJHZ_MAX_PAITYPE	34		/* 杭州麻将使用34种牌(27张序数+7张字牌) */
@@ -57,33 +57,36 @@ typedef struct mjhz_player_s {
 	int can_gang;
 	int can_hu;
 	mjhz_hu_t hu;
-}MJHZ_PLAYER;
+}mjhz_player_t;
 
 typedef struct mjhz_s {
-    int debug;          /* output debug info */
-    int mode;			/* client or server mode */
-    int game_state;     /* game state */
-    int turn_time;      /* turn time */
-    int curr_turn_time; /* current turn left time */
+    int debug;              /* output debug info */
+    int mode;               /* client or server mode */
+    int game_state;         /* game state */
+    int turn_time;          /* turn time */
+    int curr_turn_time;     /* current turn left time */
     int round;
     int inning;
-	int player_num;		/* 2 or 4 player */
-    int banker_no;		/* banker no. */
-    int first_player_no;/* first player no. */
-    int curr_player_no; /* current turn player no. */
+    int player_num;         /* 2 or 4 player */
+    int banker_no;          /* banker no. */
+    int first_player_no;    /* first player no. */
+    int curr_player_no;     /* current turn player no. */
 	int dice1;
 	int dice2;
-	mjpai_t deck[MJHZ_DECK_CARDS];	/* mj card */
 	int deck_all_num;
-	int deck_deal_index;/* current deal card index */
-	int deck_deal_end;	/* where deal end position */
-	int deck_deal_gang; /* deal when gang */
-	int deck_valid_num;	/* valid number card */
+    int deck_deal_index;    /* current deal card index */
+    int deck_deal_end;      /* where deal end position */
+    int deck_deal_gang;     /* deal when gang */
+    int deck_valid_num;     /* valid number card */
 	mjpai_t last_played_mj;
 	int last_played_no;
-	int lao_z;			/* 老庄 */
-	mjpai_t joker;		/* 百搭(财神) */
-    MJHZ_PLAYER players[MJHZ_MAX_PLAYERS];
+    int last_draw_no;       /* last draw player no */
+    int lao_z;              /* 老庄 */
+    int enable_dian_hu;     /* 能否点和(点炮、捉冲) */
+    mjpai_t joker;          /* 百搭(财神) */
+
+    mjpai_t deck[MJHZ_DECK_CARDS];              /* mj card */
+    mjhz_player_t players[MJHZ_MAX_PLAYERS];    /* players */
 }mjhz_t;
 
 /* init a mjhz game object */
@@ -92,10 +95,18 @@ void mjhz_init(mjhz_t* mj, int mode, int player_num);
 /* start a new game */
 void mjhz_start(mjhz_t* mj);
 
+/* sort a hand */
 void mjhz_sort(mjhz_t* mj, mjpai_t* tiles, int len);
+
+/* get a player valid mjpai number */
+int mjhz_pai_length(mjhz_t* mj, int player_no);
+
 const char* mjhz_hu_name(mjhz_hu_t* hu);
 int mjhz_play(mjhz_t* mj, int player_no, mjpai_t* card);
+
+/* 抓牌 */
 void mjhz_draw(mjhz_t* mj, int is_gang);
+
 int mjhz_can_chi(mjhz_t* mj, int player_no);
 int mjhz_can_peng(mjhz_t* mj, int player_no);
 

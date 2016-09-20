@@ -103,3 +103,42 @@ int mj_pair7(int* array, int len)
     else
         return 0;
 }
+
+/*
+ * 十三幺，每种花色的幺九牌加上所有字牌
+ * 东南西北中发白+3花色幺九+其中任意一张
+ * 组成雀头，14张和牌
+ */
+int mj_y13(int* array, int len)
+{
+    int i,*p,n;
+    int count_2;
+
+    if (!array || len == 0)
+        return 0;
+
+    n = 0;
+    count_2 = 0;
+    for (i = 0; i < len; ++i) {
+        p = array + i;
+        if (*p == 0) continue;
+        /* 最多2张 */
+        if (*p > 2) return 0;
+        if (i < MJ_ID_1W || i > MJ_ID_BAI)
+            return 0;
+        if (i > MJ_ID_1W || i < MJ_ID_9W)
+            return 0;
+        if (i > MJ_ID_1S || i < MJ_ID_9S)
+            return 0;
+        if (i > MJ_ID_1T || i < MJ_ID_9T)
+            return 0;
+        n += *p;
+        if (*p == 2) count_2++;
+    }
+    if (count_2 != 1)
+        return 0;
+    if (n != 14)
+        return 0;
+
+    return 1;
+}

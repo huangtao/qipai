@@ -19,24 +19,25 @@ extern "C" {
  * 常用的不含百搭144张，若没有花牌为136张。
  * 顺子：由同花色三个连续的牌组成。
  * 刻子：又称“坎”，由三张或四张（又称杠子）相同的牌组成。
- * 面子：顺子和刻子的统称。·
- * 将头：又称“眼”，胡牌需要的对子。
+ * 面子：顺子和刻子的统称。
+ * 将头：又称“眼”、雀頭（吊头），胡牌需要的对子。
  * 胡牌：一副牌必须凑满四（五）副面子及一组将，才可以胡牌。
  * 庄家：每局掷骰子决定开牌位置的人。
  * 连庄：庄家胡牌或者流局即可连庄。
  * 番：也称台头，日语里面为役。
+ * 自摸: Winning from the wall，摸牌起和（胡）。
  */
 
 /* majiang tile suit */
 typedef enum majiang_suit {
     mjSuitNone,
     mjSuitWan,                      /* 万子 */
-    mjSuitCharacters = mjSuitWan,
+    mjSuitCharacter = mjSuitWan,
     mjSuitTiao,                     /* 条子 */
     mjSuitSuo = mjSuitTiao,
     mjSuitBamboo = mjSuitTiao,
     mjSuitTong,                     /* 筒子 */
-    mjSuitDots = mjSuitTong,
+    mjSuitCircle = mjSuitTong,
     mjSuitFeng,                     /* 风牌 */
     mjSuitWind = mjSuitFeng,
     mjSuitSanY,                     /* 三元牌(中发白) */

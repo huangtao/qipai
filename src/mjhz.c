@@ -91,6 +91,7 @@ void mjhz_start(mjhz_t* mj)
             direct = (mj->banker_no + i) % MJHZ_MAX_PLAYERS;
             mjpai_copy(mj->players[direct].tiles + m, mj->deck + n);
         }
+        mj->last_draw_no = mj->banker_no;
 
         /* 初始化分析数据 */
         for (i = 0; i < MJHZ_MAX_PLAYERS; ++i) {
@@ -112,11 +113,13 @@ void mjhz_start(mjhz_t* mj)
         mj->first_player_no = mj->banker_no;
         mj->curr_player_no = mj->first_player_no;
     } else {
+        /* 初始化，真实数据需要收到服务器数据赋值。 */
         for (i = 0; i < MJHZ_MAX_PLAYERS; i++) {
             memset(mj->players[i].tiles, 0, sizeof(mjpai_t) * MJHZ_MAX_CARDS);
             memset(mj->players[i].tiles_played, 0, sizeof(mjpai_t) * MJHZ_MAX_CARDS);
         }
         mj->banker_no = 0;
+        mj->last_draw_no = 0;
         mj->first_player_no = 0;
         mj->curr_player_no = 0;
         mj->last_played_no = 0;
@@ -167,6 +170,22 @@ void mjhz_sort(mjhz_t* mj, mjpai_t* tiles, int len)
             pa->sign = temp.sign;
         }
     }
+}
+
+int mjhz_pai_length(mjhz_t* mj, int player_no)
+{
+    int i, n;
+
+    if (!mj)
+        return 0;
+    if (player_no >= mj->player_num)
+        return 0;
+    n = 0;
+    for (i = 0; i < MJHZ_MAX_CARDS; ++i) {
+        if (mj->players[player_no].tiles[i].id != MJ_ID_EMPTY)
+            n++;
+    }
+    return n;
 }
 
 const char* mjhz_hu_name(mjhz_hu_t* hu)
@@ -386,41 +405,17 @@ int mjhz_can_peng(mjhz_t* mj, int player_no)
 /* 返回可以杠牌的数量 */
 int mjhz_can_gang(mjhz_t* mj, int player_no, int pai_gang[4])
 {
-    int i,j,num,x;
-    int mask;
-    mjpai_t* p;
+    int i,num,x;
 
     if (!mj)
         return 0;
     if (player_no >= mj->player_num)
         return 0;
-    if (mj->curr_player_no == player_no)
-        return 0;
     num = 0;
     memset(pai_gang, 0, sizeof(int) * 4);
 
-    if (mj->last_played_mj.suit > 0 &&
-            mj->last_played_mj.sign > 0) {
-        /* 明杠(杠打出的牌) */
-        if (mj->last_played_mj.suit == mj->joker.suit &&
-                mj->last_played_mj.sign == mj->joker.sign) {
-            return 0;
-        }
-        num = 0;
-        p = mj->players[player_no].tiles;
-        for (i = 0; i < MJHZ_MAX_CARDS; ++i) {
-            if (p->suit == mj->last_played_mj.suit &&
-                    p->sign == mj->last_played_mj.sign) {
-                num++;
-            }
-            p++;
-        }
-        if (num >= 3)
-            return 1;
-        else
-            return 0;
-    } else {
-        /* 暗杠或者加杠 */
+    if (mj->curr_player_no == player_no && mj->last_draw_no == player_no) {
+        /* 轮到我且已经抓过牌了，暗杠或者加杠 */
         /* 有没有暗杠 */
         for (i = 1; i < MJHZ_LEN_JS; i++) {
             if (mj->players[player_no].tiles_js[i] == 4) {
@@ -435,6 +430,15 @@ int mjhz_can_gang(mjhz_t* mj, int player_no, int pai_gang[4])
                     pai_gang[num++] = x;
                 }
             }
+        }
+    } else {
+        /* 明杠(杠打出的牌) */
+        if (mj->last_played_mj.id == MJ_ID_BAI) {
+            return 0;
+        }
+        x = mj->last_played_mj.id;
+        if (mj->players[player_no].tiles_js[x] == 3) {
+            pai_gang[num++] = x;
         }
     }
     return num;
@@ -458,13 +462,26 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
         return 0;
     if (player_no >= mj->player_num)
         return 0;
-    if (mj->last_played_mj.suit == mj->joker.suit &&
-            mj->last_played_mj.sign == mj->joker.sign) {
-        return 0;
-    }
 
     n = 0;
     n_joker = 0;
+    memcpy(js, mj->players[player_no].tiles_js,
+           sizeof(int) * MJHZ_LEN_JS);
+    if (mj->last_draw_no != player_no &&
+            mj->last_played_mj.id != MJ_ID_EMPTY) {
+        /* 杭州麻将老庄才能捉冲。*/
+        if (mj->lao_z == 0)
+            return 0;
+        /* 配置开关 */
+        if (mj->enable_dian_hu == 0)
+            return 0;
+        /* 捉冲，财神不能捉。 */
+        if (mj->last_played_mj.id == mj->joker.id) {
+            return 0;
+        }
+        js[mj->last_played_mj.id]++;
+    }
+
     memset(js, 0, sizeof(int) * MJHZ_LEN_JS);
     p = mj->players[player_no].tiles;
     for (i = 0; i < MJHZ_MAX_CARDS; ++i,p++) {

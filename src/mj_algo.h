@@ -26,6 +26,9 @@ int mj_hys(mjpai_t* pais, int length);
 /* 7对子 */
 int mj_pair7(int* array, int len);
 
+/* 十三幺(国士无双 Thirteen orphans hand) */
+int mj_y13(int* array, int len);
+
 #ifdef __cplusplus
 }
 #endif
