@@ -453,9 +453,11 @@ int mjhz_can_gang(mjhz_t* mj, int player_no, int pai_gang[4])
 int mjhz_can_hu(mjhz_t* mj, int player_no)
 {
     int i,x,n;
+    int n_pai,n_4;
     int n_joker,left_joker;
     int js[MJHZ_LEN_JS];
     int js_joker[MJHZ_LEN_JS];
+    mjhz_hu_t hu;
     mjpai_t* p;
 
     if (!mj)
@@ -481,39 +483,61 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
         }
         js[mj->last_played_mj.id]++;
     }
-
-    memset(js, 0, sizeof(int) * MJHZ_LEN_JS);
-    p = mj->players[player_no].tiles;
-    for (i = 0; i < MJHZ_MAX_CARDS; ++i,p++) {
-        if (p->suit == 0 || p->sign == 0)
-            continue;
-        x = p->id;
-        if (x >= MJHZ_LEN_JS) continue;
-        if (x == MJ_ID_BAI) {
-            n_joker++;
-            continue;
-        }
-        js[x]++;
-        n++;
-    }
-    if (mj->curr_player_no != player_no) {
-        x = mj->last_played_mj.id;
-        if (x < MJHZ_LEN_JS)
-            js[x]++;
-    }
+    n_joker = js[MJ_ID_BAI];
+    js[MJ_ID_BAI] = 0;
+    memset(&hu, 0, sizeof(mjhz_hu_t));
 
     /* 是否七对子 */
     memcpy(js_joker, js, sizeof(int) * MJHZ_LEN_JS);
+    n_pai = n_4 = 0;
+    hu.is_pair7 = 1;
+    for (i = 1; i < MJHZ_LEN_JS; ++i) {
+        if (js_joker[i] == 0) continue;
+        n_pai += js_joker[i];
+        if (js_joker[i] == 2) {
+            continue;
+        } else if (js_joker[i] == 4) {
+            n_4++;
+        } else if (js_joker[i] == 3) {
+            if (n_joker > 0) {
+                n_joker--;
+                n_4++;
+            } else {
+                hu.is_pair7 = 0;
+                break;
+            }
+        } else if (js_joker[i] == 1) {
+            if (n_joker > 0) {
+                n_joker--;
+                /* 是否爆头 */
+                if ()
+            } else {
+                hu.is_pair7 = 0;
+                break;
+            }
+        }
+    }
     if (n_joker > 0) {
         /* 财神处理 */
         left_joker = n_joker;
         for (i = 0; i < MJHZ_LEN_JS; ++i) {
             if (js_joker[i] == 0) continue;
-            if ((js_joker[i] % 2) > 0) {
+            if (js_joker[i] == 1 || js_joker[i] == 3) {
                 js_joker[i]++;
                 left_joker--;
                 if (left_joker == 0)
                     break;
+            }
+        }
+        /* 财神去凑更多的豪华数量 */
+        if (left_joker >= 2) {
+            for (i = 0; i < MJHZ_LEN_JS; ++i) {
+                if (js_joker[i] == 2) {
+                    js_joker[i] = 4;
+                    left_joker -= 2;
+                    if (left_joker == 0)
+                        break;
+                }
             }
         }
         if (left_joker > 0) {

@@ -35,10 +35,10 @@ typedef enum mjhz_mode_e {
 /* mjhz hu info */
 typedef struct mjhz_hu_s {
 	int fan;		/* 番数 */
-    int isPair7;	/* 7对子 */
-	int pair7H4;	/* 7对子包含4个的数量 */
-	int isBaoTou;	/* 爆头 */
-	int isCaiPiao;	/* 财飘 */
+    int is_pair7;	/* 7对子 */
+    int pair7_h4;	/* 7对子包含4个的数量 */
+    int is_baotou;	/* 爆头 */
+    int is_caipiao;	/* 财飘 */
 }mjhz_hu_t;
 
 typedef struct mjhz_player_s {
