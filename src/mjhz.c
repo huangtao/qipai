@@ -293,7 +293,7 @@ int mjhz_play(mjhz_t* mj, int player_no, mjpai_t* pai)
     }
     if (!flag) {
         mjhz_next_player(mj);
-        mjhz_draw(mj, 0);
+        mjhz_takes(mj, 0);
     }
 
     return 1;
@@ -455,13 +455,12 @@ int mjhz_can_gang(mjhz_t* mj, int player_no, int pai_gang[4])
  */
 int mjhz_can_hu(mjhz_t* mj, int player_no)
 {
-    int i,x,n;
+    int i,n;
     int n_pai,n_4;
     int n_joker,left_joker;
     int pai_takes; /* 刚刚摸到的牌 */
     int js[MJHZ_LEN_JS];
     int js_joker[MJHZ_LEN_JS];
-    mjpai_t* p;
 
     if (!mj)
         return 0;
@@ -506,7 +505,6 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
         } else if (js_joker[i] == 3) {
             if (left_joker > 0) {
                 left_joker--;
-                n_4++;
             } else {
                 mj->players[player_no].hu.is_pair7 = 0;
                 break;
@@ -523,8 +521,6 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
     if (mj->players[player_no].hu.is_pair7 &&
             (n_pai + n_joker) == MJHZ_MAX_CARDS) {
         /* 是7对子 */
-        if (left_joker > 0)
-            n_4 += left_joker / 2;
         mj->players[player_no].hu.pair7_h4 = n_4;
 
         /* 判定爆头 */
