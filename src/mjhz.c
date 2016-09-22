@@ -461,7 +461,6 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
     int pai_takes; /* 刚刚摸到的牌 */
     int js[MJHZ_LEN_JS];
     int js_joker[MJHZ_LEN_JS];
-    mjhz_hu_t hu;
     mjpai_t* p;
 
     if (!mj)
@@ -491,13 +490,12 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
     }
     n_joker = left_joker = js[MJ_ID_BAI];
     js[MJ_ID_BAI] = 0;
-    memset(&hu, 0, sizeof(mjhz_hu_t));
+    memset(&mj->players[player_no].hu, 0, sizeof(mjhz_hu_t));
 
     /* 是否七对子 */
     memcpy(js_joker, js, sizeof(int) * MJHZ_LEN_JS);
     n_pai = n_4 = 0;
-    hu.is_pair7 = 1;
-    hu.is_baotou = 0;
+    mj->players[player_no].hu.is_pair7 = 1;
     for (i = 1; i < MJHZ_LEN_JS; ++i) {
         if (js_joker[i] == 0) continue;
         n_pai += js_joker[i];
@@ -508,37 +506,45 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
         } else if (js_joker[i] == 3) {
             if (left_joker > 0) {
                 left_joker--;
-                js_joker[i]++;
                 n_4++;
             } else {
-                hu.is_pair7 = 0;
+                mj->players[player_no].hu.is_pair7 = 0;
                 break;
             }
         } else if (js_joker[i] == 1) {
             if (left_joker > 0) {
                 left_joker--;
-                js_joker[i]++;
-                if (i == pai_takes) {
-                    /* 爆头 */
-                    hu.is_baotou = 1;
-                }
             } else {
-                hu.is_pair7 = 0;
+                mj->players[player_no].hu.is_pair7 = 0;
                 break;
             }
         }
     }
-    if (hu.is_pair7 && (n_pai + n_joker) == MJHZ_MAX_CARDS) {
+    if (mj->players[player_no].hu.is_pair7 &&
+            (n_pai + n_joker) == MJHZ_MAX_CARDS) {
         /* 是7对子 */
-        if (left_joker > 0) {
-            /* 2 or 4 */
+        if (left_joker > 0)
             n_4 += left_joker / 2;
-            if (pai_takes == MJ_ID_BAI) {
-                /* 最后摸上的财神 */
-                hu.is_baotou = 1;
+        mj->players[player_no].hu.pair7_h4 = n_4;
+
+        /* 判定爆头 */
+        if (n_joker > 0) {
+            left_joker = n_joker - 1;
+            js_joker[pai_takes]--;
+            mj->players[player_no].hu.is_baotou = 1;
+            for (i = 1; i < MJHZ_LEN_JS; ++i) {
+                if (js_joker[i] % 2 == 0)
+                    continue;
+                else {
+                    if (left_joker > 0) {
+                        left_joker--;
+                    } else {
+                        mj->players[player_no].hu.is_baotou = 0;
+                        break;
+                    }
+                }
             }
         }
-        hu.pair7_h4 = n_4;
         return 1;
     }
 
