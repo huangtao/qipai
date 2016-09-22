@@ -91,7 +91,7 @@ void mjhz_start(mjhz_t* mj)
             direct = (mj->banker_no + i) % MJHZ_MAX_PLAYERS;
             mjpai_copy(mj->players[direct].tiles + m, mj->deck + n);
         }
-        mj->last_draw_no = mj->banker_no;
+        mj->last_takes_no = mj->banker_no;
 
         /* 初始化分析数据 */
         for (i = 0; i < MJHZ_MAX_PLAYERS; ++i) {
@@ -119,7 +119,7 @@ void mjhz_start(mjhz_t* mj)
             memset(mj->players[i].tiles_played, 0, sizeof(mjpai_t) * MJHZ_MAX_CARDS);
         }
         mj->banker_no = 0;
-        mj->last_draw_no = 0;
+        mj->last_takes_no = 0;
         mj->first_player_no = 0;
         mj->curr_player_no = 0;
         mj->last_played_no = 0;
@@ -417,8 +417,8 @@ int mjhz_can_gang(mjhz_t* mj, int player_no, int pai_gang[4])
     num = 0;
     memset(pai_gang, 0, sizeof(int) * 4);
 
-    if (mj->curr_player_no == player_no && mj->last_draw_no == player_no) {
-        /* 轮到我且已经抓过牌了，暗杠或者加杠 */
+    if (mj->curr_player_no == player_no && mj->last_takes_no == player_no) {
+        /* 轮到我且已经摸过牌了，暗杠或者加杠 */
         /* 有没有暗杠 */
         for (i = 1; i < MJHZ_LEN_JS; i++) {
             if (mj->players[player_no].tiles_js[i] == 4) {
@@ -471,7 +471,7 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
     n_joker = 0;
     memcpy(js, mj->players[player_no].tiles_js,
            sizeof(int) * MJHZ_LEN_JS);
-    if (mj->last_draw_no != player_no &&
+    if (mj->last_takes_no != player_no &&
             mj->last_played_mj.id != MJ_ID_EMPTY) {
         /* 杭州麻将老庄才能捉冲。*/
         if (mj->lao_z == 0)

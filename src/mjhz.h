@@ -80,7 +80,7 @@ typedef struct mjhz_s {
     int deck_valid_num;     /* valid number card */
 	mjpai_t last_played_mj;
 	int last_played_no;
-    int last_draw_no;       /* last draw player no */
+    int last_takes_no;      /* last takes(摸牌) player no */
     int lao_z;              /* 老庄 */
     int enable_dian_hu;     /* 能否点和(点炮、捉冲) */
     mjpai_t joker;          /* 百搭(财神) */
