@@ -104,8 +104,8 @@ int mjhz_pai_length(mjhz_t* mj, int player_no);
 const char* mjhz_hu_name(mjhz_hu_t* hu);
 int mjhz_play(mjhz_t* mj, int player_no, mjpai_t* card);
 
-/* 抓牌 */
-void mjhz_draw(mjhz_t* mj, int is_gang);
+/* 摸牌 */
+void mjhz_takes(mjhz_t* mj, int is_gang);
 
 int mjhz_can_chi(mjhz_t* mj, int player_no);
 int mjhz_can_peng(mjhz_t* mj, int player_no);

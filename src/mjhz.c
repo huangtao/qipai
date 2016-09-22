@@ -201,8 +201,11 @@ const char* mjhz_hu_name(mjhz_hu_t* hu)
     return hu_name[0];
 }
 
-/* 抓牌 */
-void mjhz_draw(mjhz_t* mj, int is_gang)
+/*
+ * 抓牌
+ * 抓到的牌规定放在数组的最后，等打出后排序
+ */
+void mjhz_takes(mjhz_t* mj, int is_gang)
 {
 }
 
@@ -455,6 +458,7 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
     int i,x,n;
     int n_pai,n_4;
     int n_joker,left_joker;
+    int pai_takes; /* 刚刚摸到的牌 */
     int js[MJHZ_LEN_JS];
     int js_joker[MJHZ_LEN_JS];
     mjhz_hu_t hu;
@@ -482,8 +486,10 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
             return 0;
         }
         js[mj->last_played_mj.id]++;
+    } else {
+        pai_takes = mj->players[player_no].tiles[MJHZ_MAX_CARDS-1].id;
     }
-    n_joker = js[MJ_ID_BAI];
+    n_joker = left_joker = js[MJ_ID_BAI];
     js[MJ_ID_BAI] = 0;
     memset(&hu, 0, sizeof(mjhz_hu_t));
 
@@ -491,6 +497,7 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
     memcpy(js_joker, js, sizeof(int) * MJHZ_LEN_JS);
     n_pai = n_4 = 0;
     hu.is_pair7 = 1;
+    hu.is_baotou = 0;
     for (i = 1; i < MJHZ_LEN_JS; ++i) {
         if (js_joker[i] == 0) continue;
         n_pai += js_joker[i];
@@ -499,59 +506,39 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
         } else if (js_joker[i] == 4) {
             n_4++;
         } else if (js_joker[i] == 3) {
-            if (n_joker > 0) {
-                n_joker--;
+            if (left_joker > 0) {
+                left_joker--;
+                js_joker[i]++;
                 n_4++;
             } else {
                 hu.is_pair7 = 0;
                 break;
             }
         } else if (js_joker[i] == 1) {
-            if (n_joker > 0) {
-                n_joker--;
-                /* 是否爆头 */
-                if ()
+            if (left_joker > 0) {
+                left_joker--;
+                js_joker[i]++;
+                if (i == pai_takes) {
+                    /* 爆头 */
+                    hu.is_baotou = 1;
+                }
             } else {
                 hu.is_pair7 = 0;
                 break;
             }
         }
     }
-    if (n_joker > 0) {
-        /* 财神处理 */
-        left_joker = n_joker;
-        for (i = 0; i < MJHZ_LEN_JS; ++i) {
-            if (js_joker[i] == 0) continue;
-            if (js_joker[i] == 1 || js_joker[i] == 3) {
-                js_joker[i]++;
-                left_joker--;
-                if (left_joker == 0)
-                    break;
-            }
-        }
-        /* 财神去凑更多的豪华数量 */
-        if (left_joker >= 2) {
-            for (i = 0; i < MJHZ_LEN_JS; ++i) {
-                if (js_joker[i] == 2) {
-                    js_joker[i] = 4;
-                    left_joker -= 2;
-                    if (left_joker == 0)
-                        break;
-                }
-            }
-        }
+    if (hu.is_pair7 && (n_pai + n_joker) == MJHZ_MAX_CARDS) {
+        /* 是7对子 */
         if (left_joker > 0) {
-            js_joker[MJ_ID_BAI] += left_joker;
+            /* 2 or 4 */
+            n_4 += left_joker / 2;
+            if (pai_takes == MJ_ID_BAI) {
+                /* 最后摸上的财神 */
+                hu.is_baotou = 1;
+            }
         }
-    }
-    if (mj_pair7(js_joker, MJHZ_LEN_JS)) {
-        /* 是7对子得到豪华数量 */
-        mj->players[player_no].hu.isPair7 = 1;
-        mj->players[player_no].hu.pair7H4 = 0;
-        for (i = 0; i < MJHZ_LEN_JS; ++i) {
-            if (js_joker[i] == 4)
-                mj->players[player_no].hu.pair7H4++;
-        }
+        hu.pair7_h4 = n_4;
         return 1;
     }
 
