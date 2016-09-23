@@ -447,6 +447,97 @@ int mjhz_can_gang(mjhz_t* mj, int player_no, int pai_gang[4])
     return num;
 }
 
+int mjhz_all_melded(int array[MJHZ_LEN_JS])
+{
+    int i,j,index;
+    int js[MJHZ_LEN_JS];
+
+    memcpy(js, array, sizeof(int) * MJHZ_LEN_JS);
+    /* 序数牌 */
+    for (i = 0; i < 3; ++i) {
+        for (j = 0; i < 7; ++j) {
+            index = MJ_ID_1W + i * 9 + j;
+            if (js[index] % 3 == 0)
+                continue;
+            else if (js[index] % 3 == 1) {
+                if (js[index+1] > 0 && js[index+2] > 0) {
+                    js[index+1]--;
+                    js[index+2]--;
+                } else {
+                    return 0;
+                }
+            } else if (js[index] % 3 == 2) {
+                if (js[index+1] >= 2 && js[index+2] >= 2) {
+                    js[index+1] -= 2;
+                    js[index+2] -= 2;
+                } else {
+                    return 0;
+                }
+            }
+        }
+        /* 8,9 */
+        if (js[i*9+7] % 3 == 0 && js[i*9+8] % 3 == 0)
+            continue;
+        else
+            return 0;
+    }
+    /* 字牌 */
+    for (i = MJ_ID_DONG; i < MJ_ID_BAI; ++i) {
+        if (js[i] % 3 == 0)
+            continue;
+        else
+            return 0;
+    }
+
+    return 1;
+}
+
+/*
+ * 此版本适用没有花牌的判定
+ */
+int mjhz_all_melded_joker(int array[MJHZ_LEN_JS], int num_joker)
+{
+    int i,yes,n;
+    int* p;
+
+    yes = 0;
+    p = array;
+    if (num_joker > 0) {
+        /* 先判定风牌 */
+        p = array + MJ_ID_DONG;
+        for (i = MJ_ID_DONG; i <= MJ_ID_BAI; ++i) {
+            n = *p;
+            if (n == 3 || n == 0) continue;
+            if (n == 1) {
+                if (num_joker < 2) {
+                    return 0;
+                }
+                num_joker -= 2;
+                *p = 3;
+            } else if (n == 2) {
+                if (num_joker < 1) {
+                    return 0;
+                }
+                num_joker--;
+                *p = 3;
+            }
+            p++;
+        }
+        /* 序数牌 */
+        p = array + MJ_ID_1W;
+        for (i = MJ_ID_1W; i <= MJ_ID_9T; ++i) {
+            n = *p;
+            if (i == MJ_ID_8W || i == MJ_ID_8S || i == MJ_ID_8T) {
+                /* 8W,8S,8T */
+            }
+        }
+    } else {
+        yes = mj_all_melded(array);
+    }
+
+    return yes;
+}
+
 /*
  * 基本胡牌公式
  * m * ABC + n * AAA + AA

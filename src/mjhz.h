@@ -113,6 +113,12 @@ int mjhz_can_peng(mjhz_t* mj, int player_no);
 /* 杠判定。返回可以杠的数量,pai_gang返回杠的牌。 */
 int mjhz_can_gang(mjhz_t* mj, int player_no, int pai_gang[4]);
 
+/* 是否全顺子和刻子 */
+int mjhz_all_melded(int array[MJHZ_LEN_JS]);
+
+/* 带财神数量 */
+int mjhz_all_melded_joker(int array[MJHZ_LEN_JS], int num_joker);
+
 /* 和(胡)判定 */
 int mjhz_can_hu(mjhz_t* mj, int player_no);
 

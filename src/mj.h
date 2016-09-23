@@ -108,7 +108,7 @@ typedef enum majiang_id {
     MJ_ID_DONG, MJ_ID_NAN, MJ_ID_XI, MJ_ID_BEI,
     MJ_ID_ZHONG, MJ_ID_FA, MJ_ID_BAI,
     MJ_ID_MEI, MJ_ID_LAN, MJ_ID_ZHU, MJ_ID_JU,
-    MJ_ID_CUN, MJ_ID_XIA, MJ_ID_QIU, MJ_ID_DON,
+    MJ_ID_CUN, MJ_ID_XIA, MJ_ID_QIU, MJ_ID_SDONG,
     MJ_ID_UNKNOW
 }mjID;
 
@@ -153,11 +153,6 @@ void mj_trim(mjpai_t* cards, int len);
  */
 const char* mj_string(mjpai_t* cards, int len, int line_number);
 const char* mjpai_string(mjpai_t* card);
-
-/* 是否全顺子和刻子 */
-int mj_all_melded(int* array, int len);
-/* 带百搭数量 */
-int mj_all_melded_joker(int* array, int len, int num_joker);
 
 #ifdef __cplusplus
 }
