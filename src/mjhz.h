@@ -48,7 +48,7 @@ typedef struct mjhz_player_s {
     int64_t score;
     uint64_t gold;
     mjpai_t tiles[MJHZ_MAX_CARDS];
-    mjpai_t tiles_played[MJHZ_DECK_CARDS/2];
+    int tiles_played[MJHZ_DECK_CARDS/2];
     mj_melded_t mj_sets[MJHZ_MAX_SETS];
     int tiles_js[MJHZ_LEN_JS];                  /* 用于分析麻将 */
     int last_played;
@@ -73,17 +73,19 @@ typedef struct mjhz_s {
     int curr_player_no;     /* current turn player no. */
 	int dice1;
 	int dice2;
+
 	int deck_all_num;
     int deck_deal_index;    /* current deal card index */
     int deck_deal_end;      /* where deal end position */
     int deck_deal_gang;     /* deal when gang */
     int deck_valid_num;     /* valid number card */
-	mjpai_t last_played_mj;
+
+    int last_played_mj;
 	int last_played_no;
     int last_takes_no;      /* last takes(摸牌) player no */
     int lao_z;              /* 老庄 */
     int enable_dian_hu;     /* 能否点和(点炮、捉冲) */
-    mjpai_t joker;          /* 百搭(财神) */
+    int joker;              /* 百搭(财神) */
 
     mjpai_t deck[MJHZ_DECK_CARDS];              /* mj card */
     mjhz_player_t players[MJHZ_MAX_PLAYERS];    /* players */
@@ -101,8 +103,8 @@ void mjhz_sort(mjhz_t* mj, mjpai_t* tiles, int len);
 /* get a player valid mjpai number */
 int mjhz_pai_length(mjhz_t* mj, int player_no);
 
-const char* mjhz_hu_name(mjhz_hu_t* hu);
-int mjhz_play(mjhz_t* mj, int player_no, mjpai_t* card);
+/* 打牌 */
+int mjhz_play(mjhz_t* mj, int player_no, int pai_id);
 
 /* 摸牌 */
 void mjhz_takes(mjhz_t* mj, int is_gang);
@@ -127,7 +129,10 @@ int mjhz_peng(mjhz_t* mj, int player_no);
 int mjhz_gang(mjhz_t* mj, int player_no);
 int mjhz_hu(mjhz_t* mj, int player_no);
 void mjhz_next_player(mjhz_t* mj);
+
+/* 帮助函数 */
 void mjhz_dump(mjhz_t* mj);
+const char* mjhz_hu_name(mjhz_hu_t* hu);
 
 #ifdef __cplusplus
 }

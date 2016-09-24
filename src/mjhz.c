@@ -135,15 +135,35 @@ static int _range_melded(int array[MJHZ_LEN_JS], int start, int* num_joker)
     } else {
         js[8] = 0;
     }
-
+    *num_joker = left_joker;
     return 1;
 }
 
 /*
  * 内部用于判断字牌是否全成面子
  */
-static int _hornor_melded(int array[MJHZ_LEN_JS], int start, int* num_joker)
+static int _hornor_melded(int array[MJHZ_LEN_JS], int* num_joker)
 {
+    int i,left_joker;
+    int js[7];
+
+    if (num_joker == NULL)
+        return 0;
+    left_joker = *num_joker;
+    if (left_joker < 0 || left_joker > 4)
+        return 0;
+    memcpy(js, array + MJ_ID_DONG, sizeof(int) * 7);
+    for (i = 0; i < 7; ++i) {
+        if (js[i] % 3 == 1) {
+            if (left_joker < 2)
+                return 0;
+        } else if (js[i] % 3 == 2) {
+            if (left_joker == 0)
+                return 0;
+        }
+        js[i] = 0;
+    }
+    *num_joker = left_joker;
     return 1;
 }
 
@@ -352,14 +372,15 @@ void mjhz_takes(mjhz_t* mj, int is_gang)
 {
 }
 
-/* 出牌 */
-int mjhz_play(mjhz_t* mj, int player_no, mjpai_t* pai)
+/* 打牌 */
+int mjhz_play(mjhz_t* mj, int player_no, int pai_id)
 {
     int i,n,flag;
-    mjpai_t* p;
     int gang_id[4];
 
-    if(!mj || !pai)
+    if(!mj)
+        return -1;
+    if (pai_id < MJ_ID_1W || pai_id > MJ_ID_BAI)
         return -1;
 
     if (mj->game_state != MJHZ_GAME_PLAY) {
@@ -376,13 +397,11 @@ int mjhz_play(mjhz_t* mj, int player_no, mjpai_t* pai)
     /* 有效检查并删除这张牌 */
     if (mj->mode == MJHZ_MODE_SERVER) {
         n = -1;
-        p = mj->players[player_no].tiles;
         for (i = 0; i < MJHZ_MAX_CARDS; ++i){
-            if (p->suit == pai->suit && p->sign == pai->sign) {
+            if (mj->players[player_no].tiles[i].id == pai_id) {
                 n = i;
                 break;
             }
-            p++;
         }
         if (n == -1) {
             if (mj->debug) {
@@ -390,22 +409,17 @@ int mjhz_play(mjhz_t* mj, int player_no, mjpai_t* pai)
             }
             return -4;
         } else {
-            mj->players[player_no].tiles[n].suit = 0;
-            mj->players[player_no].tiles[n].sign = 0;
+            mjpai_zero(&mj->players[player_no].tiles[n]);
         }
     } else {
-        p = mj->players[player_no].tiles;
         for (i = 0; i < MJHZ_MAX_CARDS; ++i) {
-            if (p->suit == pai->suit && p->sign == pai->sign) {
-                p->suit = 0;
-                p->sign = 0;
+            if (mj->players[player_no].tiles[i].id == MJ_ID_UNKNOW) {
+                mjpai_zero(&mj->players[player_no].tiles[i]);
                 break;
             }
-            p++;
         }
     }
-    mj->last_played_mj.suit = pai->suit;
-    mj->last_played_mj.sign = pai->sign;
+    mj->last_played_mj = pai_id;
     mj->last_played_no = player_no;
     mj_trim(mj->players[player_no].tiles, MJHZ_MAX_CARDS);
     /* 判定吃碰杠胡 */
@@ -445,14 +459,15 @@ int mjhz_play(mjhz_t* mj, int player_no, mjpai_t* pai)
 /*
  * 返回吃牌信息
  * 0 : 不能吃
- * 1 : **o
- * 2 : *o*
- * 4 : o**
+ * 1 : o** 左吃
+ * 2 : *o* 中吃
+ * 4 : **o 右吃
  */
 int mjhz_can_chi(mjhz_t* mj, int player_no)
 {
     int i,chi_info;
-    int num[10];
+    int start_index;
+    mjpai_t pai;
     mjpai_t* p;
     int pos1,pos2,pos3;
 
@@ -462,54 +477,42 @@ int mjhz_can_chi(mjhz_t* mj, int player_no)
         return 0;
     if (mj->curr_player_no == player_no)
         return 0;
+    mjpai_init_id(mj->last_played_mj, &pai);
     /* 只能吃万、索、筒子 */
-    if (mj->last_played_mj.suit == mj->joker.suit &&
-            mj->last_played_mj.sign == mj->joker.sign) {
+    if (pai.suit != mjSuitWan || pai.suit != mjSuitSuo ||
+            pai.suit != mjSuitTong) {
         return 0;
-    }
-    if (mj->last_played_mj.suit != mjSuitWan ||
-            mj->last_played_mj.suit != mjSuitSuo ||
-            mj->last_played_mj.suit != mjSuitTong) {
-        return 0;
-    }
-
-    /* 同类型序数牌计数 */
-    memset((void*)num, 0, sizeof(int) * 9);
-    p = mj->players[player_no].tiles;
-    for (i = 0; i < MJHZ_MAX_CARDS; ++i) {
-        if (p->suit == mj->last_played_mj.suit) {
-            num[p->sign]++;
-        }
-        p++;
     }
     chi_info = 0;
-
-    for (i = 1; i <= 9; ++i) {
-        if ( i != mj->last_played_mj.sign)
-            continue;
-        pos1 = pos2 = pos3 = 0;
-        if (i == 1) {
-            pos1 = 1;
-        } else if (i == 2) {
-            pos1 = pos2 = 1;
-        } else if (i == 8) {
-            pos2 = pos3 = 1;
-        } else if (i == 9) {
-            pos3 = 1;
-        } else {
-            pos1 = pos2 = pos3 = 1;
+    pos1 = pos2 = pos3 = 0;
+    /* 允许吃的位置 */
+    if (pai.sign == 1) {
+        pos1 = 1;
+    } else if (pai.sign == 2) {
+        pos1 = pos2 = 1;
+    } else if (pai.sign == 8) {
+        pos2 = pos3 = 1;
+    } else if (pai.sign == 9) {
+        pos3 = 1;
+    } else {
+        pos1 = pos2 = pos3 = 1;
+    }
+    if (pos1) {
+        if (mj->players[player_no].tiles_js[pai.sign+1] > 0 &&
+                mj->players[player_no].tiles_js[pai.sign+2] > 0) {
+            chi_info &= 0x01;
         }
-        if (pos1) {
-            if (num[i+1] > 0 && num[i+2] > 0)
-                chi_info &= 0x01;
+    }
+    if (pos2) {
+        if (mj->players[player_no].tiles_js[pai.sign-1] > 0 &&
+                mj->players[player_no].tiles_js[pai.sign+1] >0) {
+            chi_info &= 0x02;
         }
-        if (pos2) {
-            if (num[i-1] > 0 && num[i+1] > 0)
-                chi_info &= 0x02;
-        }
-        if (pos3) {
-            if (num[i-1] > 0 && num[i-2] > 0)
-                chi_info &= 0x04;
+    }
+    if (pos3) {
+        if (mj->players[player_no].tiles_js[pai.sign-1] > 0 &&
+                mj->players[player_no].tiles_js[pai.sign-2] >0) {
+            chi_info &= 0x04;
         }
     }
 
@@ -518,31 +521,17 @@ int mjhz_can_chi(mjhz_t* mj, int player_no)
 
 int mjhz_can_peng(mjhz_t* mj, int player_no)
 {
-    int i;
-    int num;
-    mjpai_t* p;
-
     if (!mj)
         return 0;
     if (player_no >= mj->player_num)
         return 0;
     if (mj->curr_player_no == player_no)
         return 0;
-    if (mj->last_played_mj.suit == mj->joker.suit &&
-            mj->last_played_mj.sign == mj->joker.sign) {
+    if (mj->last_played_mj == mj->joker) {
         return 0;
     }
 
-    num = 0;
-    p = mj->players[player_no].tiles;
-    for (i = 0; i < MJHZ_MAX_CARDS; ++i) {
-        if (p->suit == mj->last_played_mj.suit &&
-                p->sign == mj->last_played_mj.sign) {
-            num++;
-        }
-        p++;
-    }
-    if (num >= 2)
+    if (mj->players[player_no].tiles_js[mj->last_played_mj] >= 2)
         return 1;
     else
         return 0;
@@ -571,7 +560,7 @@ int mjhz_can_gang(mjhz_t* mj, int player_no, int pai_gang[4])
         /* 加杠(已经碰了，再摸一张) */
         for (i = 0; i < MJHZ_MAX_SETS; ++i) {
             if (mj->players[player_no].mj_sets[i].type == mjMeldPeng) {
-                x = mj->players[player_no].mj_sets[i].card.id;
+                x = mj->players[player_no].mj_sets[i].pai.id;
                 if (mj->players[player_no].tiles_js[x] > 0) {
                     pai_gang[num++] = x;
                 }
@@ -579,10 +568,10 @@ int mjhz_can_gang(mjhz_t* mj, int player_no, int pai_gang[4])
         }
     } else {
         /* 明杠(杠打出的牌) */
-        if (mj->last_played_mj.id == MJ_ID_BAI) {
+        if (mj->last_played_mj == mj->joker) {
             return 0;
         }
-        x = mj->last_played_mj.id;
+        x = mj->last_played_mj;
         if (mj->players[player_no].tiles_js[x] == 3) {
             pai_gang[num++] = x;
         }
@@ -640,42 +629,22 @@ int mjhz_all_melded(int array[MJHZ_LEN_JS])
  */
 int mjhz_all_melded_joker(int array[MJHZ_LEN_JS], int num_joker)
 {
-    int i,yes,n;
     int left_joker;
-    int js[MJHZ_LEN_JS];
 
-    memcpy(js, array, sizeof(int) * MJHZ_LEN_JS);
-    yes = 0;
-    if (num_joker > 0) {
-        /* 先判定字牌 */
-        left_joker = num_joker;
-        for (i = MJ_ID_DONG; i < MJ_ID_BAI; ++i) {
-            if (js[i] == 3 || js[i] == 0) continue;
-            if (js[i] == 1) {
-                if (left_joker < 2) {
-                    return 0;
-                }
-                left_joker -= 2;
-                js[i] += 2;
-            } else if (n == 2) {
-                if (left_joker < 1) {
-                    return 0;
-                }
-                left_joker--;
-                js[i]++;
-            }
-        }
-        /* 序数牌 */
-        for (i = MJ_ID_1W; i <= MJ_ID_9T; ++i) {
-            if (i == MJ_ID_8W || i == MJ_ID_8S || i == MJ_ID_8T) {
-                /* 8W,8S,8T */
-            }
-        }
-    } else {
-        yes = mj_all_melded(array);
-    }
+    /* 先判定字牌 */
+    left_joker = num_joker;
+    if (_hornor_melded(array, &left_joker) == 0)
+        return 0;
 
-    return yes;
+    /* 序数牌 */
+    if (_range_melded(array, MJ_ID_1W, &left_joker) == 0)
+        return 0;
+    if (_range_melded(array, MJ_ID_1S, &left_joker) == 0)
+        return 0;
+    if (_range_melded(array, MJ_ID_1T, &left_joker) == 0)
+        return 0;
+
+    return 1;
 }
 
 /*
@@ -703,7 +672,7 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
     memcpy(js, mj->players[player_no].tiles_js,
            sizeof(int) * MJHZ_LEN_JS);
     if (mj->last_takes_no != player_no &&
-            mj->last_played_mj.id != MJ_ID_EMPTY) {
+            mj->last_played_mj != MJ_ID_EMPTY) {
         /* 杭州麻将老庄才能捉冲。*/
         if (mj->lao_z == 0)
             return 0;
@@ -711,10 +680,10 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
         if (mj->enable_dian_hu == 0)
             return 0;
         /* 捉冲，财神不能捉。 */
-        if (mj->last_played_mj.id == mj->joker.id) {
+        if (mj->last_played_mj == mj->joker) {
             return 0;
         }
-        js[mj->last_played_mj.id]++;
+        js[mj->last_played_mj]++;
     } else {
         pai_takes = mj->players[player_no].tiles[MJHZ_MAX_CARDS-1].id;
     }
@@ -782,12 +751,12 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
 		if (js_joker[i] >= 2) {
 			js_joker[i] -= 2;
 			/* 判断去掉将头后是否都是面子 */
-			if (mj_all_melded_joker(js_joker, MJHZ_LEN_JS, n_joker) > 0)
+            if (mjhz_all_melded_joker(js_joker, n_joker) > 0)
 				return 1;
 		} else if (js_joker[i] == 1) {
 			if (n_joker > 0) {
 				js_joker[i] = 0;
-				if (mj_all_melded_joker(js_joker, MJHZ_LEN_JS, n_joker - 1) > 0)
+                if (mjhz_all_melded_joker(js_joker, n_joker - 1) > 0)
 					return 1;
 			}
 		}

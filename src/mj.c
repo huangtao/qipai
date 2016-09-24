@@ -82,6 +82,28 @@ void mjpai_zero(mjpai_t* pai)
     }
 }
 
+int mjpai_ss2id(int suit, int sign)
+{
+    int id;
+    if (suit == 0)
+        return MJ_ID_EMPTY;
+    else if (suit == mjSuitWan || suit == mjSuitSuo ||
+             suit == mjSuitTong) {
+        id = (suit - 1) * 9 + sign;
+    } else if (suit == mjSuitFeng) {
+        id = MJ_ID_DONG + (sign - 1);
+    } else if (suit == mjSuitZFB) {
+        id = MJ_ID_ZHONG + (sign - 1);
+    } else if (suit == mjSuitHua) {
+        id = MJ_ID_MEI + (sign - 1);
+    } else if (suit == mjSuitSeason) {
+        id = MJ_ID_CUN + (sign - 1);
+    } else {
+        id = MJ_ID_UNKNOW;
+    }
+    return id;
+}
+
 void mjpai_copy(mjpai_t* dest, mjpai_t* src)
 {
     if (src && dest) {
