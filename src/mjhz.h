@@ -14,11 +14,12 @@ extern "C" {
 #include "card_player.h"
 
 #define MJHZ_MAX_PLAYERS	4
-#define MJHZ_MAX_CARDS		14      /* 手上牌最大数量 */
+#define MJHZ_MAX_PAIS		14      /* 手上牌最大数量 */
 #define MJHZ_MAX_SETS       6       /* 面子最大数量 */
-#define MJHZ_DECK_CARDS     136		/* 杭州麻将麻将牌最大数量 */
+#define MJHZ_DECK_PAIS      136		/* 杭州麻将麻将牌最大数量 */
 #define MJHZ_MAX_PAITYPE	34		/* 杭州麻将使用34种牌(27张序数+7张字牌) */
 
+#define MJHZ_MAX_PLAYED     MJHZ_DECK_PAIS/2    /* 打出的牌 */
 #define MJHZ_LEN_JS			MJHZ_MAX_PAITYPE+1	/* 用于计数 */
 
 /* 游戏状态 */
@@ -47,8 +48,8 @@ typedef struct mjhz_player_s {
     int position;
     int64_t score;
     uint64_t gold;
-    mjpai_t tiles[MJHZ_MAX_CARDS];
-    int tiles_played[MJHZ_DECK_CARDS/2];
+    int tiles[MJHZ_MAX_PAIS];
+    int tiles_played[MJHZ_MAX_PLAYED];
     mj_melded_t mj_sets[MJHZ_MAX_SETS];
     int tiles_js[MJHZ_LEN_JS];                  /* 用于分析麻将 */
     int last_played;
@@ -87,7 +88,7 @@ typedef struct mjhz_s {
     int enable_dian_hu;     /* 能否点和(点炮、捉冲) */
     int joker;              /* 百搭(财神) */
 
-    mjpai_t deck[MJHZ_DECK_CARDS];              /* mj card */
+    int deck[MJHZ_DECK_PAIS];                   /* deck mj pais */
     mjhz_player_t players[MJHZ_MAX_PLAYERS];    /* players */
 }mjhz_t;
 
@@ -98,10 +99,7 @@ void mjhz_init(mjhz_t* mj, int mode, int player_num);
 void mjhz_start(mjhz_t* mj);
 
 /* sort a hand */
-void mjhz_sort(mjhz_t* mj, mjpai_t* tiles, int len);
-
-/* get a player valid mjpai number */
-int mjhz_pai_length(mjhz_t* mj, int player_no);
+void mjhz_sort(int pais[MJHZ_MAX_PAIS]);
 
 /* 打牌 */
 int mjhz_play(mjhz_t* mj, int player_no, int pai_id);

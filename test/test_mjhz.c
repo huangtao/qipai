@@ -1,4 +1,4 @@
-﻿#include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include "mjhz.h"
@@ -23,7 +23,7 @@ void test_mjhz()
 
     mjhz_init(&mj, 0, 4);
     n = 0;
-    for (i = 0; i < MJHZ_DECK_CARDS; i++) {
+    for (i = 0; i < MJHZ_DECK_PAIS; i++) {
         printf("%s ", mjpai_string(&mj.deck[i]));
         n++;
         if (n >= 10) {

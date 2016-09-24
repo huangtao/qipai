@@ -209,31 +209,29 @@ void mj_sort(mjpai_t* cards, int len, mjpai_t* mammon)
         return;
 }
 
-void mj_trim(mjpai_t* cards, int len)
+void mj_trim(int* pais, int len)
 {
     int i,n;
-    mjpai_t* p;
-    static mjpai_t temp[32];
+    int* p;
+    int temp[32];
 
     if (len > 32)
         return;
-    if (cards && len > 0) {
+    if (pais && len > 0) {
         memset((void*)temp, 0, sizeof(mjpai_t) * 32);
         n = 0;
-        p = cards;
+        p = pais;
         for (i = 0; i < len; i++) {
-            if (p->suit && p->sign) {
-                temp[n].suit = p->suit;
-                temp[n].sign = p->sign;
+            if (*p != MJ_ID_EMPTY) {
+                temp[n] = *p;
                 n++;
             }
             p++;
         }
-        memset((void*)cards, 0, sizeof(mjpai_t) * len);
-        p = cards;
+        memset((void*)pais, 0, sizeof(int) * len);
+        p = pais;
         for (i = 0; i < n; i++) {
-            p->suit = temp[i].suit;
-            p->sign = temp[i].sign;
+            *p = temp[i];
             p++;
         }
     }
@@ -257,69 +255,69 @@ const char* mj_string(mjpai_t* cards, int len, int line_number)
     return str;
 }
 
-const char* mjpai_string(mjpai_t* pai)
+const char* mjpai_string(int id)
 {
     static char str[8];
+    mjpai_t pai;
 
     memset(str, 0, 8);
-    if (pai) {
-        if (pai->suit == mjSuitSuo) {
-            sprintf(str, "%dS", pai->sign);
-        } else if (pai->suit == mjSuitWan) {
-            sprintf(str, "%dW", pai->sign);
-        } else if (pai->suit == mjSuitTong) {
-            sprintf(str, "%dT", pai->sign);
-        } else if (pai->suit == mjSuitFeng) {
-            if (pai->sign == mjEast) {
-                strcpy(str, "DF");
-            } else if (pai->sign == mjSouth) {
-                strcpy(str, "NF");
-            } else if (pai->sign == mjWest) {
-                strcpy(str, "XF");
-            } else if (pai->sign == mjNorth) {
-                strcpy(str, "BF");
-            } else {
-                strcpy(str, "@@");
-            }
-        } else if (pai->suit == mjSuitZFB) {
-            if (pai->sign == mjZhong) {
-                strcpy(str, "HZ");
-            } else if (pai->sign == mjFa) {
-                strcpy(str, "FC");
-            } else if (pai->sign == mjBai) {
-                strcpy(str, "BB");
-            } else {
-                strcpy(str, "@@");
-            }
-        } else if (pai->suit == mjSuitFlower) {
-            if (pai->sign == mjMei) {
-                strcpy(str, "MH");
-            } else if (pai->sign == mjLan) {
-                strcpy(str, "LH");
-            } else if (pai->sign == mjJu) {
-                strcpy(str, "JH");
-            } else if (pai->sign == mjZhu) {
-                strcpy(str, "ZH");
-            } else {
-                strcpy(str, "@@");
-            }
-        } else if (pai->suit == mjSuitSeason) {
-            if (pai->sign == mjCun) {
-                strcpy(str, "CT");
-            } else if (pai->sign == mjXia) {
-                strcpy(str, "XT");
-            } else if (pai->sign == mjQiu) {
-                strcpy(str, "QT");
-            } else if (pai->sign == mjDong) {
-                strcpy(str, "DT");
-            } else {
-                strcpy(str, "@@");
-            }
-        } else if (pai->suit == mjSuitUnknow) {
-            strcpy(str, "??");
+    mjpai_init_id(&pai, id);
+    if (pai.suit == mjSuitSuo) {
+        sprintf(str, "%dS", pai.sign);
+    } else if (pai.suit == mjSuitWan) {
+        sprintf(str, "%dW", pai.sign);
+    } else if (pai.suit == mjSuitTong) {
+        sprintf(str, "%dT", pai.sign);
+    } else if (pai.suit == mjSuitFeng) {
+        if (pai.sign == mjEast) {
+            strcpy(str, "DF");
+        } else if (pai.sign == mjSouth) {
+            strcpy(str, "NF");
+        } else if (pai.sign == mjWest) {
+            strcpy(str, "XF");
+        } else if (pai.sign == mjNorth) {
+            strcpy(str, "BF");
         } else {
             strcpy(str, "@@");
         }
+    } else if (pai.suit == mjSuitZFB) {
+        if (pai.sign == mjZhong) {
+            strcpy(str, "HZ");
+        } else if (pai.sign == mjFa) {
+            strcpy(str, "FC");
+        } else if (pai.sign == mjBai) {
+            strcpy(str, "BB");
+        } else {
+            strcpy(str, "@@");
+        }
+    } else if (pai.suit == mjSuitFlower) {
+        if (pai.sign == mjMei) {
+            strcpy(str, "MH");
+        } else if (pai.sign == mjLan) {
+            strcpy(str, "LH");
+        } else if (pai.sign == mjJu) {
+            strcpy(str, "JH");
+        } else if (pai.sign == mjZhu) {
+            strcpy(str, "ZH");
+        } else {
+            strcpy(str, "@@");
+        }
+    } else if (pai.suit == mjSuitSeason) {
+        if (pai.sign == mjCun) {
+            strcpy(str, "CT");
+        } else if (pai.sign == mjXia) {
+            strcpy(str, "XT");
+        } else if (pai.sign == mjQiu) {
+            strcpy(str, "QT");
+        } else if (pai.sign == mjDong) {
+            strcpy(str, "DT");
+        } else {
+            strcpy(str, "@@");
+        }
+    } else if (pai.suit == mjSuitUnknow) {
+        strcpy(str, "??");
+    } else {
+        strcpy(str, "@@");
     }
     return str;
 }

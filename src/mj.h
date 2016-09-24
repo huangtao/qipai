@@ -134,8 +134,9 @@ typedef struct mjpai_s {
 /* 面子 */
 typedef struct mj_melded_s {
     int type;       /* 面子类型 */
-    mjpai_t pai;    /* 特征牌 */
+    int pai_id;     /* 特征牌 */
     int player_no;  /* 吃碰目标玩家 */
+    int extra_info; /* 吃附加信息 */
 }mj_melded_t;
 
 void mjpai_init_id(mjpai_t* pai, int id);
@@ -149,12 +150,12 @@ void mjpai_copy(mjpai_t* dest, mjpai_t* src);
 void mjpai_decode(mjpai_t* pai, unsigned char x);
 
 void mj_shuffle(mjpai_t* pais, int len);
-void mj_trim(mjpai_t* pais, int len);
+void mj_trim(int* pais, int len);
 /**
  * print cards to a readable string
  */
 const char* mj_string(mjpai_t* pais, int len, int line_number);
-const char* mjpai_string(mjpai_t* pai);
+const char* mjpai_string(int id);
 
 #ifdef __cplusplus
 }
