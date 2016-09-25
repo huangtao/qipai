@@ -51,13 +51,14 @@ typedef struct mjhz_player_s {
     int tiles[MJHZ_MAX_PAIS];
     int tiles_played[MJHZ_MAX_PLAYED];
     mj_melded_t mj_sets[MJHZ_MAX_SETS];
-    int tiles_js[MJHZ_LEN_JS];                  /* 用于分析麻将 */
+    int tiles_js[MJHZ_LEN_JS];              /* 用于分析麻将 */
     int last_played;
 	int can_chi;
 	int can_peng;
 	int can_gang;
 	int can_hu;
-	mjhz_hu_t hu;
+    int pai_gang[4];        /* 杠牌信息 */
+    mjhz_hu_t hu;           /* 胡牌信息 */
 }mjhz_player_t;
 
 typedef struct mjhz_s {
@@ -72,10 +73,12 @@ typedef struct mjhz_s {
     int banker_no;          /* banker no. */
     int first_player_no;    /* first player no. */
     int curr_player_no;     /* current turn player no. */
-	int dice1;
-	int dice2;
+    int hu_player_no;
+    int flag_liu;           /* 流局标记 */
 
-	int deck_all_num;
+    int dice1;
+    int dice2;
+    int deck_all_num;
     int deck_deal_index;    /* current deal card index */
     int deck_deal_end;      /* where deal end position */
     int deck_deal_gang;     /* deal when gang */
@@ -87,6 +90,7 @@ typedef struct mjhz_s {
     int lao_z;              /* 老庄 */
     int enable_dian_hu;     /* 能否点和(点炮、捉冲) */
     int joker;              /* 百搭(财神) */
+    int pai_gang;           /* 当前杠牌 */
 
     int deck[MJHZ_DECK_PAIS];                   /* deck mj pais */
     mjhz_player_t players[MJHZ_MAX_PLAYERS];    /* players */
@@ -105,13 +109,13 @@ void mjhz_sort(int pais[MJHZ_MAX_PAIS]);
 int mjhz_play(mjhz_t* mj, int player_no, int pai_id);
 
 /* 摸牌 */
-void mjhz_takes(mjhz_t* mj, int is_gang);
+int mjhz_takes(mjhz_t* mj, int is_gang);
 
 int mjhz_can_chi(mjhz_t* mj, int player_no);
 int mjhz_can_peng(mjhz_t* mj, int player_no);
 
-/* 杠判定。返回可以杠的数量,pai_gang返回杠的牌。 */
-int mjhz_can_gang(mjhz_t* mj, int player_no, int pai_gang[4]);
+/* 杠判定。返回可以杠的数量。 */
+int mjhz_can_gang(mjhz_t* mj, int player_no);
 
 /* 是否全顺子和刻子 */
 int mjhz_all_melded(int array[MJHZ_LEN_JS]);

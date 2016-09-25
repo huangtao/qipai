@@ -143,18 +143,18 @@ void mjpai_init_id(mjpai_t* pai, int id);
 void mjpai_init_ss(mjpai_t* pai, int suit, int sign);
 void mjpai_zero(mjpai_t* pai);
 
-/* get id from suit & sign */
-int mjpai_ss2id(int suit, int sign);
-
 void mjpai_copy(mjpai_t* dest, mjpai_t* src);
-void mjpai_decode(mjpai_t* pai, unsigned char x);
 
-void mj_shuffle(mjpai_t* pais, int len);
+/* 洗牌 */
+void mj_shuffle(int* pais, int len);
+
+/* 整理 */
 void mj_trim(int* pais, int len);
+
 /**
  * print cards to a readable string
  */
-const char* mj_string(mjpai_t* pais, int len, int line_number);
+const char* mj_string(int* pais, int len, int line_number);
 const char* mjpai_string(int id);
 
 #ifdef __cplusplus

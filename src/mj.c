@@ -82,28 +82,6 @@ void mjpai_zero(mjpai_t* pai)
     }
 }
 
-int mjpai_ss2id(int suit, int sign)
-{
-    int id;
-    if (suit == 0)
-        return MJ_ID_EMPTY;
-    else if (suit == mjSuitWan || suit == mjSuitSuo ||
-             suit == mjSuitTong) {
-        id = (suit - 1) * 9 + sign;
-    } else if (suit == mjSuitFeng) {
-        id = MJ_ID_DONG + (sign - 1);
-    } else if (suit == mjSuitZFB) {
-        id = MJ_ID_ZHONG + (sign - 1);
-    } else if (suit == mjSuitHua) {
-        id = MJ_ID_MEI + (sign - 1);
-    } else if (suit == mjSuitSeason) {
-        id = MJ_ID_CUN + (sign - 1);
-    } else {
-        id = MJ_ID_UNKNOW;
-    }
-    return id;
-}
-
 void mjpai_copy(mjpai_t* dest, mjpai_t* src)
 {
     if (src && dest) {
@@ -113,77 +91,13 @@ void mjpai_copy(mjpai_t* dest, mjpai_t* src)
     }
 }
 
-unsigned char mjpai_encode(mjpai_t* pai)
-{
-    unsigned char x;
-
-    if (pai) {
-        if (pai->suit == mjSuitWan) {
-            x = pai->sign;
-        } else if (pai->suit == mjSuitSuo) {
-            x = 9 + pai->sign;
-        } else if (pai->suit == mjSuitTong) {
-            x = 18 + pai->sign;
-        } else if (pai->suit == mjSuitFeng) {
-            x = 27 + pai->sign;
-        } else if (pai->suit == mjSuitZFB) {
-            x = 31 + pai->sign;
-        } else if (pai->suit == mjSuitFlower) {
-            x = 34 + pai->sign;
-        } else if (pai->suit == mjSuitSeason) {
-            x = 38 + pai->sign;
-        } else {
-            x = 43;
-        }
-    } else {
-        x = 0;
-    }
-    return x;
-}
-
-void mjpai_decode(mjpai_t* pai, unsigned char x)
-{
-    if (pai) {
-        if (x == 0) {
-            pai->suit = pai->sign = 0;
-        } else if (x >= 1 && x <= 9) {
-            pai->suit = mjSuitWan;
-            pai->sign = x;
-        } else if (x >= 10 && x <= 18) {
-            pai->suit = mjSuitSuo;
-            pai->sign = x - 9;
-        } else if (x >= 19 && x <= 27) {
-            pai->suit = mjSuitTong;
-            pai->sign = x - 18;
-        } else if (x >= 28 && x <= 31) {
-            pai->suit = mjSuitFeng;
-            pai->sign = x - 27;
-        } else if (x >= 32 && x <= 34) {
-            pai->suit = mjSuitZFB;
-            pai->sign = x - 31;
-        } else if (x >= 35 && x <= 38) {
-            pai->suit = mjSuitFlower;
-            pai->sign = x - 34;
-        } else if (x >= 39 && x <= 42) {
-            pai->suit = mjSuitSeason;
-            pai->sign = x - 38;
-        } else {
-            pai->suit = mjSuitUnknow;
-            pai->sign = 0;
-        }
-    } else {
-        x = 0;
-    }
-}
-
-void mj_shuffle(mjpai_t* cards, int len)
+void mj_shuffle(int* pais, int len)
 {
     int i,n;
-    int a,b;
-    mjpai_t temp;
+    int a,b,temp;
     mjpai_t *pa, *pb;
 
-    if(!cards || len <= 2)
+    if(!pais || len <= 2)
         return;
 
     n = 1000 + rand() % 50;
@@ -191,14 +105,9 @@ void mj_shuffle(mjpai_t* cards, int len)
         a = rand() % len;
         b = rand() % len;
         if(a != b){
-            pa = cards + a;
-            pb = cards + b;
-            temp.sign = pa->sign;
-            temp.suit = pa->suit;
-            pa->sign = pb->sign;
-            pa->suit = pb->suit;
-            pb->sign = temp.sign;
-            pb->suit = temp.suit;
+            temp = *(pais + a);
+            *(pais + a) = *(pais + b);
+            *(pais + b) = temp;
         }
     }
 }
@@ -237,18 +146,17 @@ void mj_trim(int* pais, int len)
     }
 }
 
-const char* mj_string(mjpai_t* cards, int len, int line_number)
+const char* mj_string(int* pais, int len, int line_number)
 {
     static char str[256];
-    int i;
-    mjpai_t* p;
+    int i,pai_id;
 
     memset(str, 0, 256);
-    if (cards && len > 0) {
-        p = cards;
+    if (pais && len > 0) {
         for (i = 0; i < len; i++) {
-            if (p->suit && p->sign) {
-                strcat(str, mjpai_string(p));
+            pai_id = *(pais + i);
+            if (pai_id != 0) {
+                strcat(str, pai_id);
             }
         }
     }

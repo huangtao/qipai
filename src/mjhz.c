@@ -204,6 +204,7 @@ void mjhz_init(mjhz_t* mj, int mode, int player_num)
 void mjhz_start(mjhz_t* mj)
 {
     int i,j,direct,m,n;
+    int temp[MJHZ_DECK_PAIS];
 
     if (!mj)
         return;
@@ -217,6 +218,8 @@ void mjhz_start(mjhz_t* mj)
     /* 白板是财神 */
     mj->joker = MJ_ID_BAI;
     mj->last_played_mj = MJ_ID_EMPTY;
+    mj->pai_gang = 0;
+
     if (mj->mode == MJHZ_MODE_SERVER) {
         /* 洗牌 */
         mj_shuffle(mj->deck, mj->deck_all_num);
@@ -226,13 +229,18 @@ void mjhz_start(mjhz_t* mj)
             % MJHZ_MAX_PLAYERS;
         mj->deck_deal_index = direct * 17 * 2
             + (mj->dice1 + mj->dice2) * 2;
-        mj->deck_deal_gang = mj->deck_deal_index - 1; /* 杠抓牌 */
-        mj->deck_deal_end = (mj->deck_deal_index + mj->deck_all_num
-                - 20) % mj->deck_all_num;
-        mj->deck_valid_num = mj->deck_all_num - 20;
+        /* 将牌直接交换好 */
+        memcpy(temp, mj->deck + mj->deck_deal_index,
+               sizeof(int) * (mj->deck_all_num - mj->deck_deal_index));
+        memcpy(temp + mj->deck_deal_index, mj->deck,
+               sizeof(int) * mj->deck_deal_index);
+        mj->deck_deal_index = 0;
+        mj->deck_deal_gang = mj->deck_all_num - 1; /* 杠抓牌 */
+        mj->deck_deal_end = mj->deck_all_num- 20;
 
         /* 顺时针,每人抓12张,庄家先抓,一次4张 */
-        m = n = 0;
+        m = 0;
+        n = mj->deck_deal_index;
         for (j = 0; j < 3; ++j) {
             for (i = 0; i < MJHZ_MAX_PLAYERS; ++i) {
                 direct = (mj->banker_no + i) % MJHZ_MAX_PLAYERS;
@@ -252,6 +260,7 @@ void mjhz_start(mjhz_t* mj)
             mj->players[direct].tiles[m] = mj->deck[n++];
         }
         mj->last_takes_no = mj->banker_no;
+        mj->deck_deal_index += 13 * 3 + 14;
 
         /* 初始化分析数据 */
         for (i = 0; i < MJHZ_MAX_PLAYERS; ++i) {
@@ -312,18 +321,44 @@ void mjhz_sort(int pais[MJHZ_MAX_PAIS])
 }
 
 /*
- * 抓牌
- * 抓到的牌规定放在数组的最后，等打出后排序
+ * 摸牌
+ * 摸到的牌规定放在数组的最后，等打出后排序
+ * 无牌可以摸返回0
  */
-void mjhz_takes(mjhz_t* mj, int is_gang)
+int mjhz_takes(mjhz_t* mj, int is_gang)
 {
+    int pai;
+
+    if (!mj)
+        return 0;
+    if (!is_gang) {
+        if (mj->deck_deal_index == mj->deck_deal_end) {
+            /* 流局 */
+            return 0;
+        }
+    }
+    mj->pai_gang = 0;
+    if (is_gang) {
+        pai = mj->deck[mj->deck_deal_gang];
+        mj->deck_deal_gang--;
+    } else {
+        pai = mj->deck[mj->deck_deal_index];
+        mj->deck_deal_index++;
+    }
+    mj->players[mj->curr_player_no].tiles[MJHZ_MAX_PAIS-1] = pai;
+    mj->players[mj->curr_player_no].tiles_js[pai]++;
+
+    /* 杠胡判定 */
+    mjhz_can_hu(mj, mj->curr_player_no);
+    mjhz_can_gang(mj, mj->curr_player_no);
+
+    return 1;
 }
 
 /* 打牌 */
 int mjhz_play(mjhz_t* mj, int player_no, int pai_id)
 {
     int i,n,flag;
-    int gang_id[4];
 
     if(!mj)
         return -1;
@@ -365,7 +400,7 @@ int mjhz_play(mjhz_t* mj, int player_no, int pai_id)
     for (i = 0; i < mj->player_num; ++i) {
         if (i != player_no) {
             mj->players[i].can_hu = mjhz_can_hu(mj, i);
-            mj->players[i].can_gang = mjhz_can_gang(mj, i, gang_id);
+            mjhz_can_gang(mj, i);
             mj->players[i].can_peng = mjhz_can_peng(mj, i);
             mj->players[i].can_chi = mjhz_can_chi(mj, i);
         } else {
@@ -404,10 +439,8 @@ int mjhz_play(mjhz_t* mj, int player_no, int pai_id)
  */
 int mjhz_can_chi(mjhz_t* mj, int player_no)
 {
-    int i,chi_info;
-    int start_index;
+    int chi_info;
     mjpai_t pai;
-    mjpai_t* p;
     int pos1,pos2,pos3;
 
     if (!mj)
@@ -416,7 +449,7 @@ int mjhz_can_chi(mjhz_t* mj, int player_no)
         return 0;
     if (mj->curr_player_no == player_no)
         return 0;
-    mjpai_init_id(mj->last_played_mj, &pai);
+    mjpai_init_id(&pai, mj->last_played_mj);
     /* 只能吃万、索、筒子 */
     if (pai.suit != mjSuitWan || pai.suit != mjSuitSuo ||
             pai.suit != mjSuitTong) {
@@ -477,7 +510,7 @@ int mjhz_can_peng(mjhz_t* mj, int player_no)
 }
 
 /* 返回可以杠牌的数量 */
-int mjhz_can_gang(mjhz_t* mj, int player_no, int pai_gang[4])
+int mjhz_can_gang(mjhz_t* mj, int player_no)
 {
     int i,num,x;
 
@@ -486,14 +519,14 @@ int mjhz_can_gang(mjhz_t* mj, int player_no, int pai_gang[4])
     if (player_no >= mj->player_num)
         return 0;
     num = 0;
-    memset(pai_gang, 0, sizeof(int) * 4);
+    memset(mj->players[player_no].pai_gang, 0, sizeof(int) * 4);
 
     if (mj->curr_player_no == player_no && mj->last_takes_no == player_no) {
         /* 轮到我且已经摸过牌了，暗杠或者加杠 */
         /* 有没有暗杠 */
         for (i = 1; i < MJHZ_LEN_JS; i++) {
             if (mj->players[player_no].tiles_js[i] == 4) {
-                pai_gang[num++] = i;
+                mj->players[player_no].pai_gang[num++] = i;
             }
         }
         /* 加杠(已经碰了，再摸一张) */
@@ -501,7 +534,7 @@ int mjhz_can_gang(mjhz_t* mj, int player_no, int pai_gang[4])
             if (mj->players[player_no].mj_sets[i].type == mjMeldPeng) {
                 x = mj->players[player_no].mj_sets[i].pai_id;
                 if (mj->players[player_no].tiles_js[x] > 0) {
-                    pai_gang[num++] = x;
+                    mj->players[player_no].pai_gang[num++] = x;
                 }
             }
         }
@@ -512,9 +545,13 @@ int mjhz_can_gang(mjhz_t* mj, int player_no, int pai_gang[4])
         }
         x = mj->last_played_mj;
         if (mj->players[player_no].tiles_js[x] == 3) {
-            pai_gang[num++] = x;
+            mj->players[player_no].pai_gang[num++] = x;
         }
     }
+    if (num > 0)
+        mj->players[player_no].can_gang = 1;
+    else
+        mj->players[player_no].can_gang = 0;
     return num;
 }
 
@@ -741,7 +778,7 @@ void mjhz_dump(mjhz_t* mj)
 
     printf("player number:%d\n", mj->player_num);
     printf("joker:\n");
-    printf("%s\n", mjpai_string(&mj->joker));
+    printf("%s\n", mjpai_string(mj->joker));
 
     /* dump player's mj pai */
     printf("players mj pai:\n");
@@ -757,7 +794,7 @@ void mjhz_dump(mjhz_t* mj)
     }
 
     printf("last mj pai:\n");
-    printf("%s\n", mjpai_string(&mj->last_played_mj));
+    printf("%s\n", mjpai_string(mj->last_played_mj));
 
     printf("current player no is %d\n", mj->curr_player_no);
 }
