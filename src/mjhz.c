@@ -236,7 +236,6 @@ void mjhz_start(mjhz_t* mj)
                sizeof(int) * mj->deck_deal_index);
         mj->deck_deal_index = 0;
         mj->deck_deal_gang = mj->deck_all_num - 1; /* 杠抓牌 */
-        mj->deck_deal_end = mj->deck_all_num - 20; /* 保留20张 */
 
         /* 顺时针,每人抓12张,庄家先抓,一次4张 */
         m = 0;
@@ -261,7 +260,9 @@ void mjhz_start(mjhz_t* mj)
             mj->players[direct].tiles[m] = mj->deck[n++];
         }
         mj->last_takes_no = mj->banker_no;
-        mj->deck_deal_index += 13 * 3 + 14;
+        mj->deck_deal_index += 13 * (MJHZ_MAX_PLAYERS - 1) + 14;
+        mj->deck_valid_num = mj->deck_all_num -
+                13 * (MJHZ_MAX_PLAYERS - 1) + 14;
 
         /* 初始化分析数据 */
         for (i = 0; i < MJHZ_MAX_PLAYERS; ++i) {
@@ -334,11 +335,9 @@ int mjhz_takes(mjhz_t* mj, int is_gang)
 
     if (!mj)
         return 0;
-    if (!is_gang) {
-        if (mj->deck_deal_index == mj->deck_deal_end) {
-            /* 流局 */
-            return 0;
-        }
+    if (mj->deck_valid_num <= 20) {
+        /* 流局 */
+        return 0;
     }
     mj->pai_gang = 0;
     if (is_gang) {
@@ -348,6 +347,7 @@ int mjhz_takes(mjhz_t* mj, int is_gang)
         pai = mj->deck[mj->deck_deal_index];
         mj->deck_deal_index++;
     }
+    mj->deck_valid_num--;
     mj->players[mj->curr_player_no].tiles[MJHZ_MAX_PAIS-1] = pai;
     mj->players[mj->curr_player_no].tiles_js[pai]++;
 
@@ -1013,9 +1013,21 @@ int mjhz_hu(mjhz_t* mj, int player_no)
     }
     if (mj->players[player_no].hu.is_baotou)
         mj->players[player_no].hu.fan++;
-    if (mj->players[player_no].hu.is_gk)
-        mj->players[player_no].hu.fan++;
-    mj->players[player_no].hu.fan += mj->players[player_no].hu.cai_piao;
+    if (mj->players[player_no].hu.is_gk) {
+        if (mj->players[player_no].hu.cai_piao) {
+            /* 飘杠(3番) */
+            mj->players[player_no].hu.fan += 3;
+            if (mj->players[player_no].hu.cai_piao > 1) {
+                mj->players[player_no].hu.fan +=
+                        mj->players[player_no].hu.cai_piao - 1;
+            }
+        } else {
+            mj->players[player_no].hu.fan++;
+        }
+    } else {
+        mj->players[player_no].hu.fan += mj->players[player_no].hu.cai_piao;
+    }
+    mj->players[player_no].hu.fan += mj->lao_z;
 
     return 0;
 }
