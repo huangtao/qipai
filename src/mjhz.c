@@ -643,6 +643,10 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
     if (player_no >= mj->player_num)
         return 0;
 
+    mj->players[player_no].can_hu = 0;
+    memset(&mj->players[player_no].hu, 0,
+           sizeof(mjhz_hu_t));
+
     n = 0;
     n_joker = 0;
     memcpy(js, mj->players[player_no].tiles_js,
@@ -717,6 +721,7 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
                 }
             }
         }
+        mj->players[player_no].can_hu = 1;
         return 1;
     }
 
@@ -727,13 +732,17 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
 		if (js_joker[i] >= 2) {
 			js_joker[i] -= 2;
 			/* 判断去掉将头后是否都是面子 */
-            if (mjhz_all_melded_joker(js_joker, n_joker) > 0)
+            if (mjhz_all_melded_joker(js_joker, n_joker) > 0) {
+                mj->players[player_no].can_hu = 1;
 				return 1;
+            }
 		} else if (js_joker[i] == 1) {
 			if (n_joker > 0) {
 				js_joker[i] = 0;
-                if (mjhz_all_melded_joker(js_joker, n_joker - 1) > 0)
+                if (mjhz_all_melded_joker(js_joker, n_joker - 1) > 0) {
+                    mj->players[player_no].can_hu = 1;
 					return 1;
+                }
 			}
 		}
 	}

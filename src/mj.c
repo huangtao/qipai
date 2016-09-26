@@ -95,7 +95,6 @@ void mj_shuffle(int* pais, int len)
 {
     int i,n;
     int a,b,temp;
-    mjpai_t *pa, *pb;
 
     if(!pais || len <= 2)
         return;
@@ -149,14 +148,20 @@ void mj_trim(int* pais, int len)
 const char* mj_string(int* pais, int len, int line_number)
 {
     static char str[256];
-    int i,pai_id;
+    int i,pai_id,n;
 
     memset(str, 0, 256);
     if (pais && len > 0) {
+        n = 0;
         for (i = 0; i < len; i++) {
             pai_id = *(pais + i);
             if (pai_id != 0) {
-                strcat(str, pai_id);
+                strcat(str, mjpai_string(pai_id));
+                n++;
+                if (n >= line_number) {
+                    strcat(str, "\n");
+                    n = 0;
+                }
             }
         }
     }
