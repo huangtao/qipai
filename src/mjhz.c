@@ -236,7 +236,7 @@ void mjhz_start(mjhz_t* mj)
                sizeof(int) * mj->deck_deal_index);
         mj->deck_deal_index = 0;
         mj->deck_deal_gang = mj->deck_all_num - 1; /* 杠抓牌 */
-        mj->deck_deal_end = mj->deck_all_num- 20;
+        mj->deck_deal_end = mj->deck_all_num - 20; /* 保留20张 */
 
         /* 顺时针,每人抓12张,庄家先抓,一次4张 */
         m = 0;
@@ -244,7 +244,8 @@ void mjhz_start(mjhz_t* mj)
         for (j = 0; j < 3; ++j) {
             for (i = 0; i < MJHZ_MAX_PLAYERS; ++i) {
                 direct = (mj->banker_no + i) % MJHZ_MAX_PLAYERS;
-                memcpy(mj->players[direct].tiles + m, mj->deck + n, 4 * sizeof(int));
+                memcpy(mj->players[direct].tiles + m,
+                       mj->deck + n, 4 * sizeof(int));
                 n += 4;
             }
             m += 4;
@@ -284,8 +285,10 @@ void mjhz_start(mjhz_t* mj)
     } else {
         /* 初始化，真实数据需要收到服务器数据赋值。 */
         for (i = 0; i < MJHZ_MAX_PLAYERS; i++) {
-            memset(mj->players[i].tiles, 0, sizeof(int) * MJHZ_MAX_PAIS);
-            memset(mj->players[i].tiles_played, 0, sizeof(int) * MJHZ_MAX_PLAYED);
+            memset(mj->players[i].tiles, 0,
+                   sizeof(int) * MJHZ_MAX_PAIS);
+            memset(mj->players[i].tiles_played, 0,
+                   sizeof(int) * MJHZ_MAX_PLAYED);
         }
         mj->banker_no = 0;
         mj->last_takes_no = 0;
@@ -399,10 +402,10 @@ int mjhz_play(mjhz_t* mj, int player_no, int pai_id)
     /* 判定吃碰杠胡 */
     for (i = 0; i < mj->player_num; ++i) {
         if (i != player_no) {
-            mj->players[i].can_hu = mjhz_can_hu(mj, i);
+            mjhz_can_hu(mj, i);
             mjhz_can_gang(mj, i);
-            mj->players[i].can_peng = mjhz_can_peng(mj, i);
-            mj->players[i].can_chi = mjhz_can_chi(mj, i);
+            mjhz_can_peng(mj, i);
+            mjhz_can_chi(mj, i);
         } else {
             mj->players[i].can_hu = 0;
             mj->players[i].can_gang = 0;
@@ -449,6 +452,8 @@ int mjhz_can_chi(mjhz_t* mj, int player_no)
         return 0;
     if (mj->curr_player_no == player_no)
         return 0;
+    mj->players[player_no].can_chi = 0;
+
     mjpai_init_id(&pai, mj->last_played_mj);
     /* 只能吃万、索、筒子 */
     if (pai.suit != mjSuitWan || pai.suit != mjSuitSuo ||
@@ -472,22 +477,22 @@ int mjhz_can_chi(mjhz_t* mj, int player_no)
     if (pos1) {
         if (mj->players[player_no].tiles_js[pai.sign+1] > 0 &&
                 mj->players[player_no].tiles_js[pai.sign+2] > 0) {
-            chi_info &= 0x01;
+            chi_info &= mjChiLeft;
         }
     }
     if (pos2) {
         if (mj->players[player_no].tiles_js[pai.sign-1] > 0 &&
                 mj->players[player_no].tiles_js[pai.sign+1] >0) {
-            chi_info &= 0x02;
+            chi_info &= mjChiMiddle;
         }
     }
     if (pos3) {
         if (mj->players[player_no].tiles_js[pai.sign-1] > 0 &&
                 mj->players[player_no].tiles_js[pai.sign-2] >0) {
-            chi_info &= 0x04;
+            chi_info &= mjChiRight;
         }
     }
-
+    mj->players[player_no].can_chi = chi_info;
     return chi_info;
 }
 
@@ -497,14 +502,18 @@ int mjhz_can_peng(mjhz_t* mj, int player_no)
         return 0;
     if (player_no >= mj->player_num)
         return 0;
+
+    mj->players[player_no].can_peng = 0;
     if (mj->curr_player_no == player_no)
         return 0;
     if (mj->last_played_mj == mj->joker) {
         return 0;
     }
 
-    if (mj->players[player_no].tiles_js[mj->last_played_mj] >= 2)
+    if (mj->players[player_no].tiles_js[mj->last_played_mj] >= 2) {
+        mj->players[player_no].can_peng = 1;
         return 1;
+    }
     else
         return 0;
 }
@@ -631,7 +640,7 @@ int mjhz_all_melded_joker(int array[MJHZ_LEN_JS], int num_joker)
  */
 int mjhz_can_hu(mjhz_t* mj, int player_no)
 {
-    int i,n;
+    int i;
     int n_pai,n_4;
     int n_joker,left_joker;
     int pai_takes; /* 刚刚摸到的牌 */
@@ -647,7 +656,6 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
     memset(&mj->players[player_no].hu, 0,
            sizeof(mjhz_hu_t));
 
-    n = 0;
     n_joker = 0;
     memcpy(js, mj->players[player_no].tiles_js,
            sizeof(int) * MJHZ_LEN_JS);
@@ -750,23 +758,234 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
     return 0;
 }
 
-int mjhz_chi(mjhz_t* mj, int player_no)
+int mjhz_chi(mjhz_t* mj, int player_no, int pai1, int pai2)
 {
-    return 0;
+    int m1,m2,m3,temp;
+    int i,set_idx;
+    mjpai_t t1,t2,t3;
+
+    if (!mj)
+        return 0;
+    if (player_no >= mj->player_num)
+        return 0;
+    if (mj->last_played_mj == mj->joker)
+        return 0;
+    if (mj->last_played_mj < MJ_ID_1W ||
+            mj->last_played_mj > MJ_ID_9T) {
+        return 0;
+    }
+    if (mj->players[player_no].tiles_js[pai1] == 0)
+        return 0;
+    if (mj->players[player_no].tiles_js[pai2] == 0)
+        return 0;
+
+    m1 = mj->last_played_mj;
+    m2 = pai1;
+    m3 = pai2;
+    if (m1 > m2) {
+        temp = m2;
+        m2 = m1;
+        m1 = temp;
+    }
+    if (m1 > m3) {
+        temp = m3;
+        m3 = m1;
+        m1 = temp;
+    }
+    if (m2 > m3) {
+        temp = m3;
+        m3 = m2;
+        m2 = temp;
+    }
+    if ((m2 - m1) != 1)
+        return 0;
+    if ((m3 - m2) != 1)
+        return 0;
+    mjpai_init_id(&t1, m1);
+    mjpai_init_id(&t2, m2);
+    mjpai_init_id(&t3, m3);
+    if (!(t1.suit == t2.suit && t1.suit == t3.suit)) {
+        return 0;
+    }
+    set_idx = -1;
+    for (i = 0; i < MJHZ_MAX_SETS; ++i) {
+        if (mj->players[player_no].mj_sets[i].type == 0) {
+            /* unused */
+            set_idx = i;
+            break;
+        }
+    }
+    if (set_idx == -1) {
+        if (mj->debug)
+            printf("players mj_sets overflowed!\n");
+    }
+    mj->players[player_no].mj_sets[set_idx].type = mjMeldChi;
+    mj->players[player_no].mj_sets[set_idx].pai_id = mj->last_played_mj;
+    mj->players[player_no].mj_sets[set_idx].player_no = mj->curr_player_no;
+    if (m1 == mj->last_played_mj) {
+        mj->players[player_no].mj_sets[set_idx].extra_info = mjChiLeft;
+        mj_delete(mj->players[player_no].tiles, MJHZ_MAX_PAIS, m2);
+        mj->players[player_no].tiles_js[m2]--;
+        mj_delete(mj->players[player_no].tiles, MJHZ_MAX_PAIS, m3);
+        mj->players[player_no].tiles_js[m3]--;
+    }
+    else if (m2 == mj->last_played_mj) {
+        mj->players[player_no].mj_sets[set_idx].extra_info = mjChiMiddle;
+        mj_delete(mj->players[player_no].tiles, MJHZ_MAX_PAIS, m1);
+        mj->players[player_no].tiles_js[m1]--;
+        mj_delete(mj->players[player_no].tiles, MJHZ_MAX_PAIS, m3);
+        mj->players[player_no].tiles_js[m3]--;
+    }
+    else {
+        mj->players[player_no].mj_sets[set_idx].extra_info = mjChiRight;
+        mj_delete(mj->players[player_no].tiles, MJHZ_MAX_PAIS, m1);
+        mj->players[player_no].tiles_js[m1]--;
+        mj_delete(mj->players[player_no].tiles, MJHZ_MAX_PAIS, m2);
+        mj->players[player_no].tiles_js[m2]--;
+    }
+    mj_trim(mj->players[player_no].tiles, MJHZ_MAX_PAIS);
+
+    mj->curr_player_no = player_no;
+    mj->last_played_mj = 0;
+
+    return 1;
 }
 
 int mjhz_peng(mjhz_t* mj, int player_no)
 {
-    return 0;
+    int i,set_idx;
+
+    if (!mj)
+        return 0;
+    if (player_no >= mj->player_num)
+        return 0;
+    if (player_no == mj->curr_player_no)
+        return 0;
+    if (mj->last_played_mj == mj->joker)
+        return 0;
+
+    if (mj->players[player_no].tiles_js[mj->last_played_mj] < 2)
+        return 0;
+
+    set_idx = -1;
+    for (i = 0; i < MJHZ_MAX_SETS; ++i) {
+        if (mj->players[player_no].mj_sets[i].type == 0) {
+            /* unused */
+            set_idx = i;
+            break;
+        }
+    }
+    if (set_idx == -1) {
+        if (mj->debug)
+            printf("players mj_sets overflowed!\n");
+    }
+    mj->players[player_no].mj_sets[set_idx].type = mjMeldPeng;
+    mj->players[player_no].mj_sets[set_idx].pai_id = mj->last_played_mj;
+    mj->players[player_no].mj_sets[set_idx].player_no = mj->curr_player_no;
+    mj_delete(mj->players[player_no].tiles, MJHZ_MAX_PAIS,
+              mj->last_played_mj);
+    mj_delete(mj->players[player_no].tiles, MJHZ_MAX_PAIS,
+              mj->last_played_mj);
+    mj->players[player_no].tiles_js[mj->last_played_mj] -= 2;
+    mj_trim(mj->players[player_no].tiles, MJHZ_MAX_PAIS);
+
+    mj->last_played_mj = 0;
+    mj->curr_player_no = player_no;
+
+    return 1;
 }
 
-int mjhz_gang(mjhz_t* mj, int player_no)
+int mjhz_gang(mjhz_t* mj, int player_no, int pai)
 {
-    return 0;
+    int i,set_idx;
+    int peng_idx;
+
+    if (!mj)
+        return 0;
+    if (player_no >= mj->player_num)
+        return 0;
+    if (pai == mj->joker)
+        return 0;
+
+    set_idx = -1;
+    for (i = 0; i < MJHZ_MAX_SETS; ++i) {
+        if (mj->players[player_no].mj_sets[i].type == 0) {
+            /* unused */
+            set_idx = i;
+            break;
+        }
+    }
+    if (set_idx == -1) {
+        if (mj->debug)
+            printf("players mj_sets overflowed!\n");
+    }
+
+    if (player_no == mj->curr_player_no) {
+        /* 暗杠或加杠 */
+        if (mj->players[player_no].tiles_js[pai] == 4) {
+            mj->players[player_no].mj_sets[set_idx].type = mjMeldGang;
+            mj->players[player_no].mj_sets[set_idx].pai_id = mj->last_played_mj;
+            mj->players[player_no].mj_sets[set_idx].player_no = mj->curr_player_no;
+            mj->players[player_no].mj_sets[set_idx].extra_info = mjGangAn;
+            mj_delete(mj->players[player_no].tiles, MJHZ_MAX_PAIS, pai);
+            mj_delete(mj->players[player_no].tiles, MJHZ_MAX_PAIS, pai);
+            mj_delete(mj->players[player_no].tiles, MJHZ_MAX_PAIS, pai);
+            mj_delete(mj->players[player_no].tiles, MJHZ_MAX_PAIS, pai);
+            mj->players[player_no].tiles_js[pai] = 0;
+        } else if (mj->players[player_no].tiles_js[pai] == 1) {
+            /* 找到面子 */
+            peng_idx = -1;
+            for (i = 0; i < MJHZ_MAX_SETS; ++i) {
+                if (mj->players[player_no].mj_sets[i].type == mjMeldPeng &&
+                        mj->players[player_no].mj_sets[i].pai_id == pai) {
+                    peng_idx = i;
+                    break;
+                }
+            }
+            if (peng_idx == -1) {
+                if (mj->debug)
+                    printf("players jia gang but not found this peng!\n");
+                return 0;
+            }
+            mj->players[player_no].mj_sets[peng_idx].type = mjMeldGang;
+            mj->players[player_no].mj_sets[peng_idx].extra_info = mjGangJia;
+            mj_delete(mj->players[player_no].tiles, MJHZ_MAX_PAIS, pai);
+            mj->players[player_no].tiles_js[pai] = 0;
+        } else {
+            if (mj->debug)
+                printf("players gang unknow situation!\n");
+            return 0;
+        }
+    } else {
+        /* 明杠 */
+        if (mj->players[player_no].tiles_js[pai] != 3)
+            return 0;
+        if (pai != mj->last_played_mj)
+            return 0;
+        mj->players[player_no].mj_sets[set_idx].type = mjMeldGang;
+        mj->players[player_no].mj_sets[set_idx].pai_id = pai;
+        mj->players[player_no].mj_sets[set_idx].player_no = mj->curr_player_no;
+        mj->players[player_no].mj_sets[set_idx].extra_info = mjGangMing;
+        mj_delete(mj->players[player_no].tiles, MJHZ_MAX_PAIS, pai);
+        mj_delete(mj->players[player_no].tiles, MJHZ_MAX_PAIS, pai);
+        mj_delete(mj->players[player_no].tiles, MJHZ_MAX_PAIS, pai);
+        mj->players[player_no].tiles_js[pai] = 0;
+
+        mj->curr_player_no = player_no;
+    }
+    mj_trim(mj->players[player_no].tiles, MJHZ_MAX_PAIS);
+
+    mj->last_played_mj = 0;
+
+    return 1;
 }
 
 int mjhz_hu(mjhz_t* mj, int player_no)
 {
+    if (!mj)
+        return 0;
+    if (player_no >= mj->player_num)
+        return 0;
     return 0;
 }
 
@@ -778,6 +997,19 @@ void mjhz_next_player(mjhz_t* mj)
     mj->curr_player_no--;
     if (mj->curr_player_no < 0)
         mj->curr_player_no += mj->player_num;
+}
+
+int mjhz_get_next(mjhz_t* mj)
+{
+    int next_no;
+
+    if (!mj)
+        return 0;
+    next_no = mj->curr_player_no - 1;
+    if (next_no < 0)
+        next_no += mj->player_num;
+
+    return next_no;
 }
 
 void mjhz_dump(mjhz_t* mj)

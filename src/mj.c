@@ -111,10 +111,19 @@ void mj_shuffle(int* pais, int len)
     }
 }
 
-void mj_sort(mjpai_t* cards, int len, mjpai_t* mammon)
+void mj_delete(int* pais, int len, int id)
 {
-    if (!cards || len < 2)
+    int i;
+
+    if (!pais || len <= 2)
         return;
+    for (i = 0; i < len; ++i) {
+        if ((*pais) == id) {
+            (*pais) = 0;
+            return;
+        }
+        pais++;
+    }
 }
 
 void mj_trim(int* pais, int len)

@@ -126,11 +126,20 @@ int mjhz_all_melded_joker(int array[MJHZ_LEN_JS], int num_joker);
 /* 和(胡)判定 */
 int mjhz_can_hu(mjhz_t* mj, int player_no);
 
-int mjhz_chi(mjhz_t* mj, int player_no);
+/* 吃 */
+int mjhz_chi(mjhz_t* mj, int player_no, int pai1, int pai2);
+
+/* 碰 */
 int mjhz_peng(mjhz_t* mj, int player_no);
-int mjhz_gang(mjhz_t* mj, int player_no);
+
+/* 杠 */
+int mjhz_gang(mjhz_t* mj, int player_no, int pai);
+
+/* 胡(和) */
 int mjhz_hu(mjhz_t* mj, int player_no);
+
 void mjhz_next_player(mjhz_t* mj);
+int mjhz_get_next(mjhz_t* mj);
 
 /* 帮助函数 */
 void mjhz_dump(mjhz_t* mj);

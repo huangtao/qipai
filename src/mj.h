@@ -120,9 +120,22 @@ typedef enum mj_meld_type {
     mjMeldJiang,    /* 将牌(对子) */
     mjMeldChi,      /* 吃获取的顺子 */
     mjMeldPeng,     /* 碰获取的刻子 */
-    mjMeldGang,     /* 杠 */
-    mjMeldAngang    /* 暗杠 */
+    mjMeldGang      /* 杠 */
 }mjMeldType;
+
+typedef enum mj_chi_type {
+    mjChiNone,
+    mjChiLeft = 0x01,      /* 吃的牌在左边 */
+    mjChiMiddle = 0x02,    /* 吃的牌在中间 */
+    mjChiRight = 0x04      /* 吃的牌在右边 */
+}mjChiType;
+
+typedef enum mj_gang_type {
+    mjGangNone,
+    mjGangMing,     /* 明杠 */
+    mjGangAn,       /* 暗杠 */
+    mjGangJia       /* 加杠 */
+}mjGangType;
 
 /* a mj pai */
 typedef struct mjpai_s {
@@ -136,7 +149,7 @@ typedef struct mj_melded_s {
     int type;       /* 面子类型 */
     int pai_id;     /* 特征牌 */
     int player_no;  /* 吃碰目标玩家 */
-    int extra_info; /* 吃附加信息 */
+    int extra_info; /* 吃,杠附加信息 */
 }mj_melded_t;
 
 void mjpai_init_id(mjpai_t* pai, int id);
@@ -147,6 +160,9 @@ void mjpai_copy(mjpai_t* dest, mjpai_t* src);
 
 /* 洗牌 */
 void mj_shuffle(int* pais, int len);
+
+/* 删除一张牌 */
+void mj_delete(int* pais, int len, int id);
 
 /* 整理 */
 void mj_trim(int* pais, int len);
