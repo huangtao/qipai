@@ -396,6 +396,10 @@ int mjhz_play(mjhz_t* mj, int player_no, int pai_id)
         mj->players[player_no].tiles[n] = 0;
         mj->players[player_no].tiles_js[pai_id]--;
     }
+    if (pai_id == mj->joker)
+        mj->players[player_no].hu.cai_piao++;
+    else
+        mj->players[player_no].hu.cai_piao = 0;
     mj->last_played_mj = pai_id;
     mj->last_played_no = player_no;
     mj_trim(mj->players[player_no].tiles, MJHZ_MAX_PAIS);
@@ -986,6 +990,33 @@ int mjhz_hu(mjhz_t* mj, int player_no)
         return 0;
     if (player_no >= mj->player_num)
         return 0;
+    if (mj->players[player_no].can_hu == 0)
+        return 0;
+
+    if (mj->curr_player_no == player_no) {
+        /* 自摸、杠开 */
+    } else {
+        /* 点炮 */
+        if (!mj->enable_dian_hu)
+            return 0;
+        mj->players[player_no].tiles[MJHZ_MAX_PAIS-1] = mj->last_played_mj;
+        mj->players[player_no].tiles_js[mj->last_played_mj]++;
+    }
+    mj->hu_player_no = player_no;
+    mj->game_state = MJHZ_GAME_END;
+
+    /* 番计算 */
+    mj->players[player_no].hu.fan = 0;
+    if (mj->players[player_no].hu.is_pair7) {
+        mj->players[player_no].hu.fan++;
+        mj->players[player_no].hu.fan += mj->players[player_no].hu.pair7_h4;
+    }
+    if (mj->players[player_no].hu.is_baotou)
+        mj->players[player_no].hu.fan++;
+    if (mj->players[player_no].hu.is_gk)
+        mj->players[player_no].hu.fan++;
+    mj->players[player_no].hu.fan += mj->players[player_no].hu.cai_piao;
+
     return 0;
 }
 

@@ -39,7 +39,8 @@ typedef struct mjhz_hu_s {
     int is_pair7;	/* 7对子 */
     int pair7_h4;	/* 7对子包含4个的数量 */
     int is_baotou;	/* 爆头 */
-    int is_caipiao;	/* 财飘 */
+    int is_gk;      /* 杠开 */
+    int cai_piao;	/* 财飘次数 */
 }mjhz_hu_t;
 
 typedef struct mjhz_player_s {
