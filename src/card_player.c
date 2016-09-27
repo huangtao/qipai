@@ -1,23 +1,23 @@
 ﻿#include "card_player.h"
 #include <stdlib.h>
 #include <string.h>
-#include "ht_lch.h"
-
+#include "qp_error.h"
+/*
 int card_player_init(card_player_t* player, int max_card_num)
 {
     if (!player)
-        return HTERR_PARAM;
+        return QIPAI_PARAM;
     if (max_card_num <= 0)
         max_card_num = 54;
     player->mycards = hand_new(max_card_num);
     if (!player->mycards)
-        return HTERR_OUTOFMEMORY;
+        return QIPAI_OUTOFMEMORY;
     player->played_cards = hand_new(max_card_num);
     if (!player->played_cards)
-        return HTERR_OUTOFMEMORY;
+        return QIPAI_OUTOFMEMORY;
     player->position = -1;
     player->data = 0;
-    return HT_OK;
+    return QIPAI_OK;
 }
 
 void card_player_clear(qp_player_t* player)
@@ -77,4 +77,4 @@ int card_player_play(card_player_t* player, card_t* card)
 
     return hand_del(player->mycards, card);
 }
-
+*/

@@ -308,8 +308,8 @@ void mjhz_sort(int pais[MJHZ_MAX_PAIS])
 
     /* 选择排序 */
     for (i = 0; i < MJHZ_MAX_PAIS - 1; ++i) {
-        exchange = 0;
         for (j = i + 1; j < MJHZ_MAX_PAIS; ++j) {
+            exchange = 0;
             if (pais[j] == MJ_ID_BAI && pais[i] != MJ_ID_BAI) {
                 exchange = 1;
             } else if (pais[j] < pais[i]) {

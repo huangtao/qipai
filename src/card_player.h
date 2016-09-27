@@ -8,6 +8,8 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+
 /* define a card player */
 typedef struct card_player_s{
     int level;

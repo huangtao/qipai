@@ -11,7 +11,6 @@ extern "C" {
 #endif
 
 #include "mj.h"
-#include "card_player.h"
 
 #define MJHZ_MAX_PLAYERS	4
 #define MJHZ_MAX_PAIS		14      /* 手上牌最大数量 */
