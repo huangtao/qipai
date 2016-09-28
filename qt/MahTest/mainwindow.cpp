@@ -191,14 +191,20 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 
 void MainWindow::on_pushButton_clicked()
 {
+    ui->listWidget->clear();
     if (mjhz_can_hu(&mjhz, 0) > 0) {
         // 胡了
         _hu = 1;
         if (mjhz.players[0].hu.is_pair7) {
             ui->listWidget->addItem(tr("七对子"));
         }
-        update();
+        if (mjhz.players[0].hu.pair7_h4 > 0) {
+            QString str =
+                    QString("豪华对数:%1").arg(mjhz.players[0].hu.pair7_h4);
+            ui->listWidget->addItem(str);
+        }
     } else {
         _hu = 0;
     }
+    update();
 }
