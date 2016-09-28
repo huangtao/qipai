@@ -1,7 +1,7 @@
 ﻿#include "card.h"
-#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 static char c_suit[] = {'0','D','C','H','S','*','?'};
 static char c_rank[] = {'0','A','2','3','4','5','6','7','8','9','T','J','Q','K','S','B','?'};
