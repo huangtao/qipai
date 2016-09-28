@@ -113,7 +113,7 @@ bool MainWindow::pointInRect(const QPoint &pt, const QRect &rect)
 
 void MainWindow::mousePressEvent(QMouseEvent *event)
 {
-    int i,n;
+    int i,id,n;
     int out_index = -1;
     int in_index = -1;
 
@@ -148,6 +148,8 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             x += MJPAI_W;
         }
         if (out_index != -1) {
+            id = mjhz.players[0].tiles[out_index];
+            mjhz.players[0].tiles_js[id]--;
             mjhz.players[0].tiles[out_index] = 0;
             mj_trim(mjhz.players[0].tiles, MJHZ_MAX_PAIS);
             mjhz_sort(mjhz.players[0].tiles);
@@ -192,6 +194,9 @@ void MainWindow::on_pushButton_clicked()
     if (mjhz_can_hu(&mjhz, 0) > 0) {
         // 胡了
         _hu = 1;
+        if (mjhz.players[0].hu.is_pair7) {
+            ui->listWidget->addItem(tr("七对子"));
+        }
         update();
     } else {
         _hu = 0;

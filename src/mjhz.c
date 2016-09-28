@@ -317,6 +317,9 @@ void mjhz_sort(int pais[MJHZ_MAX_PAIS])
                 if (pais[j] <= MJ_ID_EMPTY)
                     continue;
                 exchange = 1;
+            } else if (pais[i] == MJ_ID_EMPTY &&
+                       pais[j] != MJ_ID_EMPTY) {
+                exchange = 1;
             }
             if (exchange) {
                 temp = pais[i];
@@ -665,7 +668,7 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
 
     n_joker = 0;
     memcpy(js, mj->players[player_no].tiles_js,
-           sizeof(int) * MJHZ_LEN_JS);
+           sizeof(js));
     if (mj->last_takes_no != player_no &&
             mj->last_played_mj != MJ_ID_EMPTY) {
         /* 杭州麻将老庄才能捉冲。*/
@@ -684,10 +687,9 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
     }
     n_joker = left_joker = js[MJ_ID_BAI];
     js[MJ_ID_BAI] = 0;
-    memset(&mj->players[player_no].hu, 0, sizeof(mjhz_hu_t));
 
     /* 是否七对子 */
-    memcpy(js_joker, js, sizeof(int) * MJHZ_LEN_JS);
+    memcpy(js_joker, js, sizeof(js_joker));
     n_pai = n_4 = 0;
     mj->players[player_no].hu.is_pair7 = 1;
     for (i = 1; i < MJHZ_LEN_JS; ++i) {
@@ -743,7 +745,7 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
 	/* 暴力枚举，将每张牌作为将牌(1张的用财神+1) 来判定是否全成面子 */
 	for (i = 1; i < MJHZ_LEN_JS; ++i) {
 		if (js[i] == 0) continue;
-		memcpy(js_joker, js, sizeof(int) * MJHZ_LEN_JS);
+        memcpy(js_joker, js, sizeof(js_joker));
 		if (js_joker[i] >= 2) {
 			js_joker[i] -= 2;
 			/* 判断去掉将头后是否都是面子 */

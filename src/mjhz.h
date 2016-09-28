@@ -18,8 +18,8 @@ extern "C" {
 #define MJHZ_DECK_PAIS      136		/* 杭州麻将麻将牌最大数量 */
 #define MJHZ_MAX_PAITYPE	34		/* 杭州麻将使用34种牌(27张序数+7张字牌) */
 
-#define MJHZ_MAX_PLAYED     MJHZ_DECK_PAIS/2    /* 打出的牌 */
-#define MJHZ_LEN_JS			MJHZ_MAX_PAITYPE+1	/* 用于计数 */
+#define MJHZ_MAX_PLAYED     50      /* 记录打出的牌 */
+#define MJHZ_LEN_JS			35      /* 用于计数 */
 
 /* 游戏状态 */
 typedef enum mjhz_gamestate_e {
