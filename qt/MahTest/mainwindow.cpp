@@ -2,8 +2,12 @@
 #include "ui_mainwindow.h"
 #include <QPainter>
 #include <QResizeEvent>
+#include <time.h>
 
 #include "../../src/mjhz.h"
+
+#define MJPAI_W 42
+#define MJPAI_H 60
 
 mjhz_t mjhz;
 
@@ -17,10 +21,11 @@ MainWindow::MainWindow(QWidget *parent) :
     _winH = rc.height();
     _winW = rc.width();
 
-    for (int i = 1; i < 43; ++i) {
-        QString str = QString(":/res/mah/mj%1.png").arg(i);
-        _imgMj[i].load(str);
-    }
+    srand(time(NULL));
+
+    _hu = 0;
+    _imgTiles.load(":/res/mj.png");
+    _imgHu.load(":/res/hu.png");
 
     mjhz_init(&mjhz, 0, 4);
     mjhz_start(&mjhz);
@@ -37,28 +42,11 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     QSize sz = event->size();
     _winW = sz.width();
     _winH = sz.height();
-    int center_x = _winW / 2;
-    _rcWan.setLeft(2);
-    _rcWan.setTop(2);
-    _rcWan.setRight(_rcWan.left() + 9 * (_imgMj[1].width() + 2));
-    _rcWan.setBottom(_rcWan.top() + _imgMj[1].height());
-    _rcSuo.setLeft(2);
-    _rcSuo.setTop(_rcWan.bottom() + 2);
-    _rcSuo.setRight(_rcSuo.left() + 9 * (_imgMj[1].width() + 2));
-    _rcSuo.setBottom(_rcSuo.top() + _imgMj[1].height());
-    _rcTong.setLeft(2);
-    _rcTong.setTop(_rcSuo.bottom() + 2);
-    _rcTong.setRight(_rcTong.left() + 9 * (_imgMj[1].width() + 2));
-    _rcTong.setBottom(_rcTong.top() + _imgMj[1].height());
-    _rcHornor.setLeft(2);
-    _rcHornor.setTop(_rcTong.bottom() + 2);
-    _rcHornor.setRight(_rcHornor.left() + 7 * (_imgMj[1].width() + 2));
-    _rcHornor.setBottom(_rcHornor.top() + _imgMj[1].height());
 }
 
 void MainWindow::paintEvent(QPaintEvent*)
 {
-    int i,j;
+    int i;
     int x,y,n;
 
     QPainter painter(this);
@@ -66,42 +54,146 @@ void MainWindow::paintEvent(QPaintEvent*)
     QBrush brush(QColor(16, 114, 16));
     painter.fillRect(rcAll, brush);
 
-    x = y = 2;
+    x = y = 0;
     n = 1;
-    for (i = 0; i < 3; ++i) {
-        if (i == 0) {
-            x = _rcWan.left();
-            y = _rcWan.top();
-        } else if (i == 1) {
-            x = _rcSuo.left();
-            y = _rcSuo.top();
-        } else {
-            x = _rcTong.left();
-            y = _rcTong.top();
-        }
-        for (j = 0; j < 9; ++j) {
-            painter.drawPixmap(x, y, _imgMj[n]);
-            n++;
-            x += _imgMj[1].width() + 2;
-        }
-        x = 2;
-        y += _imgMj[1].height() + 2;
-    }
-    x = _rcHornor.left();
-    y = _rcHornor.top();
-    for (i = 0; i < 7; ++i) {
-        painter.drawPixmap(x, y, _imgMj[n]);
+    for (i = 0; i < 34; ++i) {
+        QRect rcSrc(n * MJPAI_W, 0, MJPAI_W, MJPAI_H);
+        QRect rcDest(x, y, MJPAI_W, MJPAI_H);
+        painter.drawPixmap(rcDest, _imgTiles, rcSrc);
         n++;
-        x += _imgMj[1].width() + 2;
+        x += MJPAI_W;
+        if ((n -1) % 9 == 0) {
+            x = 0;
+            y += MJPAI_H;
+        }
     }
 
-    x = (rcAll.width() - (14 * _imgMj[1].width() + 6)) / 2;
-    y = rcAll.bottom() - _imgMj[1].height();
+    int offset;
+    if (mjhz.players[0].tiles[MJHZ_MAX_PAIS-1] != 0)
+        offset = 6;
+    else
+        offset = 0;
+    n = 0;
     for (i = 0; i < MJHZ_MAX_PAIS; ++i) {
-        painter.drawPixmap(
-                    x,
-                    y,
-                    _imgMj[mjhz.players[0].tiles[i]]);
-        x += _imgMj[1].width() + 2;
+        if (mjhz.players[0].tiles[i] != 0)
+            n++;
+    }
+
+    x = (rcAll.width() - (n * MJPAI_W) - offset) / 2;
+    y = rcAll.bottom() - MJPAI_H;
+    for (i = 0; i < MJHZ_MAX_PAIS; ++i) {
+        if (mjhz.players[0].tiles[i] == 0)
+            continue;
+        QRect rcSrc(mjhz.players[0].tiles[i] * MJPAI_W,
+                0, MJPAI_W, MJPAI_H);
+        if (i == (MJHZ_MAX_PAIS - 1)) {
+            x += 6;
+        }
+        QRect rcDest(x, y, MJPAI_W, MJPAI_H);
+        painter.drawPixmap(rcDest, _imgTiles, rcSrc);
+        x += MJPAI_W;
+    }
+
+    if (_hu) {
+        painter.drawPixmap(rcAll.right() - _imgHu.width(),
+                           rcAll.bottom() - _imgHu.height(),
+                           _imgHu);
+    }
+}
+
+bool MainWindow::pointInRect(const QPoint &pt, const QRect &rect)
+{
+    if (pt.x() >= rect.left() && pt.x() <= rect.right() &&
+            pt.y() >= rect.top() && pt.y() <= rect.bottom()) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+void MainWindow::mousePressEvent(QMouseEvent *event)
+{
+    int i,n;
+    int out_index = -1;
+    int in_index = -1;
+
+    QRectF rcAll = rect();
+    if (event->button() == Qt::LeftButton) {
+        int offset;
+        if (mjhz.players[0].tiles[MJHZ_MAX_PAIS-1] != 0)
+            offset = 6;
+        else
+            offset = 0;
+        n = 0;
+        for (i = 0; i < MJHZ_MAX_PAIS; ++i) {
+            if (mjhz.players[0].tiles[i] != 0)
+                n++;
+        }
+
+        int x = (rcAll.width() - (n * MJPAI_W) - offset) / 2;
+        int y = rcAll.bottom() - MJPAI_H;
+
+        QPoint pos = event->pos();
+        for (i = 0; i < MJHZ_MAX_PAIS; i++) {
+            if (mjhz.players[0].tiles[i] == 0)
+                continue;
+            if (i == (MJHZ_MAX_PAIS - 1))
+                x += 6;
+            QRect rcPai(x, y, MJPAI_W, MJPAI_H);
+            if (pointInRect(pos, rcPai)) {
+                // 选中了牌
+                out_index = i;
+                break;
+            }
+            x += MJPAI_W;
+        }
+        if (out_index != -1) {
+            mjhz.players[0].tiles[out_index] = 0;
+            mj_trim(mjhz.players[0].tiles, MJHZ_MAX_PAIS);
+            mjhz_sort(mjhz.players[0].tiles);
+            update();
+        } else {
+            QRect rcIn(0, 0, 9 * MJPAI_W, MJPAI_H);
+            if (pointInRect(pos, rcIn)) {
+                // 选了万子
+                in_index = MJ_ID_1W + pos.x() / MJPAI_W;
+            }
+            rcIn.setRect(0, MJPAI_H, 9 * MJPAI_W, MJPAI_H);
+            if (pointInRect(pos, rcIn)) {
+                // 选了索子
+                in_index = MJ_ID_1S + pos.x() / MJPAI_W;
+            }
+            rcIn.setRect(0, 2 * MJPAI_H, 9 * MJPAI_W, MJPAI_H);
+            if (pointInRect(pos, rcIn)) {
+                // 选了筒子
+                in_index = MJ_ID_1T + pos.x() / MJPAI_W;
+            }
+            rcIn.setRect(0, 3 * MJPAI_H, 7 * MJPAI_W, MJPAI_H);
+            if (pointInRect(pos, rcIn)) {
+                // 字牌
+                in_index = MJ_ID_DONG + pos.x() / MJPAI_W;
+            }
+            if (in_index != -1) {
+                for (i = 0; i < MJHZ_MAX_PAIS; ++i) {
+                    if (mjhz.players[0].tiles[i] == 0) {
+                        mjhz.players[0].tiles[i] = in_index;
+                        mjhz.players[0].tiles_js[in_index]++;
+                        update();
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    if (mjhz_can_hu(&mjhz, 0) > 0) {
+        // 胡了
+        _hu = 1;
+        update();
+    } else {
+        _hu = 0;
     }
 }

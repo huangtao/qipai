@@ -97,5 +97,7 @@
         <file>res/poker/SK.png</file>
         <file>res/poker/SQ.png</file>
         <file>res/poker/ST.png</file>
+        <file>res/mj.png</file>
+        <file>res/hu.png</file>
     </qresource>
 </RCC>

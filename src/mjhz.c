@@ -230,9 +230,10 @@ void mjhz_start(mjhz_t* mj)
         mj->deck_deal_index = direct * 17 * 2
             + (mj->dice1 + mj->dice2) * 2;
         /* 将牌直接交换好 */
+        m = mj->deck_all_num - mj->deck_deal_index;
         memcpy(temp, mj->deck + mj->deck_deal_index,
-               sizeof(int) * (mj->deck_all_num - mj->deck_deal_index));
-        memcpy(temp + mj->deck_deal_index, mj->deck,
+               sizeof(int) * m);
+        memcpy(temp + m, mj->deck,
                sizeof(int) * mj->deck_deal_index);
         mj->deck_deal_index = 0;
         mj->deck_deal_gang = mj->deck_all_num - 1; /* 杠抓牌 */
@@ -312,7 +313,9 @@ void mjhz_sort(int pais[MJHZ_MAX_PAIS])
             exchange = 0;
             if (pais[j] == MJ_ID_BAI && pais[i] != MJ_ID_BAI) {
                 exchange = 1;
-            } else if (pais[j] < pais[i]) {
+            } else if (pais[i] > pais[j]) {
+                if (pais[j] <= MJ_ID_EMPTY)
+                    continue;
                 exchange = 1;
             }
             if (exchange) {

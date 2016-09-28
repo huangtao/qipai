@@ -164,8 +164,8 @@ void mj_shuffle(int* pais, int len);
 /* 删除一张牌 */
 void mj_delete(int* pais, int len, int id);
 
-/* 整理 */
-void mj_trim(int* pais, int len);
+/* 整理，返回有效数量 */
+int mj_trim(int* pais, int len);
 
 /**
  * print cards to a readable string

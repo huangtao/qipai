@@ -126,16 +126,16 @@ void mj_delete(int* pais, int len, int id)
     }
 }
 
-void mj_trim(int* pais, int len)
+int mj_trim(int* pais, int len)
 {
     int i,n;
     int* p;
     int temp[32];
 
     if (len > 32)
-        return;
+        return 0;
     if (pais && len > 0) {
-        memset((void*)temp, 0, sizeof(mjpai_t) * 32);
+        memset((void*)temp, 0, sizeof(int) * 32);
         n = 0;
         p = pais;
         for (i = 0; i < len; i++) {
@@ -152,6 +152,7 @@ void mj_trim(int* pais, int len)
             p++;
         }
     }
+    return n;
 }
 
 const char* mj_string(int* pais, int len, int line_number)
