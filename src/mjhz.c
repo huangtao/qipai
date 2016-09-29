@@ -1097,11 +1097,15 @@ const char* mjhz_hu_name(mjhz_hu_t* hu)
 {
     static char* hu_name[] = {
         "MJHZ_ERROR",
-        "MJHZ_PING",	/* 平胡 */
-        "MJHZ_DUI7",	/* 7对子 */
-        "MJHZ_LONG",	/* 一条龙 */
-        "MJHZ_QYS"		/* 清一色*/
+        "MJHZ_PING",    /* 平胡 */
+        "MJHZ_DUI7"     /* 7对子 */
     };
 
-    return hu_name[0];
+    if (hu == NULL) {
+        return hu_name[0];
+    }
+    if (hu->is_pair7)
+        return hu_name[2];
+    else
+        return hu_name[1];
 }
