@@ -16,7 +16,7 @@ static int _range_melded(int array[MJHZ_LEN_JS], int start, int* num_joker)
     int i,left_joker;
     int js[9];
 
-    if (start != MJ_ID_1W || start != MJ_ID_1S ||
+    if (start != MJ_ID_1W && start != MJ_ID_1S &&
             start != MJ_ID_1T)
         return 0;
     if (num_joker == NULL)
@@ -135,6 +135,7 @@ static int _range_melded(int array[MJHZ_LEN_JS], int start, int* num_joker)
     } else {
         js[8] = 0;
     }
+    /* now js[9] is all zero */
     *num_joker = left_joker;
     return 1;
 }
@@ -154,6 +155,7 @@ static int _hornor_melded(int array[MJHZ_LEN_JS], int* num_joker)
         return 0;
     memcpy(js, array + MJ_ID_DONG, sizeof(int) * 7);
     for (i = 0; i < 7; ++i) {
+        if (js[i] == 0) continue;
         if (js[i] % 3 == 1) {
             if (left_joker < 2)
                 return 0;
@@ -163,6 +165,7 @@ static int _hornor_melded(int array[MJHZ_LEN_JS], int* num_joker)
         }
         js[i] = 0;
     }
+    /* now js[7] is all zero */
     *num_joker = left_joker;
     return 1;
 }
@@ -314,6 +317,8 @@ void mjhz_sort(int pais[MJHZ_MAX_PAIS])
             if (pais[j] == MJ_ID_BAI && pais[i] != MJ_ID_BAI) {
                 exchange = 1;
             } else if (pais[i] > pais[j]) {
+                if (pais[i] == MJ_ID_BAI)
+                    continue;
                 if (pais[j] <= MJ_ID_EMPTY)
                     continue;
                 exchange = 1;

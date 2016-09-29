@@ -153,6 +153,8 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             mjhz.players[0].tiles[out_index] = 0;
             mj_trim(mjhz.players[0].tiles, MJHZ_MAX_PAIS);
             mjhz_sort(mjhz.players[0].tiles);
+            _hu = 0;
+            ui->listWidget->clear();
             update();
         } else {
             QRect rcIn(0, 0, 9 * MJPAI_W, MJPAI_H);
