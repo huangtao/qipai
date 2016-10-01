@@ -103,7 +103,7 @@ void mjhz_init(mjhz_t* mj, int mode, int player_num);
 void mjhz_start(mjhz_t* mj);
 
 /* sort a hand */
-void mjhz_sort(int pais[MJHZ_MAX_PAIS]);
+void mjhz_sort(int* pais, int len);
 
 /* 打牌 */
 int mjhz_play(mjhz_t* mj, int player_no, int pai_id);

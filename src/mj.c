@@ -130,18 +130,16 @@ int mj_trim(int* pais, int len)
 {
     int i,n;
     int* p;
-    int temp[32];
+    int temp[len];  /* c99 */
 
     if (len > 32)
         return 0;
+    n = 0;
     if (pais && len > 0) {
-        memset((void*)temp, 0, sizeof(int) * 32);
-        n = 0;
         p = pais;
         for (i = 0; i < len; i++) {
             if (*p != MJ_ID_EMPTY) {
-                temp[n] = *p;
-                n++;
+                temp[n++] = *p;
             }
             p++;
         }

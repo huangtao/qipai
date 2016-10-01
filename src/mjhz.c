@@ -304,34 +304,41 @@ void mjhz_start(mjhz_t* mj)
 }
 
 /* 财神 万 索 筒 风 */
-void mjhz_sort(int pais[MJHZ_MAX_PAIS])
+void mjhz_sort(int* pais, int len)
 {
     int i,j;
+    int *pi,*pj;
     int exchange;
     int temp;
 
+    if (!pais || len < 2)
+        return;
+
     /* 选择排序 */
+    pi = pais;
     for (i = 0; i < MJHZ_MAX_PAIS - 1; ++i) {
         for (j = i + 1; j < MJHZ_MAX_PAIS; ++j) {
+            pj = pais + j;
             exchange = 0;
-            if (pais[j] == MJ_ID_BAI && pais[i] != MJ_ID_BAI) {
+            if (*pj == MJ_ID_BAI && *pi != MJ_ID_BAI) {
                 exchange = 1;
-            } else if (pais[i] > pais[j]) {
-                if (pais[i] == MJ_ID_BAI)
+            } else if (*pi > *pj) {
+                if (*pi == MJ_ID_BAI)
                     continue;
-                if (pais[j] <= MJ_ID_EMPTY)
+                if (*pj <= MJ_ID_EMPTY)
                     continue;
                 exchange = 1;
-            } else if (pais[i] == MJ_ID_EMPTY &&
-                       pais[j] != MJ_ID_EMPTY) {
+            } else if (*pi == MJ_ID_EMPTY &&
+                       *pj != MJ_ID_EMPTY) {
                 exchange = 1;
             }
             if (exchange) {
-                temp = pais[i];
-                pais[i] = pais[j];
-                pais[j] = temp;
+                temp = *pi;
+                *pi = *pj;
+                *pj = temp;
             }
         }
+        pi++;
     }
 }
 

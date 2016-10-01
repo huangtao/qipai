@@ -6,8 +6,15 @@
 
 #include "../../src/mjhz.h"
 
-#define MJPAI_W 42
-#define MJPAI_H 60
+// 麻将牌大小
+#define MJPAI_W         69
+#define MJPAI_H         100
+// 牌上图案偏移
+#define MJPAI_ID_OFFX   3
+#define MJPAI_ID_OFFY   17
+// 牌上图案大小
+#define MJPAI_ID_W      64
+#define MJPAI_ID_H      80
 
 mjhz_t mjhz;
 
@@ -24,12 +31,16 @@ MainWindow::MainWindow(QWidget *parent) :
     srand(time(NULL));
 
     _hu = 0;
-    _imgTiles.load(":/res/mj.png");
+    _imgPaiBg.load(":/res/mah/mj_bg1.png");
+    for (int i = 1; i < 35; i++) {
+        QString str = QString(":/res/mah/mj%1.png").arg(i);
+        _imgPais[i].load(str);
+    }
     _imgHu.load(":/res/hu.png");
 
     mjhz_init(&mjhz, 0, 4);
     mjhz_start(&mjhz);
-    mjhz_sort(mjhz.players[0].tiles);
+    mjhz_sort(mjhz.players[0].tiles, MJHZ_MAX_PAIS);
 }
 
 MainWindow::~MainWindow()
@@ -57,9 +68,9 @@ void MainWindow::paintEvent(QPaintEvent*)
     x = y = 0;
     n = 1;
     for (i = 0; i < 34; ++i) {
-        QRect rcSrc(n * MJPAI_W, 0, MJPAI_W, MJPAI_H);
-        QRect rcDest(x, y, MJPAI_W, MJPAI_H);
-        painter.drawPixmap(rcDest, _imgTiles, rcSrc);
+        painter.drawPixmap(x, y, _imgPaiBg);
+        painter.drawPixmap(x + MJPAI_ID_OFFX, y + MJPAI_ID_OFFY,
+                           _imgPais[n]);
         n++;
         x += MJPAI_W;
         if ((n -1) % 9 == 0) {
@@ -82,21 +93,21 @@ void MainWindow::paintEvent(QPaintEvent*)
     x = (rcAll.width() - (n * MJPAI_W) - offset) / 2;
     y = rcAll.bottom() - MJPAI_H;
     for (i = 0; i < MJHZ_MAX_PAIS; ++i) {
-        if (mjhz.players[0].tiles[i] == 0)
+        int id = mjhz.players[0].tiles[i];
+        if (id == 0)
             continue;
-        QRect rcSrc(mjhz.players[0].tiles[i] * MJPAI_W,
-                0, MJPAI_W, MJPAI_H);
         if (i == (MJHZ_MAX_PAIS - 1)) {
             x += 6;
         }
-        QRect rcDest(x, y, MJPAI_W, MJPAI_H);
-        painter.drawPixmap(rcDest, _imgTiles, rcSrc);
+        painter.drawPixmap(x, y, _imgPaiBg);
+        painter.drawPixmap(x + MJPAI_ID_OFFX, y + MJPAI_ID_OFFY,
+                           _imgPais[id]);
         x += MJPAI_W;
     }
 
     if (_hu) {
-        painter.drawPixmap(rcAll.right() - _imgHu.width(),
-                           rcAll.bottom() - _imgHu.height(),
+        painter.drawPixmap((rcAll.width() - _imgHu.width()) / 2,
+                           rcAll.bottom() - _imgPaiBg.height() - 2 - _imgHu.height(),
                            _imgHu);
     }
 }
@@ -152,7 +163,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             mjhz.players[0].tiles_js[id]--;
             mjhz.players[0].tiles[out_index] = 0;
             mj_trim(mjhz.players[0].tiles, MJHZ_MAX_PAIS);
-            mjhz_sort(mjhz.players[0].tiles);
+            mjhz_sort(mjhz.players[0].tiles, MJHZ_MAX_PAIS);
             _hu = 0;
             ui->listWidget->clear();
             update();
