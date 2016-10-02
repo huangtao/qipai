@@ -47,6 +47,12 @@
      <height>25</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>游戏规则</string>
+    </property>
+   </widget>
+   <addaction name="menu"/>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
