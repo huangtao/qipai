@@ -7,14 +7,8 @@
 #include "../../src/mjhz.h"
 
 // 麻将牌大小
-#define MJPAI_W         69
-#define MJPAI_H         100
-// 牌上图案偏移
-#define MJPAI_ID_OFFX   3
-#define MJPAI_ID_OFFY   17
-// 牌上图案大小
-#define MJPAI_ID_W      64
-#define MJPAI_ID_H      80
+#define MJPAI_W 42
+#define MJPAI_H 60
 
 mjhz_t mjhz;
 
@@ -31,11 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
     srand(time(NULL));
 
     _hu = 0;
-    _imgPaiBg.load(":/res/mah/mj_bg1.png");
-    for (int i = 1; i < 35; i++) {
-        QString str = QString(":/res/mah/mj%1.png").arg(i);
-        _imgPais[i].load(str);
-    }
+    _imgMj.load(":/res/mj.png");
     _imgHu.load(":/res/hu.png");
 
     mjhz_init(&mjhz, 0, 4);
@@ -68,12 +58,12 @@ void MainWindow::paintEvent(QPaintEvent*)
     x = y = 0;
     n = 1;
     for (i = 0; i < 34; ++i) {
-        painter.drawPixmap(x, y, _imgPaiBg);
-        painter.drawPixmap(x + MJPAI_ID_OFFX, y + MJPAI_ID_OFFY,
-                           _imgPais[n]);
+        QRect src(n * MJPAI_W, 0, MJPAI_W, MJPAI_H);
+        QRect dest(x, y, MJPAI_W, MJPAI_H);
+        painter.drawPixmap(dest, _imgMj, src);
         n++;
         x += MJPAI_W;
-        if ((n -1) % 9 == 0) {
+        if ((n - 1) % 9 == 0) {
             x = 0;
             y += MJPAI_H;
         }
@@ -99,15 +89,15 @@ void MainWindow::paintEvent(QPaintEvent*)
         if (i == (MJHZ_MAX_PAIS - 1)) {
             x += 6;
         }
-        painter.drawPixmap(x, y, _imgPaiBg);
-        painter.drawPixmap(x + MJPAI_ID_OFFX, y + MJPAI_ID_OFFY,
-                           _imgPais[id]);
+        QRect src(id * MJPAI_W, 0, MJPAI_W, MJPAI_H);
+        QRect dest(x, y, MJPAI_W, MJPAI_H);
+        painter.drawPixmap(dest, _imgMj, src);
         x += MJPAI_W;
     }
 
     if (_hu) {
         painter.drawPixmap((rcAll.width() - _imgHu.width()) / 2,
-                           rcAll.bottom() - _imgPaiBg.height() - 2 - _imgHu.height(),
+                           rcAll.bottom() - MJPAI_H - 2 - _imgHu.height(),
                            _imgHu);
     }
 }

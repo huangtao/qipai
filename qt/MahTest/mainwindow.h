@@ -25,8 +25,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    QPixmap _imgPais[35];
-    QPixmap _imgPaiBg;
+    QPixmap _imgMj;
     QPixmap _imgHu;
 
     int _hu;
