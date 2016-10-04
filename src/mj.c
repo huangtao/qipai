@@ -153,6 +153,22 @@ int mj_trim(int* pais, int len)
     return n;
 }
 
+int mj_length(int *pais, int len)
+{
+    int i,n;
+
+    if (!pais)
+        return 0;
+    n = 0;
+    for (i = 0; i < len; ++i) {
+        if (*pais != MJ_ID_EMPTY)
+            n++;
+        pais++;
+    }
+
+    return n;
+}
+
 const char* mj_string(int* pais, int len, int line_number)
 {
     static char str[256];

@@ -15,11 +15,11 @@ extern "C" {
 #define MJHZ_MAX_PLAYERS	4
 #define MJHZ_MAX_PAIS		14      /* 手上牌最大数量 */
 #define MJHZ_MAX_SETS       6       /* 面子最大数量 */
-#define MJHZ_DECK_PAIS      136		/* 杭州麻将麻将牌最大数量 */
-#define MJHZ_MAX_PAITYPE	34		/* 杭州麻将使用34种牌(27张序数+7张字牌) */
+#define MJHZ_DECK_PAIS      136     /* 杭州麻将麻将牌最大数量 */
+#define MJHZ_MAX_PAITYPE    34      /* 杭州麻将使用34种牌(27张序数+7张字牌) */
 
 #define MJHZ_MAX_PLAYED     50      /* 记录打出的牌 */
-#define MJHZ_LEN_JS			35      /* 用于计数 */
+#define MJHZ_LEN_JS         35      /* 用于计数 */
 
 /* 游戏状态 */
 typedef enum mjhz_gamestate_e {
