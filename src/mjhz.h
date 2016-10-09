@@ -65,8 +65,6 @@ typedef struct mjhz_s {
     int debug;              /* output debug info */
     int mode;               /* client or server mode */
     int game_state;         /* game state */
-    int turn_time;          /* turn time */
-    int curr_turn_time;     /* current turn left time */
     int round;
     int inning;
     int player_num;         /* 2 or 4 player */
