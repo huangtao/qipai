@@ -34,7 +34,7 @@ typedef enum mjhz_mode_e {
 
 /* mjhz hu info */
 typedef struct mjhz_hu_s {
-	int fan;		/* 番数 */
+    int fan;		/* 番数 */
     int is_pair7;	/* 7对子 */
     int pair7_h4;	/* 7对子包含4个的数量 */
     int is_baotou;	/* 爆头 */
@@ -53,10 +53,10 @@ typedef struct mjhz_player_s {
     mj_melded_t mj_sets[MJHZ_MAX_SETS];
     int tiles_js[MJHZ_LEN_JS];              /* 用于分析麻将 */
     int last_played;
-	int can_chi;
-	int can_peng;
-	int can_gang;
-	int can_hu;
+    int can_chi;
+    int can_peng;
+    int can_gang;
+    int can_hu;
     int pai_gang[4];        /* 杠牌信息 */
     mjhz_hu_t hu;           /* 胡牌信息 */
 }mjhz_player_t;

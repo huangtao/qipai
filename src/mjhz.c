@@ -349,10 +349,20 @@ void mjhz_sort(int* pais, int len)
  */
 int mjhz_takes(mjhz_t* mj, int is_gang)
 {
-    int pai;
+    int i,pai;
 
     if (!mj)
         return 0;
+    if (mj->last_played_mj != MJ_ID_EMPTY) {
+        for (i = 0; i < MJHZ_MAX_PLAYED; ++i) {
+            if (mj->players[mj->last_played_no].tiles_played[i] != 0)
+                continue;
+            mj->players[mj->last_played_no].tiles_played[i] =
+                    mj->last_played_mj;
+            break;
+        }
+        mj->last_played_mj = 0;
+    }
     if (mj->deck_valid_num <= 20) {
         /* 流局 */
         return 0;
@@ -449,7 +459,7 @@ int mjhz_play(mjhz_t* mj, int player_no, int pai_id)
     }
     if (!flag) {
         mjhz_next_player(mj);
-        mjhz_takes(mj, 0);
+        /* 摸牌独立调用 */
     }
 
     return 1;
