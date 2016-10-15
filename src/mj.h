@@ -26,7 +26,20 @@ extern "C" {
  * 连庄：庄家胡牌或者流局即可连庄。
  * 番：也称台头，日语里面为役。
  * 自摸: Winning from the wall，摸牌起和（胡）。
+ * 流局: drawn。
  */
+
+/* 游戏状态 */
+typedef enum gamestate_e {
+    GAME_END = 0,   /* game end */
+    GAME_PLAY       /* playing */
+}GAME_STATE;
+
+/* 服务器/客户端模式 */
+typedef enum game_mode_e {
+    GAME_MODE_SERVER = 0,
+    GAME_MODE_CLIENT
+}GAME_MODE;
 
 /* majiang tile suit */
 typedef enum majiang_suit {
@@ -136,6 +149,20 @@ typedef enum mj_gang_type {
     mjGangAn,       /* 暗杠 */
     mjGangJia       /* 加杠 */
 }mjGangType;
+
+/* 游戏开始后的逻辑状态 */
+typedef enum mj_logic_state {
+    lsTurn,     /* 轮流摸牌打牌 */
+    lsCall      /* 其他玩家吃碰杠 */
+}mjLogicState;
+
+/* called (claimed by other players) */
+typedef enum mj_call_type {
+    callChi,
+    callPeng,
+    callGang,
+    callHu
+}mjCallType;
 
 /* a mj pai */
 typedef struct mjpai_s {
