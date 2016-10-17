@@ -21,17 +21,6 @@ extern "C" {
 #define MJHZ_MAX_PLAYED     50      /* 记录打出的牌 */
 #define MJHZ_LEN_JS         35      /* 用于计数 */
 
-/* 游戏状态 */
-typedef enum mjhz_gamestate_e {
-    MJHZ_GAME_END = 0,   /* game end */
-    MJHZ_GAME_PLAY       /* playing */
-}MJHZ_GAMESTATE;
-
-typedef enum mjhz_mode_e {
-    MJHZ_MODE_SERVER = 0,
-    MJHZ_MODE_CLIENT
-}MJHZ_MODE;
-
 /* mjhz hu info */
 typedef struct mjhz_hu_s {
     int fan;		/* 番数 */
@@ -65,6 +54,7 @@ typedef struct mjhz_s {
     int debug;              /* output debug info */
     int mode;               /* client or server mode */
     int game_state;         /* game state */
+    int logic_state;        /* mj logic state */
     int round;
     int inning;
     int player_num;         /* 2 or 4 player */
@@ -82,8 +72,8 @@ typedef struct mjhz_s {
     int deck_deal_gang;     /* deal when gang */
     int deck_valid_num;     /* valid number card */
 
-    int last_played_mj;
-	int last_played_no;
+    int discarded_tile;     /* 打出的麻将牌和玩家编号 */
+    int discarded_no;
     int last_takes_no;      /* last takes(摸牌) player no */
     int lao_z;              /* 老庄 */
     int enable_dian_hu;     /* 能否点和(点炮、捉冲) */
@@ -103,11 +93,11 @@ void mjhz_start(mjhz_t* mj);
 /* sort a hand */
 void mjhz_sort(int* pais, int len);
 
-/* 打牌 */
-int mjhz_play(mjhz_t* mj, int player_no, int pai_id);
+/* 打出麻将牌 */
+int mjhz_discard(mjhz_t* mj, int pai_id);
 
 /* 摸牌 */
-int mjhz_takes(mjhz_t* mj, int is_gang);
+int mjhz_draw(mjhz_t* mj, int is_gang);
 
 int mjhz_can_chi(mjhz_t* mj, int player_no);
 int mjhz_can_peng(mjhz_t* mj, int player_no);
