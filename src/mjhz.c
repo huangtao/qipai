@@ -445,22 +445,7 @@ int mjhz_play(mjhz_t* mj, int player_no, int pai_id)
             mj->players[i].can_chi = 0;
         }
     }
-
-    /* 无人能吃碰胡则摸牌,否则等待 */
-    flag = 0;
-    for (i = 0; i < mj->player_num; ++i) {
-        if (mj->players[i].can_hu ||
-                mj->players[i].can_gang ||
-                mj->players[i].can_peng ||
-                mj->players[i].can_chi) {
-            flag = 1;
-            break;
-        }
-    }
-    if (!flag) {
-        mjhz_next_player(mj);
-        /* 摸牌独立调用 */
-    }
+    mjhz_next_player(mj);
 
     return 1;
 }
@@ -1013,6 +998,8 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
 
 int mjhz_hu(mjhz_t* mj, int player_no)
 {
+    int i;
+
     if (!mj)
         return 0;
     if (player_no >= mj->player_num)
@@ -1030,6 +1017,12 @@ int mjhz_hu(mjhz_t* mj, int player_no)
         mj->players[player_no].tiles_js[mj->last_played_mj]++;
     }
     mj->hu_player_no = player_no;
+    for (i = 0; i < MJHZ_MAX_PLAYERS; ++i) {
+        mj->players[i].can_chi = 0;
+        mj->players[i].can_gang = 0;
+        mj->players[i].can_peng = 0;
+        mj->players[i].can_hu = 0;
+    }
     mj->game_state = MJHZ_GAME_END;
 
     /* 番计算 */
