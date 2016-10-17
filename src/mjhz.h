@@ -12,13 +12,13 @@ extern "C" {
 
 #include "mj.h"
 
-#define MJHZ_MAX_PLAYERS	4
-#define MJHZ_MAX_PAIS		14      /* 手上牌最大数量 */
-#define MJHZ_MAX_SETS       6       /* 面子最大数量 */
+#define MJHZ_MAX_PLAYERS	4       /* 游戏最多玩家 */
+#define MJHZ_MAX_HAND		14      /* 手上牌最大数量 */
+#define MJHZ_MAX_MELD       6       /* 面子最大数量 */
 #define MJHZ_DECK_PAIS      136     /* 杭州麻将麻将牌最大数量 */
 #define MJHZ_MAX_PAITYPE    34      /* 杭州麻将使用34种牌(27张序数+7张字牌) */
-
-#define MJHZ_MAX_PLAYED     50      /* 记录打出的牌 */
+#define MJHZ_WALL_REMAIN    20      /* 长城保留的牌数 */
+#define MJHZ_MAX_DISCARDED  30      /* 记录打出的牌 */
 #define MJHZ_LEN_JS         35      /* 用于计数 */
 
 /* mjhz hu info */
@@ -37,9 +37,9 @@ typedef struct mjhz_player_s {
     int position;
     int64_t score;
     uint64_t gold;
-    int tiles[MJHZ_MAX_PAIS];
-    int tiles_played[MJHZ_MAX_PLAYED];
-    mj_melded_t mj_sets[MJHZ_MAX_SETS];
+    int hand[MJHZ_MAX_HAND];                /* 手牌 */
+    int discard[MJHZ_MAX_DISCARDED];        /* 打出的牌 */
+    mj_meld_t meld[MJHZ_MAX_MELD];          /* 已吃碰杠 */
     int tiles_js[MJHZ_LEN_JS];              /* 用于分析麻将 */
     int last_played;
     int can_chi;
@@ -72,13 +72,17 @@ typedef struct mjhz_s {
     int deck_deal_gang;     /* deal when gang */
     int deck_valid_num;     /* valid number card */
 
-    int discarded_tile;     /* 打出的麻将牌和玩家编号 */
+    int current_discard;    /* 当前打出的麻将牌 */
     int discarded_no;
     int last_takes_no;      /* last takes(摸牌) player no */
     int lao_z;              /* 老庄 */
     int enable_dian_hu;     /* 能否点和(点炮、捉冲) */
     int joker;              /* 百搭(财神) */
     int pai_gang;           /* 当前杠牌 */
+
+    time_t time_start;      /* 游戏开始时间 */
+    time_t time_turn;       /* 玩家回合开始时间 */
+    int sec_wait;           /* 当前操作总共等待时间(秒) */
 
     int deck[MJHZ_DECK_PAIS];                   /* deck mj pais */
     mjhz_player_t players[MJHZ_MAX_PLAYERS];    /* players */

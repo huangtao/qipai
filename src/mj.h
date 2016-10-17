@@ -11,6 +11,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include <time.h>
 
 /*
  * 麻将常用术语
@@ -115,13 +116,19 @@ typedef enum majiang_season {
 
 typedef enum majiang_id {
     MJ_ID_EMPTY,
+    /* 万子 */
     MJ_ID_1W, MJ_ID_2W, MJ_ID_3W, MJ_ID_4W, MJ_ID_5W, MJ_ID_6W, MJ_ID_7W, MJ_ID_8W, MJ_ID_9W,
+    /* 索子 */
     MJ_ID_1S, MJ_ID_2S, MJ_ID_3S, MJ_ID_4S, MJ_ID_5S, MJ_ID_6S, MJ_ID_7S, MJ_ID_8S, MJ_ID_9S,
+    /* 筒子 */
     MJ_ID_1T, MJ_ID_2T, MJ_ID_3T, MJ_ID_4T, MJ_ID_5T, MJ_ID_6T, MJ_ID_7T, MJ_ID_8T, MJ_ID_9T,
+    /* 字牌 */
     MJ_ID_DONG, MJ_ID_NAN, MJ_ID_XI, MJ_ID_BEI,
     MJ_ID_ZHONG, MJ_ID_FA, MJ_ID_BAI,
+    /* 花牌 */
     MJ_ID_MEI, MJ_ID_LAN, MJ_ID_ZHU, MJ_ID_JU,
     MJ_ID_CUN, MJ_ID_XIA, MJ_ID_QIU, MJ_ID_SDONG,
+    /* 特殊 */
     MJ_ID_UNKNOW
 }mjID;
 
@@ -172,12 +179,12 @@ typedef struct mjpai_s {
 }mjpai_t;
 
 /* 面子 */
-typedef struct mj_melded_s {
+typedef struct mj_meld_s {
     int type;       /* 面子类型 */
     int pai_id;     /* 特征牌 */
     int player_no;  /* 吃碰目标玩家 */
     int extra_info; /* 吃,杠附加信息 */
-}mj_melded_t;
+}mj_meld_t;
 
 void mjpai_init_id(mjpai_t* pai, int id);
 void mjpai_init_ss(mjpai_t* pai, int suit, int sign);
