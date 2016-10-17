@@ -30,7 +30,7 @@ int mj_duan19(mjpai_t* pais, int length)
         return 0;
     p = pais;
     for (i = 0; i < length; ++i) {
-        if (p->suit != mjSuitWan || p->suit != mjSuitTiao ||
+        if (p->suit != mjSuitWan || p->suit != mjSuitSuo ||
                 p->suit != mjSuitTong)
             return 0;
         if (p->sign == 1 || p->sign == 9)

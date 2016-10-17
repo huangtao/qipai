@@ -19,7 +19,7 @@ void mjpai_init_id(mjpai_t* pai, int id)
         pai->suit = mjSuitWan;
         pai->sign = id - MJ_ID_1W + 1;
     } else if (id >= MJ_ID_1S && id <= MJ_ID_9S) {
-        pai->suit = mjSuitTiao;
+        pai->suit = mjSuitSuo;
         pai->sign = id - MJ_ID_1S + 1;
     } else if (id >= MJ_ID_1T && id <= MJ_ID_9T) {
         pai->suit = mjSuitTong;
@@ -56,7 +56,7 @@ void mjpai_init_ss(mjpai_t* pai, int suit, int sign)
     pai->suit = suit;
     if (suit == mjSuitWan) {
         pai->id = MJ_ID_1W + sign - 1;
-    } else if (suit == mjSuitTiao) {
+    } else if (suit == mjSuitSuo) {
         pai->id = MJ_ID_1S + sign - 1;
     } else if (suit == mjSuitTong) {
         pai->id = MJ_ID_1T + sign - 1;

@@ -47,9 +47,8 @@ typedef enum majiang_suit {
     mjSuitNone,
     mjSuitWan,                      /* 万子 */
     mjSuitCharacter = mjSuitWan,
-    mjSuitTiao,                     /* 条子 */
-    mjSuitSuo = mjSuitTiao,
-    mjSuitBamboo = mjSuitTiao,
+    mjSuitSuo,                      /* 索子 */
+    mjSuitBamboo = mjSuitSuo,
     mjSuitTong,                     /* 筒子 */
     mjSuitCircle = mjSuitTong,
     mjSuitFeng,                     /* 风牌 */
