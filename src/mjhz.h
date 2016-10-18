@@ -56,6 +56,9 @@ typedef struct mjhz_player_s {
     int req_peng;
     int req_gang;
     int req_hu;
+    int wait_chi;       /* 等待吃(碰杠胡优先) */
+    int wait_peng;
+    int wait_gang;
 }mjhz_player_t;
 
 typedef struct mjhz_s {

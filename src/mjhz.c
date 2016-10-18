@@ -437,6 +437,7 @@ int mjhz_discard(mjhz_t* mj, int pai_id)
         mj->players[no].hand[n] = 0;
         mj->players[no].tiles_js[pai_id]--;
     }
+    /* 财飘处理 */
     if (pai_id == mj->joker)
         mj->players[no].hu.cai_piao++;
     else
@@ -444,11 +445,15 @@ int mjhz_discard(mjhz_t* mj, int pai_id)
     mj->current_discard = pai_id;
     mj->discarded_no = no;
     mj_trim(mj->players[no].hand, MJHZ_MAX_HAND);
+
     /* 判定吃碰杠胡 */
     flag = 0;
     for (i = 0; i < mj->player_num; ++i) {
         if (i != no) {
-            flag |= mjhz_can_hu(mj, i);
+            if (pai_id == mj->joker)
+                continue;   /* 财飘不能吃、碰、放冲 */
+            if (mj->enable_dian_hu && mj->lao_z >= 2)
+                flag |= mjhz_can_hu(mj, i); /* 二老庄才能捉冲 */
             flag |= mjhz_can_gang(mj, i);
             flag |= mjhz_can_peng(mj, i);
             flag |= mjhz_can_chi(mj, i);

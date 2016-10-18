@@ -30,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     mjhz_init(&mjhz, 0, 4);
     mjhz_start(&mjhz);
-    mjhz_sort(mjhz.players[0].tiles, MJHZ_MAX_PAIS);
+    mjhz_sort(mjhz.players[0].hand, MJHZ_MAX_HAND);
 }
 
 MainWindow::~MainWindow()
@@ -70,23 +70,23 @@ void MainWindow::paintEvent(QPaintEvent*)
     }
 
     int offset;
-    if (mjhz.players[0].tiles[MJHZ_MAX_PAIS-1] != 0)
+    if (mjhz.players[0].hand[MJHZ_MAX_HAND-1] != 0)
         offset = 6;
     else
         offset = 0;
     n = 0;
-    for (i = 0; i < MJHZ_MAX_PAIS; ++i) {
-        if (mjhz.players[0].tiles[i] != 0)
+    for (i = 0; i < MJHZ_MAX_HAND; ++i) {
+        if (mjhz.players[0].hand[i] != 0)
             n++;
     }
 
     x = (rcAll.width() - (n * MJPAI_W) - offset) / 2;
     y = rcAll.bottom() - MJPAI_H;
-    for (i = 0; i < MJHZ_MAX_PAIS; ++i) {
-        int id = mjhz.players[0].tiles[i];
+    for (i = 0; i < MJHZ_MAX_HAND; ++i) {
+        int id = mjhz.players[0].hand[i];
         if (id == 0)
             continue;
-        if (i == (MJHZ_MAX_PAIS - 1)) {
+        if (i == (MJHZ_MAX_HAND - 1)) {
             x += 6;
         }
         QRect src(id * MJPAI_W, 0, MJPAI_W, MJPAI_H);
@@ -121,13 +121,13 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
     QRectF rcAll = rect();
     if (event->button() == Qt::LeftButton) {
         int offset;
-        if (mjhz.players[0].tiles[MJHZ_MAX_PAIS-1] != 0)
+        if (mjhz.players[0].hand[MJHZ_MAX_HAND-1] != 0)
             offset = 6;
         else
             offset = 0;
         n = 0;
-        for (i = 0; i < MJHZ_MAX_PAIS; ++i) {
-            if (mjhz.players[0].tiles[i] != 0)
+        for (i = 0; i < MJHZ_MAX_HAND; ++i) {
+            if (mjhz.players[0].hand[i] != 0)
                 n++;
         }
 
@@ -135,10 +135,10 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
         int y = rcAll.bottom() - MJPAI_H;
 
         QPoint pos = event->pos();
-        for (i = 0; i < MJHZ_MAX_PAIS; i++) {
-            if (mjhz.players[0].tiles[i] == 0)
+        for (i = 0; i < MJHZ_MAX_HAND; i++) {
+            if (mjhz.players[0].hand[i] == 0)
                 continue;
-            if (i == (MJHZ_MAX_PAIS - 1))
+            if (i == (MJHZ_MAX_HAND - 1))
                 x += 6;
             QRect rcPai(x, y, MJPAI_W, MJPAI_H);
             if (pointInRect(pos, rcPai)) {
@@ -149,11 +149,11 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             x += MJPAI_W;
         }
         if (out_index != -1) {
-            id = mjhz.players[0].tiles[out_index];
+            id = mjhz.players[0].hand[out_index];
             mjhz.players[0].tiles_js[id]--;
-            mjhz.players[0].tiles[out_index] = 0;
-            mj_trim(mjhz.players[0].tiles, MJHZ_MAX_PAIS);
-            mjhz_sort(mjhz.players[0].tiles, MJHZ_MAX_PAIS);
+            mjhz.players[0].hand[out_index] = 0;
+            mj_trim(mjhz.players[0].hand, MJHZ_MAX_HAND);
+            mjhz_sort(mjhz.players[0].hand, MJHZ_MAX_HAND);
             _hu = 0;
             ui->listWidget->clear();
             update();
@@ -161,27 +161,27 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             QRect rcIn(0, 0, 9 * MJPAI_W, MJPAI_H);
             if (pointInRect(pos, rcIn)) {
                 // 选了万子
-                in_index = MJ_ID_1W + pos.x() / MJPAI_W;
+                in_index = PAI_1W + pos.x() / MJPAI_W;
             }
             rcIn.setRect(0, MJPAI_H, 9 * MJPAI_W, MJPAI_H);
             if (pointInRect(pos, rcIn)) {
                 // 选了索子
-                in_index = MJ_ID_1S + pos.x() / MJPAI_W;
+                in_index = PAI_1S + pos.x() / MJPAI_W;
             }
             rcIn.setRect(0, 2 * MJPAI_H, 9 * MJPAI_W, MJPAI_H);
             if (pointInRect(pos, rcIn)) {
                 // 选了筒子
-                in_index = MJ_ID_1T + pos.x() / MJPAI_W;
+                in_index = PAI_1T + pos.x() / MJPAI_W;
             }
             rcIn.setRect(0, 3 * MJPAI_H, 7 * MJPAI_W, MJPAI_H);
             if (pointInRect(pos, rcIn)) {
                 // 字牌
-                in_index = MJ_ID_DONG + pos.x() / MJPAI_W;
+                in_index = PAI_DONG + pos.x() / MJPAI_W;
             }
             if (in_index != -1) {
-                for (i = 0; i < MJHZ_MAX_PAIS; ++i) {
-                    if (mjhz.players[0].tiles[i] == 0) {
-                        mjhz.players[0].tiles[i] = in_index;
+                for (i = 0; i < MJHZ_MAX_HAND; ++i) {
+                    if (mjhz.players[0].hand[i] == 0) {
+                        mjhz.players[0].hand[i] = in_index;
                         mjhz.players[0].tiles_js[in_index]++;
                         update();
                         break;
