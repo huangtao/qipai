@@ -435,13 +435,13 @@ int mjhz_discard(mjhz_t* mj, int pai_id)
         return -4;
     } else {
         mj->players[no].hand[n] = 0;
-        mj->players[no].tiles_js[tile_id]--;
+        mj->players[no].tiles_js[pai_id]--;
     }
-    if (tile_id == mj->joker)
+    if (pai_id == mj->joker)
         mj->players[no].hu.cai_piao++;
     else
         mj->players[no].hu.cai_piao = 0;
-    mj->current_discard = tile_id;
+    mj->current_discard = pai_id;
     mj->discarded_no = no;
     mj_trim(mj->players[no].hand, MJHZ_MAX_HAND);
     /* 判定吃碰杠胡 */
