@@ -8,34 +8,34 @@ void mjpai_init_id(mjpai_t* pai, int id)
 {
     if (pai == NULL)
         return;
-    if (id <= MJ_ID_EMPTY || id > MJ_ID_UNKNOW) {
-        pai->id = MJ_ID_EMPTY;
+    if (id <= PAI_EMPTY || id > PAI_UNKNOW) {
+        pai->id = PAI_EMPTY;
         pai->sign = 0;
         pai->suit = 0;
         return;
     }
     pai->id = id;
-    if (id >= MJ_ID_1W && id <= MJ_ID_9W) {
+    if (id >= PAI_1W && id <= PAI_9W) {
         pai->suit = mjSuitWan;
-        pai->sign = id - MJ_ID_1W + 1;
-    } else if (id >= MJ_ID_1S && id <= MJ_ID_9S) {
+        pai->sign = id - PAI_1W + 1;
+    } else if (id >= PAI_1S && id <= PAI_9S) {
         pai->suit = mjSuitSuo;
-        pai->sign = id - MJ_ID_1S + 1;
-    } else if (id >= MJ_ID_1T && id <= MJ_ID_9T) {
+        pai->sign = id - PAI_1S + 1;
+    } else if (id >= PAI_1T && id <= PAI_9T) {
         pai->suit = mjSuitTong;
-        pai->sign = id - MJ_ID_1T + 1;
-    } else if (id >= MJ_ID_DONG && id <= MJ_ID_BEI) {
+        pai->sign = id - PAI_1T + 1;
+    } else if (id >= PAI_DF && id <= PAI_BF) {
         pai->suit = mjSuitFeng;
-        pai->sign = id - MJ_ID_DONG + 1;
-    } else if (id >= MJ_ID_ZHONG && id <= MJ_ID_BAI) {
+        pai->sign = id - PAI_DONG + 1;
+    } else if (id >= PAI_ZHONG && id <= PAI_BAI) {
         pai->suit = mjSuitZFB;
-        pai->sign = id - MJ_ID_ZHONG + 1;
-    } else if (id >= MJ_ID_MEI && id <= MJ_ID_JU) {
+        pai->sign = id - PAI_ZHONG + 1;
+    } else if (id >= PAI_MEI && id <= PAI_JU) {
         pai->suit = mjSuitHua;
-        pai->sign = id - MJ_ID_MEI + 1;
-    } else if (id >= MJ_ID_CUN && id <= MJ_ID_SDONG) {
+        pai->sign = id - PAI_MEI + 1;
+    } else if (id >= PAI_CUN && id <= PAI_DONG) {
         pai->suit = mjSuitSeason;
-        pai->sign = id - MJ_ID_CUN + 1;
+        pai->sign = id - PAI_CUN + 1;
     } else {
         pai->suit = 0;
         pai->sign = 0;
@@ -55,21 +55,21 @@ void mjpai_init_ss(mjpai_t* pai, int suit, int sign)
     pai->sign = sign;
     pai->suit = suit;
     if (suit == mjSuitWan) {
-        pai->id = MJ_ID_1W + sign - 1;
+        pai->id = PAI_1W + sign - 1;
     } else if (suit == mjSuitSuo) {
-        pai->id = MJ_ID_1S + sign - 1;
+        pai->id = PAI_1S + sign - 1;
     } else if (suit == mjSuitTong) {
-        pai->id = MJ_ID_1T + sign - 1;
+        pai->id = PAI_1T + sign - 1;
     } else if (suit == mjSuitFeng) {
-        pai->id = MJ_ID_DONG + sign - 1;
+        pai->id = PAI_DONG + sign - 1;
     } else if (suit == mjSuitZFB) {
-        pai->id = MJ_ID_ZHONG + sign - 1;
+        pai->id = PAI_ZHONG + sign - 1;
     } else if (suit == mjSuitHua) {
-        pai->id = MJ_ID_MEI + sign - 1;
+        pai->id = PAI_MEI + sign - 1;
     } else if (suit == mjSuitSeason) {
-        pai->id = MJ_ID_CUN + sign - 1;
+        pai->id = PAI_CUN + sign - 1;
     } else {
-        pai->id = MJ_ID_UNKNOW;
+        pai->id = PAI_UNKNOW;
     }
 }
 
@@ -138,7 +138,7 @@ int mj_trim(int* pais, int len)
     if (pais && len > 0) {
         p = pais;
         for (i = 0; i < len; i++) {
-            if (*p != MJ_ID_EMPTY) {
+            if (*p != 0) {
                 temp[n++] = *p;
             }
             p++;
@@ -161,7 +161,7 @@ int mj_length(int *pais, int len)
         return 0;
     n = 0;
     for (i = 0; i < len; ++i) {
-        if (*pais != MJ_ID_EMPTY)
+        if (*pais != 0)
             n++;
         pais++;
     }

@@ -24,6 +24,7 @@ extern "C" {
 /* mjhz hu info */
 typedef struct mjhz_hu_s {
     int fan;		/* 番数 */
+    int is_tianhu;  /* 天胡 */
     int is_pair7;	/* 7对子 */
     int pair7_h4;	/* 7对子包含4个的数量 */
     int is_baotou;	/* 爆头 */
@@ -37,17 +38,24 @@ typedef struct mjhz_player_s {
     int position;
     int64_t score;
     uint64_t gold;
-    int hand[MJHZ_MAX_HAND];                /* 手牌 */
-    int discard[MJHZ_MAX_DISCARDED];        /* 打出的牌 */
-    mj_meld_t meld[MJHZ_MAX_MELD];          /* 已吃碰杠 */
-    int tiles_js[MJHZ_LEN_JS];              /* 用于分析麻将 */
+    int hand[MJHZ_MAX_HAND];            /* 手牌 */
+    int discard[MJHZ_MAX_DISCARDED];    /* 舍牌(打出的牌) */
+    int discard_index;
+    mj_meld_t meld[MJHZ_MAX_MELD];      /* 已吃碰杠 */
+    int meld_index;
+    int tiles_js[MJHZ_LEN_JS];          /* 用于分析麻将 */
     int last_played;
     int can_chi;
-    int can_peng;
     int can_gang;
     int can_hu;
-    int pai_gang[4];        /* 杠牌信息 */
-    mjhz_hu_t hu;           /* 胡牌信息 */
+    int can_peng[MJHZ_LEN_JS];          /* 不能弃先碰后,!=1不能碰*/
+    int pai_gang[4];    /* 杠牌信息 */
+    mjhz_hu_t hu;       /* 胡牌信息 */
+    int req_pass;       /* 请求过 */
+    int req_chi;        /* 请求吃 */
+    int req_peng;
+    int req_gang;
+    int req_hu;
 }mjhz_player_t;
 
 typedef struct mjhz_s {
@@ -64,8 +72,7 @@ typedef struct mjhz_s {
     int hu_player_no;
     int flag_liu;           /* 流局标记 */
 
-    int dice1;
-    int dice2;
+    int dice[2];
     int deck_all_num;
     int deck_deal_index;    /* current deal card index */
     //int deck_deal_end;      /* where deal end position */
@@ -76,9 +83,10 @@ typedef struct mjhz_s {
     int discarded_no;
     int last_takes_no;      /* last takes(摸牌) player no */
     int lao_z;              /* 老庄 */
-    int enable_dian_hu;     /* 能否点和(点炮、捉冲) */
     int joker;              /* 百搭(财神) */
     int pai_gang;           /* 当前杠牌 */
+    int enable_dian_hu;     /* 能否点和(点炮、捉冲) */
+    int enable_lou_hu;      /* 漏胡(弃先胡后) */
 
     time_t time_start;      /* 游戏开始时间 */
     time_t time_turn;       /* 玩家回合开始时间 */
@@ -97,7 +105,7 @@ void mjhz_start(mjhz_t* mj);
 /* sort a hand */
 void mjhz_sort(int* pais, int len);
 
-/* 打出麻将牌 */
+/* 弃牌,打出麻将牌 */
 int mjhz_discard(mjhz_t* mj, int pai_id);
 
 /* 摸牌 */

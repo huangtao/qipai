@@ -10,7 +10,7 @@
 extern "C" {
 #endif
 
-#include <stdint.h>
+#include "qpdef.h"
 #include <time.h>
 
 /*
@@ -30,17 +30,8 @@ extern "C" {
  * 流局: drawn。
  */
 
-/* 游戏状态 */
-typedef enum gamestate_e {
-    GAME_END = 0,   /* game end */
-    GAME_PLAY       /* playing */
-}GAME_STATE;
-
-/* 服务器/客户端模式 */
-typedef enum game_mode_e {
-    GAME_MODE_SERVER = 0,
-    GAME_MODE_CLIENT
-}GAME_MODE;
+#define WAITTIME_TURN   20      /* 摸牌打牌时间 */
+#define WAITTIME_CALL   8       /* 吃碰杠时间 */
 
 /* majiang tile suit */
 typedef enum majiang_suit {
@@ -113,23 +104,22 @@ typedef enum majiang_season {
     mjWinter = mjDong
 }mjSeason;
 
-typedef enum majiang_id {
-    MJ_ID_EMPTY,
+/* 麻将牌值定义 */
+typedef enum pai_id {
+    PAI_EMPTY,
     /* 万子 */
-    MJ_ID_1W, MJ_ID_2W, MJ_ID_3W, MJ_ID_4W, MJ_ID_5W, MJ_ID_6W, MJ_ID_7W, MJ_ID_8W, MJ_ID_9W,
+    PAI_1W, PAI_2W, PAI_3W, PAI_4W, PAI_5W, PAI_6W, PAI_7W, PAI_8W, PAI_9W,
     /* 索子 */
-    MJ_ID_1S, MJ_ID_2S, MJ_ID_3S, MJ_ID_4S, MJ_ID_5S, MJ_ID_6S, MJ_ID_7S, MJ_ID_8S, MJ_ID_9S,
+    PAI_1S, PAI_2S, PAI_3S, PAI_4S, PAI_5S, PAI_6S, PAI_7S, PAI_8S, PAI_9S,
     /* 筒子 */
-    MJ_ID_1T, MJ_ID_2T, MJ_ID_3T, MJ_ID_4T, MJ_ID_5T, MJ_ID_6T, MJ_ID_7T, MJ_ID_8T, MJ_ID_9T,
+    PAI_1T, PAI_2T, PAI_3T, PAI_4T, PAI_5T, PAI_6T, PAI_7T, PAI_8T, PAI_9T,
     /* 字牌 */
-    MJ_ID_DONG, MJ_ID_NAN, MJ_ID_XI, MJ_ID_BEI,
-    MJ_ID_ZHONG, MJ_ID_FA, MJ_ID_BAI,
+    PAI_DF, PAI_NF, PAI_XF, PAI_BF, PAI_ZHONG, PAI_FA, PAI_BAI,
     /* 花牌 */
-    MJ_ID_MEI, MJ_ID_LAN, MJ_ID_ZHU, MJ_ID_JU,
-    MJ_ID_CUN, MJ_ID_XIA, MJ_ID_QIU, MJ_ID_SDONG,
+    PAI_MEI, PAI_LAN, PAI_ZHU, PAI_JU, PAI_CUN, PAI_XIA, PAI_QIU, PAI_DONG,
     /* 特殊 */
-    MJ_ID_UNKNOW
-}mjID;
+    PAI_UNKNOW = 50
+}paiID;
 
 /* 面子类型 */
 typedef enum mj_meld_type {

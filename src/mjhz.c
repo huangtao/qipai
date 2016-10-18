@@ -16,8 +16,8 @@ static int _range_melded(int array[MJHZ_LEN_JS], int start, int* num_joker)
     int i,left_joker;
     int js[9];
 
-    if (start != MJ_ID_1W && start != MJ_ID_1S &&
-            start != MJ_ID_1T)
+    if (start != PAI_1W && start != PAI_1S &&
+            start != PAI_1T)
         return 0;
     if (num_joker == NULL)
         return 0;
@@ -153,7 +153,7 @@ static int _hornor_melded(int array[MJHZ_LEN_JS], int* num_joker)
     left_joker = *num_joker;
     if (left_joker < 0 || left_joker > 4)
         return 0;
-    memcpy(js, array + MJ_ID_DONG, sizeof(int) * 7);
+    memcpy(js, array + PAI_DONG, sizeof(int) * 7);
     for (i = 0; i < 7; ++i) {
         if (js[i] == 0) continue;
         if (js[i] % 3 == 1) {
@@ -184,6 +184,8 @@ void mjhz_init(mjhz_t* mj, int mode, int player_num)
         mj->mode = GAME_MODE_CLIENT;
     mj->player_num = player_num;
     mj->game_state = GAME_END;
+    mj->curr_player_no = -1;
+    mj->first_player_no = -1;
 
     /* 杭州麻将使用136张牌,108张序数+28张字牌 */
     n = 0;
@@ -192,8 +194,8 @@ void mjhz_init(mjhz_t* mj, int mode, int player_num)
          * 序数牌 1W~9T 27张
          * 字牌7张
          */
-        for (j = 0; j < 34; j++) {
-            mj->deck[n] = MJ_ID_1W + j;
+        for (j = 0; j < PAI_BAI; j++) {
+            mj->deck[n] = PAI_1W + j;
             n++;
         }
     }
@@ -217,23 +219,31 @@ void mjhz_start(mjhz_t* mj)
     time(&mj->time_start);
     mj->inning++;
 
-    mj->dice1 = rand() % 6 + 1;
-    mj->dice2 = rand() % 6 + 1;
+    mj->dice[0] = rand() % 6 + 1;
+    mj->dice[1] = rand() % 6 + 1;
 
     /* 白板是财神 */
-    mj->joker = MJ_ID_BAI;
+    mj->joker = PAI_BAI;
     mj->current_discard = 0;
     mj->pai_gang = 0;
+
+    for (i = 0; i < MJHZ_MAX_PLAYERS; ++i) {
+        mj->players[i].can_hu = 0;
+        memset(mj->players[i].can_peng, 0,
+               sizeof(mj->players[i].can_peng));
+        memset(mj->players[i].discard, 0,
+               sizeof(mj->players[i].discard));
+    }
 
     if (mj->mode == GAME_MODE_SERVER) {
         /* 洗牌 */
         mj_shuffle(mj->deck, mj->deck_all_num);
         /* 计算起手牌位置 */
         direct = (mj->banker_no + MJHZ_MAX_PLAYERS
-                - (mj->dice1 + mj->dice2) % MJHZ_MAX_PLAYERS)
+                - (mj->dice[0] + mj->dice[1]) % MJHZ_MAX_PLAYERS)
             % MJHZ_MAX_PLAYERS;
         mj->deck_deal_index = direct * 17 * 2
-            + (mj->dice1 + mj->dice2) * 2;
+            + (mj->dice[0] + mj->dice[1]) * 2;
         /* 将牌直接交换好 */
         m = mj->deck_all_num - mj->deck_deal_index;
         memcpy(temp, mj->deck + mj->deck_deal_index,
@@ -278,8 +288,8 @@ void mjhz_start(mjhz_t* mj)
                 m = 13;
             for (j = 0; j < m; ++j) {
                 n = mj->players[i].hand[j];
-                if (n <= 0 || n > MJ_ID_BAI) {
-                    printf("!!!error:find mjpai index > MJ_ID_BAI!\n");
+                if (n <= 0 || n > PAI_BAI) {
+                    printf("!!!error:find mjpai index > PAI_BAI!\n");
                     continue;
                 }
                 mj->players[i].tiles_js[n]++;
@@ -290,6 +300,11 @@ void mjhz_start(mjhz_t* mj)
         mj->first_player_no = mj->banker_no;
         mj->curr_player_no = mj->first_player_no;
         time(&mj->time_turn);
+        mj->sec_wait = WAITTIME_TURN;
+
+        /* 庄家能杠胡吗 */
+        mjhz_can_gang(mj, mj->curr_player_no);
+        mjhz_can_hu(mj, mj->curr_player_no);
     } else {
         /* 初始化，真实数据需要收到服务器数据赋值。 */
         for (i = 0; i < MJHZ_MAX_PLAYERS; i++) {
@@ -323,16 +338,16 @@ void mjhz_sort(int* pais, int len)
         for (j = i + 1; j < MJHZ_MAX_HAND; ++j) {
             pj = pais + j;
             exchange = 0;
-            if (*pj == MJ_ID_BAI && *pi != MJ_ID_BAI) {
+            if (*pj == PAI_BAI && *pi != PAI_BAI) {
                 exchange = 1;
             } else if (*pi > *pj) {
-                if (*pi == MJ_ID_BAI)
+                if (*pi == PAI_BAI)
                     continue;
-                if (*pj <= MJ_ID_EMPTY)
+                if (*pj <= PAI_EMPTY)
                     continue;
                 exchange = 1;
-            } else if (*pi == MJ_ID_EMPTY &&
-                       *pj != MJ_ID_EMPTY) {
+            } else if (*pi == PAI_EMPTY &&
+                       *pj != PAI_EMPTY) {
                 exchange = 1;
             }
             if (exchange) {
@@ -389,18 +404,18 @@ int mjhz_draw(mjhz_t* mj, int is_gang)
     return 1;
 }
 
-int mjhz_discard(mjhz_t* mj, int tile_id)
+int mjhz_discard(mjhz_t* mj, int pai_id)
 {
     int i,n,flag;
     int no;
 
     if (!mj)
         return -1;
-    if (tile_id < MJ_ID_1W || tile_id > MJ_ID_BAI)
+    if (pai_id < PAI_1W || pai_id > PAI_BAI)
         return -1;
     if (mj->game_state != GAME_PLAY) {
         if (mj->debug)
-            printf("discard tile but game state not play.\n");
+            printf("discard pai but game state not play.\n");
         return -2;
     }
     no = mj->curr_player_no;
@@ -408,14 +423,14 @@ int mjhz_discard(mjhz_t* mj, int tile_id)
     /* 有效检查并删除这张牌 */
     n = -1;
     for (i = 0; i < MJHZ_MAX_HAND; ++i){
-        if (mj->players[no].hand[i] == tile_id) {
+        if (mj->players[no].hand[i] == pai_id) {
             n = i;
             break;
         }
     }
     if (n == -1) {
         if (mj->debug) {
-            printf("discard tile but player hasn't this tile.\n");
+            printf("discard pai but player hasn't this pai.\n");
         }
         return -4;
     } else {
@@ -440,8 +455,9 @@ int mjhz_discard(mjhz_t* mj, int tile_id)
         } else {
             mj->players[i].can_hu = 0;
             mj->players[i].can_gang = 0;
-            mj->players[i].can_peng = 0;
             mj->players[i].can_chi = 0;
+            memset(mj->players[i].can_peng, 0,
+                   sizeof(mj->players[i].can_peng));
         }
     }
     /* 无人能吃碰胡则摸牌,否则进入call状态 */
@@ -525,7 +541,6 @@ int mjhz_can_peng(mjhz_t* mj, int player_no)
     if (player_no >= mj->player_num)
         return 0;
 
-    mj->players[player_no].can_peng = 0;
     if (mj->curr_player_no == player_no)
         return 0;
     if (mj->current_discard == mj->joker) {
@@ -533,7 +548,7 @@ int mjhz_can_peng(mjhz_t* mj, int player_no)
     }
 
     if (mj->players[player_no].tiles_js[mj->current_discard] >= 2) {
-        mj->players[player_no].can_peng = 1;
+        mj->players[player_no].can_peng[mj->current_discard]++;
         return 1;
     }
     else
@@ -595,7 +610,7 @@ int mjhz_all_melded(int array[MJHZ_LEN_JS])
     /* 序数牌 */
     for (i = 0; i < 3; ++i) {
         for (j = 0; i < 7; ++j) {
-            index = MJ_ID_1W + i * 9 + j;
+            index = PAI_1W + i * 9 + j;
             if (js[index] % 3 == 0)
                 continue;
             else if (js[index] % 3 == 1) {
@@ -621,7 +636,7 @@ int mjhz_all_melded(int array[MJHZ_LEN_JS])
             return 0;
     }
     /* 字牌 */
-    for (i = MJ_ID_DONG; i < MJ_ID_BAI; ++i) {
+    for (i = PAI_DONG; i < PAI_BAI; ++i) {
         if (js[i] % 3 == 0)
             continue;
         else
@@ -644,11 +659,11 @@ int mjhz_all_melded_joker(int array[MJHZ_LEN_JS], int num_joker)
         return 0;
 
     /* 序数牌 */
-    if (_range_melded(array, MJ_ID_1W, &left_joker) == 0)
+    if (_range_melded(array, PAI_1W, &left_joker) == 0)
         return 0;
-    if (_range_melded(array, MJ_ID_1S, &left_joker) == 0)
+    if (_range_melded(array, PAI_1S, &left_joker) == 0)
         return 0;
-    if (_range_melded(array, MJ_ID_1T, &left_joker) == 0)
+    if (_range_melded(array, PAI_1T, &left_joker) == 0)
         return 0;
 
     return 1;
@@ -697,8 +712,8 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
     } else {
         pai_takes = mj->players[player_no].hand[MJHZ_MAX_HAND-1];
     }
-    n_joker = left_joker = js[MJ_ID_BAI];
-    js[MJ_ID_BAI] = 0;
+    n_joker = left_joker = js[PAI_BAI];
+    js[PAI_BAI] = 0;
 
     /* 是否七对子 */
     memcpy(js_joker, js, sizeof(js_joker));
@@ -791,8 +806,8 @@ int mjhz_chi(mjhz_t* mj, int player_no, int pai1, int pai2)
         return 0;
     if (mj->current_discard == mj->joker)
         return 0;
-    if (mj->current_discard < MJ_ID_1W ||
-            mj->current_discard > MJ_ID_9T) {
+    if (mj->current_discard < PAI_1W ||
+            mj->current_discard > PAI_9T) {
         return 0;
     }
     if (mj->players[player_no].tiles_js[pai1] == 0)

@@ -17,7 +17,8 @@ SOURCES += ../src/card.c \
     ../src/mj_algo.c \
     ../src/mjhz.c
 
-HEADERS += ../src/card.h \
+HEADERS += ../src/qpdef.h \
+    ../src/card.h \
     ../src/gp.h \
     ../src/qipai.h \
     ../src/card_algo.h \

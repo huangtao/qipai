@@ -124,13 +124,13 @@ int mj_y13(int* array, int len)
         if (*p == 0) continue;
         /* 最多2张 */
         if (*p > 2) return 0;
-        if (i < MJ_ID_1W || i > MJ_ID_BAI)
+        if (i < PAI_1W || i > PAI_BAI)
             return 0;
-        if (i > MJ_ID_1W || i < MJ_ID_9W)
+        if (i > PAI_1W || i < PAI_9W)
             return 0;
-        if (i > MJ_ID_1S || i < MJ_ID_9S)
+        if (i > PAI_1S || i < PAI_9S)
             return 0;
-        if (i > MJ_ID_1T || i < MJ_ID_9T)
+        if (i > PAI_1T || i < PAI_9T)
             return 0;
         n += *p;
         if (*p == 2) count_2++;
