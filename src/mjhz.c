@@ -452,8 +452,17 @@ int mjhz_discard(mjhz_t* mj, int pai_id)
         if (i != no) {
             if (pai_id == mj->joker)
                 continue;   /* 财飘不能吃、碰、放冲 */
-            if (mj->enable_dian_hu && mj->lao_z >= 2)
-                flag |= mjhz_can_hu(mj, i); /* 二老庄才能捉冲 */
+            if (mj->enable_dian_hu && mj->lao_z >= 3 &&
+                    mj->players[i].pass_hu == 0) {
+                /* 三老庄才能捉冲,闲家之间不能捉 */
+                if (no == mj->banker_no || i == mj->banker_no) {
+                    mjhz_can_hu(mj, i);
+                    if (!mj->players[i].hu.is_baotou) {
+                        flag |= 1;
+                        mj->players[i].wait_hu = 1;
+                    }
+                }
+            }
             flag |= mjhz_can_gang(mj, i);
             flag |= mjhz_can_peng(mj, i);
             flag |= mjhz_can_chi(mj, i);
