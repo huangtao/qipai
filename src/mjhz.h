@@ -50,7 +50,7 @@ typedef struct mjhz_player_s {
     int can_hu;
     int can_peng[MJHZ_LEN_JS];          /* 不能弃先碰后,!=1不能碰*/
     int pai_gang[4];    /* 杠牌信息 */
-    int pass_hu;        /* 弃胡标记 */
+    int pass_hu;        /* 漏胡标记 */
     mjhz_hu_t hu;       /* 胡牌信息 */
     int req_pass;       /* 请求过 */
     int req_chi;        /* 请求吃 */
@@ -60,7 +60,6 @@ typedef struct mjhz_player_s {
     int wait_chi;       /* 等待吃(碰杠胡优先) */
     int wait_peng;
     int wait_gang;
-    int wait_hu;
 }mjhz_player_t;
 
 typedef struct mjhz_s {
