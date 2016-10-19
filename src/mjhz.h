@@ -39,11 +39,11 @@ typedef struct mjhz_player_s {
     int64_t score;
     uint64_t gold;
     int hand[MJHZ_MAX_HAND];            /* 手牌 */
+    int hand_js[MJHZ_LEN_JS];           /* 手牌计数 */
     int discard[MJHZ_MAX_DISCARDED];    /* 舍牌(打出的牌) */
     int discard_index;
     mj_meld_t meld[MJHZ_MAX_MELD];      /* 已吃碰杠 */
     int meld_index;
-    int tiles_js[MJHZ_LEN_JS];          /* 用于分析麻将 */
     int last_played;
     int can_chi;
     int can_gang;

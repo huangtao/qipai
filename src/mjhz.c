@@ -215,7 +215,7 @@ void mjhz_start(mjhz_t* mj)
         return;
     mj->round = 0;
     mj->game_state = GAME_PLAY;
-    mj->logic_state = lsTurn;
+    mj->logic_state = lsDiscard;
     time(&mj->time_start);
     mj->inning++;
 
@@ -292,7 +292,7 @@ void mjhz_start(mjhz_t* mj)
                     printf("!!!error:find mjpai index > PAI_BAI!\n");
                     continue;
                 }
-                mj->players[i].tiles_js[n]++;
+                mj->players[i].hand_js[n]++;
             }
         }
 
@@ -395,7 +395,7 @@ int mjhz_draw(mjhz_t* mj, int is_gang)
     }
     mj->deck_valid_num--;
     mj->players[mj->curr_player_no].hand[MJHZ_MAX_HAND-1] = pai;
-    mj->players[mj->curr_player_no].tiles_js[pai]++;
+    mj->players[mj->curr_player_no].hand_js[pai]++;
 
     /* 杠胡判定 */
     mjhz_can_hu(mj, mj->curr_player_no);
@@ -435,7 +435,7 @@ int mjhz_discard(mjhz_t* mj, int pai_id)
         return -4;
     } else {
         mj->players[no].hand[n] = 0;
-        mj->players[no].tiles_js[pai_id]--;
+        mj->players[no].hand_js[pai_id]--;
     }
     /* 财飘处理 */
     if (pai_id == mj->joker)
@@ -462,13 +462,11 @@ int mjhz_discard(mjhz_t* mj, int pai_id)
                    sizeof(mj->players[i].can_peng));
         }
     }
-    /* 无人能吃碰胡则摸牌,否则进入call状态 */
-    if (flag) {
-        mj->logic_state = lsCall;
-    } else {
-        /* 轮到下一个(右手边) */
-        /* 独立调用 */
-    }
+    mj->logic_state = lsTake;
+    if (flag)
+        mj->sec_wait = WAITTIME_CALL;
+    else
+        mj->sec_wait = 0;
 
     return 1;
 }
@@ -537,20 +535,20 @@ int mjhz_can_chi(mjhz_t* mj, int player_no)
         pos1 = pos2 = pos3 = 1;
     }
     if (pos1) {
-        if (player->tiles_js[pai.sign+1] > 0 &&
-                player->tiles_js[pai.sign+2] > 0) {
+        if (player->hand_js[pai.sign+1] > 0 &&
+                player->hand_js[pai.sign+2] > 0) {
             chi_info &= mjChiLeft;
         }
     }
     if (pos2) {
-        if (player->tiles_js[pai.sign-1] > 0 &&
-                player->tiles_js[pai.sign+1] >0) {
+        if (player->hand_js[pai.sign-1] > 0 &&
+                player->hand_js[pai.sign+1] >0) {
             chi_info &= mjChiMiddle;
         }
     }
     if (pos3) {
-        if (player->tiles_js[pai.sign-1] > 0 &&
-                player->tiles_js[pai.sign-2] >0) {
+        if (player->hand_js[pai.sign-1] > 0 &&
+                player->hand_js[pai.sign-2] >0) {
             chi_info &= mjChiRight;
         }
     }
@@ -574,7 +572,7 @@ int mjhz_can_peng(mjhz_t* mj, int player_no)
         return 0;
     player = &mj->players[player_no];
 
-    if (player->tiles_js[mj->current_discard] >= 2)
+    if (player->hand_js[mj->current_discard] >= 2)
         player->can_peng[mj->current_discard]++;
 
     if (player->can_peng[mj->current_discard] == 1)
@@ -601,7 +599,7 @@ int mjhz_can_gang(mjhz_t* mj, int player_no)
         /* 轮到我且已经摸过牌了，暗杠或者加杠 */
         /* 有没有暗杠 */
         for (i = 1; i < MJHZ_LEN_JS; i++) {
-            if (player->tiles_js[i] == 4) {
+            if (player->hand_js[i] == 4) {
                 player->pai_gang[num++] = i;
             }
         }
@@ -609,7 +607,7 @@ int mjhz_can_gang(mjhz_t* mj, int player_no)
         for (i = 0; i < MJHZ_MAX_MELD; ++i) {
             if (player->meld[i].type == mjMeldPeng) {
                 x = player->meld[i].pai_id;
-                if (player->tiles_js[x] > 0) {
+                if (player->hand_js[x] > 0) {
                     player->pai_gang[num++] = x;
                 }
             }
@@ -620,7 +618,7 @@ int mjhz_can_gang(mjhz_t* mj, int player_no)
             return 0;
         }
         x = mj->current_discard;
-        if (player->tiles_js[x] == 3) {
+        if (player->hand_js[x] == 3) {
             player->pai_gang[num++] = x;
         }
     }
@@ -724,7 +722,7 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
     memset(&player->hu, 0, sizeof(mjhz_hu_t));
 
     n_joker = 0;
-    memcpy(js, player->tiles_js, sizeof(js));
+    memcpy(js, player->hand_js, sizeof(js));
     if (mj->current_discard != 0) {
         /* 配置开关 */
         if (mj->enable_dian_hu)
@@ -837,23 +835,28 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
 int mjhz_chi(mjhz_t* mj, int player_no, int pai1, int pai2)
 {
     int m1,m2,m3,temp;
-    int i,set_idx;
+    int i,st,set_idx;
     mjpai_t t1,t2,t3;
 
     if (!mj)
-        return 0;
+        return -1;
     if (player_no >= mj->player_num)
-        return 0;
+        return -2;
+    if (mj->logic_state != lsTake)
+        return -3;
     if (mj->current_discard == mj->joker)
-        return 0;
+        return -4;
     if (mj->current_discard < PAI_1W ||
             mj->current_discard > PAI_9T) {
-        return 0;
+        return -5;
     }
-    if (mj->players[player_no].tiles_js[pai1] == 0)
-        return 0;
-    if (mj->players[player_no].tiles_js[pai2] == 0)
-        return 0;
+    if (mj->players[player_no].hand_js[pai1] == 0)
+        return -6;
+    if (mj->players[player_no].hand_js[pai2] == 0)
+        return -6;
+    st = get_relative_seat(mj->discarded_no, player_no, mj->player_num);
+    if (st != stLeft)
+        return -7;
 
     m1 = mj->current_discard;
     m2 = pai1;
@@ -901,23 +904,23 @@ int mjhz_chi(mjhz_t* mj, int player_no, int pai1, int pai2)
     if (m1 == mj->current_discard) {
         mj->players[player_no].meld[set_idx].extra_info = mjChiLeft;
         mj_delete(mj->players[player_no].hand, MJHZ_MAX_HAND, m2);
-        mj->players[player_no].tiles_js[m2]--;
+        mj->players[player_no].hand_js[m2]--;
         mj_delete(mj->players[player_no].hand, MJHZ_MAX_HAND, m3);
-        mj->players[player_no].tiles_js[m3]--;
+        mj->players[player_no].hand_js[m3]--;
     }
     else if (m2 == mj->current_discard) {
         mj->players[player_no].meld[set_idx].extra_info = mjChiMiddle;
         mj_delete(mj->players[player_no].hand, MJHZ_MAX_HAND, m1);
-        mj->players[player_no].tiles_js[m1]--;
+        mj->players[player_no].hand_js[m1]--;
         mj_delete(mj->players[player_no].hand, MJHZ_MAX_HAND, m3);
-        mj->players[player_no].tiles_js[m3]--;
+        mj->players[player_no].hand_js[m3]--;
     }
     else {
         mj->players[player_no].meld[set_idx].extra_info = mjChiRight;
         mj_delete(mj->players[player_no].hand, MJHZ_MAX_HAND, m1);
-        mj->players[player_no].tiles_js[m1]--;
+        mj->players[player_no].hand_js[m1]--;
         mj_delete(mj->players[player_no].hand, MJHZ_MAX_HAND, m2);
-        mj->players[player_no].tiles_js[m2]--;
+        mj->players[player_no].hand_js[m2]--;
     }
     mj_trim(mj->players[player_no].hand, MJHZ_MAX_HAND);
     mj->curr_player_no = player_no;
@@ -939,7 +942,7 @@ int mjhz_peng(mjhz_t* mj, int player_no)
     if (mj->current_discard == mj->joker)
         return 0;
 
-    if (mj->players[player_no].tiles_js[mj->current_discard] < 2)
+    if (mj->players[player_no].hand_js[mj->current_discard] < 2)
         return 0;
 
     set_idx = -1;
@@ -962,7 +965,7 @@ int mjhz_peng(mjhz_t* mj, int player_no)
               mj->current_discard);
     mj_delete(mj->players[player_no].hand, MJHZ_MAX_HAND,
               mj->current_discard);
-    mj->players[player_no].tiles_js[mj->current_discard] -= 2;
+    mj->players[player_no].hand_js[mj->current_discard] -= 2;
     mj_trim(mj->players[player_no].hand, MJHZ_MAX_HAND);
     mj->current_discard = 0;
     mj->curr_player_no = player_no;
@@ -997,7 +1000,7 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
 
     if (player_no == mj->curr_player_no) {
         /* 暗杠或加杠 */
-        if (mj->players[player_no].tiles_js[pai] == 4) {
+        if (mj->players[player_no].hand_js[pai] == 4) {
             mj->players[player_no].meld[set_idx].type = mjMeldGang;
             mj->players[player_no].meld[set_idx].pai_id = mj->current_discard;
             mj->players[player_no].meld[set_idx].player_no = mj->curr_player_no;
@@ -1006,8 +1009,8 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
             mj_delete(mj->players[player_no].hand, MJHZ_MAX_HAND, pai);
             mj_delete(mj->players[player_no].hand, MJHZ_MAX_HAND, pai);
             mj_delete(mj->players[player_no].hand, MJHZ_MAX_HAND, pai);
-            mj->players[player_no].tiles_js[pai] = 0;
-        } else if (mj->players[player_no].tiles_js[pai] == 1) {
+            mj->players[player_no].hand_js[pai] = 0;
+        } else if (mj->players[player_no].hand_js[pai] == 1) {
             /* 找到面子 */
             peng_idx = -1;
             for (i = 0; i < MJHZ_MAX_MELD; ++i) {
@@ -1025,7 +1028,7 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
             mj->players[player_no].meld[peng_idx].type = mjMeldGang;
             mj->players[player_no].meld[peng_idx].extra_info = mjGangJia;
             mj_delete(mj->players[player_no].hand, MJHZ_MAX_HAND, pai);
-            mj->players[player_no].tiles_js[pai] = 0;
+            mj->players[player_no].hand_js[pai] = 0;
         } else {
             if (mj->debug)
                 printf("players gang unknow situation!\n");
@@ -1033,7 +1036,7 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
         }
     } else {
         /* 明杠 */
-        if (mj->players[player_no].tiles_js[pai] != 3)
+        if (mj->players[player_no].hand_js[pai] != 3)
             return 0;
         if (pai != mj->current_discard)
             return 0;
@@ -1044,7 +1047,7 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
         mj_delete(mj->players[player_no].hand, MJHZ_MAX_HAND, pai);
         mj_delete(mj->players[player_no].hand, MJHZ_MAX_HAND, pai);
         mj_delete(mj->players[player_no].hand, MJHZ_MAX_HAND, pai);
-        mj->players[player_no].tiles_js[pai] = 0;
+        mj->players[player_no].hand_js[pai] = 0;
 
         mj->curr_player_no = player_no;
     }
@@ -1070,7 +1073,7 @@ int mjhz_hu(mjhz_t* mj, int player_no)
         if (!mj->enable_dian_hu)
             return 0;
         mj->players[player_no].hand[MJHZ_MAX_HAND-1] = mj->current_discard;
-        mj->players[player_no].tiles_js[mj->current_discard]++;
+        mj->players[player_no].hand_js[mj->current_discard]++;
     }
     mj->hu_player_no = player_no;
     mj->game_state = GAME_END;

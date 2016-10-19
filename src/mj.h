@@ -148,8 +148,8 @@ typedef enum mj_gang_type {
 
 /* 游戏开始后的逻辑状态 */
 typedef enum mj_logic_state {
-    lsTurn,     /* 轮流摸牌打牌 */
-    lsCall      /* 其他玩家吃碰杠 */
+    lsDiscard,  /* 弃牌(打出牌) */
+    lsTake      /* 抓牌(包括玩家吃碰杠胡) */
 }mjLogicState;
 
 /* called (claimed by other players) */
