@@ -124,12 +124,19 @@ typedef enum pai_id {
 /* 面子类型 */
 typedef enum mj_meld_type {
     mjMeldNone,
-    mjMeldKe,       /* 刻子 */
-    mjMeldShun,     /* 顺子 */
-    mjMeldJiang,    /* 将牌(对子) */
-    mjMeldChi,      /* 吃获取的顺子 */
-    mjMeldPeng,     /* 碰获取的刻子 */
-    mjMeldGang      /* 杠 */
+    mjMeldShun,         /* 顺子 */
+    mjMeldKe,           /* 刻子 */
+    mjMeldJiang,        /* 将牌(对子) */
+    mjMeldChiLow,       /* 吃最小的一张 */
+    mjMeldChiMiddle,    /* 吃中间的一张 */
+    mjMeldChiUpper,     /* 吃最大的一张 */
+    mjMeldPengLeft,     /* 碰上家 */
+    mjMeldPengOpposit,  /* 碰对家 */
+    mjMeldPengRight,    /* 碰下家 */
+    mjMeldGang,         /* 暗杠 */
+    mjMeldGangLeft,     /* 明杠上家 */
+    mjMeldGangOpposit,  /* 明杠对家 */
+    mjMeldGangRight     /* 明杠下家 */
 }mjMeldType;
 
 typedef enum mj_chi_type {

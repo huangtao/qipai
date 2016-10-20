@@ -33,16 +33,29 @@ typedef enum seat_relative {
     stSelf, stLeft, stOpposit, stRight
 }seatRelative;
 
-/* 返回target相对于base的相对位置 */
-inline int get_relative_seat(int target, int base, int player_num)
+/* 根据座位号获取相对位置(上家、对家、下家) */
+inline int p4_relative_seat(int target, int base)
 {
-    return (seatRelative)((player_num + target - base) % player_num);
+    return (seatRelative)((4 + target - base) % 4);
 }
 
-/* 返回target相对位置上的玩家编号(座位号) */
-inline int get_seat_no(int target, seatRelative relative, int player_num)
+/* 获取上家、对家、下家的玩家编号(座位号) */
+inline int p4_seat_no(int target, seatRelative relative)
 {
-    return (int)((target + (int)relative) % player_num);
+    return (int)((target + (int)relative) % 4);
+}
+
+inline int p2_relative_seat(int target, int base)
+{
+    return (seatRelative)(target == base ? stSelf : stOpposit);
+}
+inline int p2_seat_no(int target, seatRelative relative)
+{
+    if (relative == stSelf)
+        return target;
+    else {
+        return ((target + 1) % 2);
+    }
 }
 
 #ifdef __cplusplus

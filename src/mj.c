@@ -96,7 +96,7 @@ void mj_shuffle(int* pais, int len)
     int i,n;
     int a,b,temp;
 
-    if(!pais || len <= 2)
+    if (!pais || len <= 2)
         return;
 
     n = 1000 + rand() % 50;
