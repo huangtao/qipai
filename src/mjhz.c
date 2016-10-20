@@ -153,7 +153,7 @@ static int _hornor_melded(int array[MJHZ_LEN_JS], int* num_joker)
     left_joker = *num_joker;
     if (left_joker < 0 || left_joker > 4)
         return 0;
-    memcpy(js, array + PAI_DONG, sizeof(int) * 7);
+    memcpy(js, array + PAI_DF, sizeof(int) * 7);
     for (i = 0; i < 7; ++i) {
         if (js[i] == 0) continue;
         if (js[i] % 3 == 1) {
@@ -669,7 +669,7 @@ int mjhz_all_melded(int array[MJHZ_LEN_JS])
             return 0;
     }
     /* 字牌 */
-    for (i = PAI_DONG; i < PAI_BAI; ++i) {
+    for (i = PAI_DF; i < PAI_BAI; ++i) {
         if (js[i] % 3 == 0)
             continue;
         else
@@ -845,7 +845,12 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
                     player->can_hu = 1;
 					return 1;
                 }
-			}
+            } else {
+                if (mjhz_all_melded(js_joker)) {
+                    player->can_hu = 1;
+                    return 1;
+                }
+            }
 		}
 	}
 

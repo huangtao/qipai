@@ -176,7 +176,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             rcIn.setRect(0, 3 * MJPAI_H, 7 * MJPAI_W, MJPAI_H);
             if (pointInRect(pos, rcIn)) {
                 // 字牌
-                in_index = PAI_DONG + pos.x() / MJPAI_W;
+                in_index = PAI_DF + pos.x() / MJPAI_W;
             }
             if (in_index != -1) {
                 for (i = 0; i < MJHZ_MAX_HAND; ++i) {
