@@ -197,6 +197,13 @@ void mjpai_zero(mjpai_t* pai);
 
 void mjpai_copy(mjpai_t* dest, mjpai_t* src);
 
+/* 根据座位号获取相对位置(上家、对家、下家) */
+int p4_relative_seat(int target, int base);
+/* 获取上家、对家、下家的玩家编号(座位号) */
+int p4_seat_no(int target, seatRelative relative);
+int p2_relative_seat(int target, int base);
+int p2_seat_no(int target, seatRelative relative);
+
 /* 洗牌 */
 void mj_shuffle(int* pais, int len);
 

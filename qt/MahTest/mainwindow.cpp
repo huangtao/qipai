@@ -150,7 +150,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
         }
         if (out_index != -1) {
             id = mjhz.players[0].hand[out_index];
-            mjhz.players[0].tiles_js[id]--;
+            mjhz.players[0].hand_js[id]--;
             mjhz.players[0].hand[out_index] = 0;
             mj_trim(mjhz.players[0].hand, MJHZ_MAX_HAND);
             mjhz_sort(mjhz.players[0].hand, MJHZ_MAX_HAND);
@@ -182,7 +182,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
                 for (i = 0; i < MJHZ_MAX_HAND; ++i) {
                     if (mjhz.players[0].hand[i] == 0) {
                         mjhz.players[0].hand[i] = in_index;
-                        mjhz.players[0].tiles_js[in_index]++;
+                        mjhz.players[0].hand_js[in_index]++;
                         update();
                         break;
                     }

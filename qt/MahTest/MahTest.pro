@@ -19,6 +19,7 @@ SOURCES += main.cpp\
 
 HEADERS  += mainwindow.h \
         ../../src/mjhz.h \
+        ../../src/qpdef.h \
         ../../src/mj.h
 
 FORMS    += mainwindow.ui
