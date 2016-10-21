@@ -39,8 +39,8 @@ extern "C" {
  * 流局: drawn。
  */
 
-#define WAITTIME_TURN   20      /* 摸牌打牌时间 */
-#define WAITTIME_CALL   8       /* 吃碰杠时间 */
+#define WAITTIME_DISCARD   20       /* 摸牌打牌时间 */
+#define WAITTIME_TAKE       8       /* 吃碰杠时间 */
 
 /* majiang tile suit */
 typedef enum majiang_suit {

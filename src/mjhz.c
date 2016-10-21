@@ -300,7 +300,7 @@ void mjhz_start(mjhz_t* mj)
         mj->first_player_no = mj->banker_no;
         mj->curr_player_no = mj->first_player_no;
         time(&mj->time_turn);
-        mj->sec_wait = WAITTIME_TURN;
+        mj->sec_wait = WAITTIME_DISCARD;
 
         /* 庄家能杠胡吗 */
         mjhz_can_gang(mj, mj->curr_player_no);
@@ -396,6 +396,8 @@ int mjhz_draw(mjhz_t* mj, int is_gang)
     mj->deck_valid_num--;
     mj->players[mj->curr_player_no].hand[MJHZ_MAX_HAND-1] = pai;
     mj->players[mj->curr_player_no].hand_js[pai]++;
+    mj->logic_state = lsDiscard;
+    mj->sec_wait = WAITTIME_DISCARD;
 
     /* 杠胡判定 */
     mjhz_can_hu(mj, mj->curr_player_no);
@@ -464,7 +466,7 @@ int mjhz_discard(mjhz_t* mj, int pai_id)
     }
     mj->logic_state = lsTake;
     if (flag)
-        mj->sec_wait = WAITTIME_CALL;
+        mj->sec_wait = WAITTIME_TAKE;
     else
         mj->sec_wait = 0;
 
@@ -1172,7 +1174,7 @@ void mjhz_pass(mjhz_t *mj, int player_no)
     mj->players[player_no].req_pass = 1;
 }
 
-/* 逆时针*/
+/* 东->南->西->北(逆时针)*/
 void mjhz_next_player(mjhz_t* mj)
 {
     if (!mj)
