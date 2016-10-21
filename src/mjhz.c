@@ -1159,6 +1159,19 @@ int mjhz_hu(mjhz_t* mj, int player_no)
     return 0;
 }
 
+void mjhz_pass(mjhz_t *mj, int player_no)
+{
+    if (!mj)
+        return;
+    if (mj->logic_state != lsTake)
+        return;
+    if (player_no >= mj->player_num)
+        return;
+
+    /* 如果所有人都过，轮到下一个玩家 */
+    mj->players[player_no].req_pass = 1;
+}
+
 /* 逆时针*/
 void mjhz_next_player(mjhz_t* mj)
 {

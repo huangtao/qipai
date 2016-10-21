@@ -142,6 +142,8 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai);
 /* 胡(和) */
 int mjhz_hu(mjhz_t* mj, int player_no);
 
+/* 过 */
+void mjhz_pass(mjhz_t* mj, int player_no);
 void mjhz_next_player(mjhz_t* mj);
 int mjhz_get_next(mjhz_t* mj);
 
