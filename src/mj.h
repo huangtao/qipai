@@ -187,8 +187,8 @@ typedef struct mjpai_s {
 typedef struct mj_meld_s {
     int type;       /* 面子类型 */
     int pai_id;     /* 特征牌 */
-    int player_no;  /* 吃碰目标玩家 */
-    int extra_info; /* 吃,杠附加信息 */
+//    int player_no;  /* 吃碰目标玩家 */
+//    int extra_info; /* 吃,杠附加信息 */
 }mj_meld_t;
 
 void mjpai_init_id(mjpai_t* pai, int id);
