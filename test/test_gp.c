@@ -1,5 +1,6 @@
 ﻿#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include "card.h"
 #include "gp.h"
@@ -41,6 +42,7 @@ void test_gp()
     printf("first player:%d\n", gp.first_player_no);
 
 	card_t cards[GP_MAX_CARDS];
+    card_t cards2[GP_MAX_CARDS];
 	gp_hint(&gp, cards, GP_MAX_CARDS, 0);
 	cards_print(cards, GP_MAX_CARDS, 10);
 	//printf("sort player0's cards and dump:\n");
@@ -132,7 +134,17 @@ void test_gp()
 			"DK,HK,SK,D3");
 	cards_print(cards, GP_MAX_CARDS, 10);
 	gp_handtype(&gp, cards, GP_MAX_CARDS, &ht);
-	printf("hand type is %s:%d.\n", gp_htype_name(ht.type), ht.param1);
+	printf("hand type is %s:%d.\n", gp_htype_name(ht.type),
+            card_logic(&ht.type_card));
+    cards_from_string(cards2, GP_MAX_CARDS,
+            "S3,H3,C3,D3,S4");
+    cards_print(cards2, GP_MAX_CARDS, 10);
+    gp_handtype(&gp, cards2, GP_MAX_CARDS, &ht);
+    printf("hand type is %s:%d.\n", gp_htype_name(ht.type),
+            card_logic(&ht.type_card));
+    memcpy(&gp.last_hand_type, &ht, sizeof(hand_type));
+    printf("can play : %d.\n", 
+            gp_canplay(&gp, cards, GP_MAX_CARDS));
 
 	/* 飞机 */
 	cards_from_string(cards, GP_MAX_CARDS,
