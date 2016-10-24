@@ -184,6 +184,8 @@ void mjpai_zero(mjpai_t* pai);
 
 void mjpai_copy(mjpai_t* dest, mjpai_t* src);
 
+int mjpai_sign(int pai_id);
+
 /* 根据座位号获取相对位置(上家、对家、下家) */
 int p4_relative_seat(int target, int base);
 /* 获取上家、对家、下家的玩家编号(座位号) */

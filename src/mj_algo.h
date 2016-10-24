@@ -11,6 +11,23 @@ extern "C" {
 
 #include "mj.h"
 
+/*
+ * 用于判断一门是否全成面子
+ * array : 计数数组
+ * start : 开始索引
+ * num_joker : 财神数量(返回剩余数量)
+ * return : 0/1
+ */
+int mj_range_melded(int* array, int start, int* num_joker);
+
+/*
+ * 用于判断字牌是否全成面子
+ */
+int mj_hornor_melded(int* array, int* num_joker);
+
+void _sign_meld_delete(int* array, int* num_joker);
+void _hornor_meld_delete(int* array, int* num_joker);
+
 /* 根据计数索引数组返回对子数量 */
 int mj_pair_count(int* array, int len);
 

@@ -4,172 +4,6 @@
 #include <stdio.h>
 #include "mj_algo.h"
 
-/*
- * 内部用于判断一门是否全成面子
- * array : 计数数组
- * start : 开始索引
- * num_joker : 财神数量(返回剩余数量)
- * return : 0/1
- */
-static int _range_melded(int array[MJHZ_LEN_JS], int start, int* num_joker)
-{
-    int i,left_joker;
-    int js[9];
-
-    if (start != PAI_1W && start != PAI_1S &&
-            start != PAI_1T)
-        return 0;
-    if (num_joker == NULL)
-        return 0;
-    left_joker = *num_joker;
-    if (left_joker < 0 || left_joker > 4)
-        return 0;
-
-    memcpy(js, array + start, sizeof(int) * 9);
-    for (i = 0; i < 7; ++i) {
-        if (js[i] % 3 == 0) {
-            js[i] = 0;
-            continue;
-        }
-        else if (js[i] % 3 == 1) {
-            if (js[i+1] > 0 && js[i+2] > 0) {
-                /* 111 112 113 121 123 131 133 */
-                js[i] = 0;
-                js[i+1]--;
-                js[i+2]--;
-                continue;
-            } else {
-                if (left_joker == 0)
-                    return 0;
-                if (js[i+1] > 0) {
-                    /* 110 120 130 */
-                    js[i] = 0;
-                    js[i+1]--;
-                    left_joker--;
-                    continue;
-                } else if (js[i+2] > 0) {
-                    /* 101 102 103 */
-                    js[i] = 0;
-                    js[i+2]--;
-                    left_joker--;
-                    continue;
-                } else {
-                    /* 100 */
-                    if (left_joker < 2)
-                        return 0;
-                    js[i] = 0;
-                    left_joker -= 2;
-                    continue;
-                }
-            }
-        } else if (js[i] % 3 == 2) {
-            if (js[i+1] >= 2 && js[i+2] >= 2) {
-                /* 222 232 242 223 233 243 224 */
-                js[i] = 0;
-                js[i+1] -= 2;
-                js[i+2] -= 2;
-                continue;
-            } else {
-                if (left_joker == 0)
-                    return 0;
-                if (js[i+1] == 1 && js[i+2] >= 2) {
-                    /* 212 213 214 */
-                    js[i] = 0;
-                    js[i+1] = 0;
-                    left_joker--;
-                    js[i+2] -= 2;
-                    continue;
-                } else if (js[i+2] == 1 && js[i+1] >= 2) {
-                    /* 221 231 241 */
-                    js[i] = 0;
-                    js[i+1] -= 2;
-                    js[i+2] = 0;
-                    left_joker--;
-                    continue;
-                } else {
-                    /*
-                     * 201 202 203 204
-                     * 210 220 230 240
-                     * 这种情况凑刻子
-                     */
-                    left_joker--;
-                    js[i] = 0;
-                    continue;
-                }
-            }
-        }
-    }
-    /* 8 */
-    if (js[7] % 3 == 1) {
-        if (js[8] % 3 == 1 && left_joker > 0) {
-            js[8] -= 1;
-            left_joker--;
-            js[7] = 0;
-        } else if (left_joker >= 2) {
-            js[7] = 0;
-            left_joker -= 2;
-        } else {
-            return 0;
-        }
-    } else if (js[7] % 3 == 2) {
-        if (left_joker == 0)
-            return 0;
-        left_joker--;
-        js[7] = 0;
-    } else {
-        js[7] = 0;
-    }
-    /* 9 */
-    if (js[8] % 3 == 1) {
-        if (left_joker >= 2) {
-            left_joker -= 2;
-            js[8] = 0;
-        } else {
-            return 0;
-        }
-    } else if (js[8] % 3 == 2) {
-        if (left_joker == 0)
-            return 0;
-        left_joker--;
-        js[8] = 0;
-    } else {
-        js[8] = 0;
-    }
-    /* now js[9] is all zero */
-    *num_joker = left_joker;
-    return 1;
-}
-
-/*
- * 内部用于判断字牌是否全成面子
- */
-static int _hornor_melded(int array[MJHZ_LEN_JS], int* num_joker)
-{
-    int i,left_joker;
-    int js[7];
-
-    if (num_joker == NULL)
-        return 0;
-    left_joker = *num_joker;
-    if (left_joker < 0 || left_joker > 4)
-        return 0;
-    memcpy(js, array + PAI_DF, sizeof(int) * 7);
-    for (i = 0; i < 7; ++i) {
-        if (js[i] == 0) continue;
-        if (js[i] % 3 == 1) {
-            if (left_joker < 2)
-                return 0;
-        } else if (js[i] % 3 == 2) {
-            if (left_joker == 0)
-                return 0;
-        }
-        js[i] = 0;
-    }
-    /* now js[7] is all zero */
-    *num_joker = left_joker;
-    return 1;
-}
-
 void mjhz_init(mjhz_t* mj, int mode, int player_num)
 {
     int i,j,n;
@@ -690,15 +524,15 @@ int mjhz_all_melded_joker(int array[MJHZ_LEN_JS], int num_joker)
 
     /* 先判定字牌 */
     left_joker = num_joker;
-    if (_hornor_melded(array, &left_joker) == 0)
+    if (mj_hornor_melded(array, &left_joker) == 0)
         return 0;
 
     /* 序数牌 */
-    if (_range_melded(array, PAI_1W, &left_joker) == 0)
+    if (mj_range_melded(array, PAI_1W, &left_joker) == 0)
         return 0;
-    if (_range_melded(array, PAI_1S, &left_joker) == 0)
+    if (mj_range_melded(array, PAI_1S, &left_joker) == 0)
         return 0;
-    if (_range_melded(array, PAI_1T, &left_joker) == 0)
+    if (mj_range_melded(array, PAI_1T, &left_joker) == 0)
         return 0;
 
     return 1;

@@ -91,6 +91,15 @@ void mjpai_copy(mjpai_t* dest, mjpai_t* src)
     }
 }
 
+int mjpai_sign(int pai_id)
+{
+    if (pai_id >= PAI_1W && pai_id <= PAI_9T) {
+        return ((pai_id - 1) % 9 + 1);
+    } else {
+        return 0;
+    }
+}
+
 /* 根据座位号获取相对位置(上家、对家、下家) */
 inline int p4_relative_seat(int target, int base)
 {

@@ -15,11 +15,13 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
         ../../src/mjhz.c \
+        ../../src/mj_algo.c \
         ../../src/mj.c
 
 HEADERS  += mainwindow.h \
         ../../src/mjhz.h \
         ../../src/qpdef.h \
+        ../../src/mj_algo.h \
         ../../src/mj.h
 
 FORMS    += mainwindow.ui
