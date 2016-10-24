@@ -229,7 +229,8 @@ void gp_handtype(gp_t* gp, card_t* cards, int len, hand_type* ht)
     cards_bucket(cards, len, x);
     ar.n1 = ar.n2 = ar.n3 = ar.n4 = 0;
     for (i = 19; i >= 0; --i) {
-        n = x[i].num_spade + x[i].num_heart + x[i].num_club + x[i].num_diamond;
+        n = x[i].num_spade + x[i].num_heart +
+                x[i].num_club + x[i].num_diamond;
         switch (n) {
         case 1:
             ar.v1[ar.n1] = i;

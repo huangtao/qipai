@@ -505,9 +505,9 @@ int mjhz_can_chi(mjhz_t* mj, int player_no)
 
     n = 0;
     for (i = 0; i < MJHZ_MAX_MELD; ++i) {
-        if (player->meld[i].type == mjMeldChiLow ||
-                player->meld[i].type == mjMeldChiMiddle ||
-                player->meld[i].type == mjMeldChiUpper) {
+        if (player->meld[i].type == meldChiLow ||
+                player->meld[i].type == meldChiMiddle ||
+                player->meld[i].type == meldChiUpper) {
             n++;
         }
     }
@@ -541,19 +541,19 @@ int mjhz_can_chi(mjhz_t* mj, int player_no)
     if (pos1) {
         if (player->hand_js[pai.sign+1] > 0 &&
                 player->hand_js[pai.sign+2] > 0) {
-            chi_info &= mjChiLeft;
+            chi_info &= 0x01;
         }
     }
     if (pos2) {
         if (player->hand_js[pai.sign-1] > 0 &&
                 player->hand_js[pai.sign+1] >0) {
-            chi_info &= mjChiMiddle;
+            chi_info &= 0x02;
         }
     }
     if (pos3) {
         if (player->hand_js[pai.sign-1] > 0 &&
                 player->hand_js[pai.sign-2] >0) {
-            chi_info &= mjChiRight;
+            chi_info &= 0x04;
         }
     }
     player->can_chi = chi_info;
@@ -610,9 +610,9 @@ int mjhz_can_gang(mjhz_t* mj, int player_no)
         }
         /* 加杠(已经碰了，再摸一张) */
         for (i = 0; i < MJHZ_MAX_MELD; ++i) {
-            if (player->meld[i].type == mjMeldPengLeft ||
-                    player->meld[i].type == mjMeldPengOpposit ||
-                    player->meld[i].type == mjMeldPengRight) {
+            if (player->meld[i].type == meldPengLeft ||
+                    player->meld[i].type == meldPengOpposit ||
+                    player->meld[i].type == meldPengRight) {
                 x = player->meld[i].pai_id;
                 if (player->hand_js[x] > 0) {
                     player->pai_gang[num++] = x;
@@ -934,26 +934,22 @@ int mjhz_chi(mjhz_t* mj, int player_no, int pai1, int pai2)
             printf("players meld overflowed!\n");
     }
     player->meld[set_idx].pai_id = mj->current_discard;
-    player->meld[set_idx].player_no = mj->curr_player_no;
     if (m1 == mj->current_discard) {
-        player->meld[set_idx].type = mjMeldChiLow;
-        player->meld[set_idx].extra_info = mjChiLeft;
+        player->meld[set_idx].type = meldChiLow;
         mj_delete(player->hand, MJHZ_MAX_HAND, m2);
         player->hand_js[m2]--;
         mj_delete(player->hand, MJHZ_MAX_HAND, m3);
         player->hand_js[m3]--;
     }
     else if (m2 == mj->current_discard) {
-        player->meld[set_idx].type = mjMeldChiMiddle;
-        player->meld[set_idx].extra_info = mjChiMiddle;
+        player->meld[set_idx].type = meldChiMiddle;
         mj_delete(player->hand, MJHZ_MAX_HAND, m1);
         player->hand_js[m1]--;
         mj_delete(player->hand, MJHZ_MAX_HAND, m3);
         player->hand_js[m3]--;
     }
     else {
-        player->meld[set_idx].type = mjMeldChiUpper;
-        player->meld[set_idx].extra_info = mjChiRight;
+        player->meld[set_idx].type = meldChiUpper;
         mj_delete(player->hand, MJHZ_MAX_HAND, m1);
         player->hand_js[m1]--;
         mj_delete(player->hand, MJHZ_MAX_HAND, m2);
@@ -1000,16 +996,15 @@ int mjhz_peng(mjhz_t* mj, int player_no)
     if (mj->player_num == 4) {
         r_no = p4_relative_seat(mj->discarded_no, player_no);
         if (r_no == stLeft)
-            player->meld[set_idx].type = mjMeldPengLeft;
+            player->meld[set_idx].type = meldPengLeft;
         else if (r_no == stOpposit)
-            player->meld[set_idx].type = mjMeldPengOpposit;
+            player->meld[set_idx].type = meldPengOpposit;
         else
-            player->meld[set_idx].type = mjMeldPengRight;
+            player->meld[set_idx].type = meldPengRight;
     }
     else
-        player->meld[set_idx].type = mjMeldPengOpposit;
+        player->meld[set_idx].type = meldPengOpposit;
     player->meld[set_idx].pai_id = mj->current_discard;
-    player->meld[set_idx].player_no = mj->curr_player_no;
     mj_delete(player->hand, MJHZ_MAX_HAND,
               mj->current_discard);
     mj_delete(player->hand, MJHZ_MAX_HAND,
@@ -1052,10 +1047,8 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
     if (player_no == mj->curr_player_no) {
         /* 暗杠或加杠 */
         if (player->hand_js[pai] == 4) {
-            player->meld[set_idx].type = mjMeldGang;
+            player->meld[set_idx].type = meldGang;
             player->meld[set_idx].pai_id = mj->current_discard;
-            player->meld[set_idx].player_no = mj->curr_player_no;
-            player->meld[set_idx].extra_info = mjGangAn;
             mj_delete(player->hand, MJHZ_MAX_HAND, pai);
             mj_delete(player->hand, MJHZ_MAX_HAND, pai);
             mj_delete(player->hand, MJHZ_MAX_HAND, pai);
@@ -1067,9 +1060,9 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
             for (i = 0; i < MJHZ_MAX_MELD; ++i) {
                 if (player->meld[i].pai_id != pai)
                     continue;
-                if (player->meld[i].type == mjMeldPengLeft ||
-                        player->meld[i].type == mjMeldPengOpposit ||
-                        player->meld[i].type == mjMeldPengRight) {
+                if (player->meld[i].type == meldPengLeft ||
+                        player->meld[i].type == meldPengOpposit ||
+                        player->meld[i].type == meldPengRight) {
                     peng_idx = i;
                     break;
                 }
@@ -1079,8 +1072,12 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
                     printf("players jia gang but not found this peng!\n");
                 return 0;
             }
-            player->meld[peng_idx].type = mjMeldGang;
-            player->meld[peng_idx].extra_info = mjGangJia;
+            if (player->meld[peng_idx].type == meldPengLeft)
+                player->meld[peng_idx].type = meldGangAddLeft;
+            else if (player->meld[peng_idx].type == meldPengOpposit)
+                player->meld[peng_idx].type = meldGangAddOpposit;
+            else if (player->meld[peng_idx].type == meldPengRight)
+                player->meld[peng_idx].type = meldGangAddRight;
             mj_delete(player->hand, MJHZ_MAX_HAND, pai);
             player->hand_js[pai] = 0;
         } else {
@@ -1094,10 +1091,8 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
             return 0;
         if (pai != mj->current_discard)
             return 0;
-        player->meld[set_idx].type = mjMeldGang;
+        player->meld[set_idx].type = meldGang;
         player->meld[set_idx].pai_id = pai;
-        player->meld[set_idx].player_no = mj->curr_player_no;
-        player->meld[set_idx].extra_info = mjGangMing;
         mj_delete(player->hand, MJHZ_MAX_HAND, pai);
         mj_delete(player->hand, MJHZ_MAX_HAND, pai);
         mj_delete(player->hand, MJHZ_MAX_HAND, pai);

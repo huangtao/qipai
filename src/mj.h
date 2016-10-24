@@ -131,36 +131,25 @@ typedef enum pai_id {
 }paiID;
 
 /* 面子类型 */
-typedef enum mj_meld_type {
-    mjMeldNone,
-    mjMeldShun,         /* 顺子 */
-    mjMeldKe,           /* 刻子 */
-    mjMeldJiang,        /* 将牌(对子) */
-    mjMeldChiLow,       /* 吃最小的一张 */
-    mjMeldChiMiddle,    /* 吃中间的一张 */
-    mjMeldChiUpper,     /* 吃最大的一张 */
-    mjMeldPengLeft,     /* 碰上家 */
-    mjMeldPengOpposit,  /* 碰对家 */
-    mjMeldPengRight,    /* 碰下家 */
-    mjMeldGang,         /* 暗杠 */
-    mjMeldGangLeft,     /* 明杠上家 */
-    mjMeldGangOpposit,  /* 明杠对家 */
-    mjMeldGangRight     /* 明杠下家 */
-}mjMeldType;
-
-typedef enum mj_chi_type {
-    mjChiNone,
-    mjChiLeft = 0x01,      /* 吃的牌在左边 */
-    mjChiMiddle = 0x02,    /* 吃的牌在中间 */
-    mjChiRight = 0x04      /* 吃的牌在右边 */
-}mjChiType;
-
-typedef enum mj_gang_type {
-    mjGangNone,
-    mjGangMing,     /* 明杠 */
-    mjGangAn,       /* 暗杠 */
-    mjGangJia       /* 加杠 */
-}mjGangType;
+typedef enum meld_type {
+    meldNone,
+    meldShun,           /* 顺子 */
+    meldKe,             /* 刻子 */
+    meldJiang,          /* 将牌(对子) */
+    meldChiLow,         /* 吃最小的一张 */
+    meldChiMiddle,      /* 吃中间的一张 */
+    meldChiUpper,       /* 吃最大的一张 */
+    meldPengLeft,       /* 碰上家 */
+    meldPengOpposit,    /* 碰对家 */
+    meldPengRight,      /* 碰下家 */
+    meldGang,           /* 暗杠 */
+    meldGangLeft,       /* 明杠上家 */
+    meldGangOpposit,    /* 明杠对家 */
+    meldGangRight,      /* 明杠下家 */
+    meldGangAddLeft,    /* 加杠上家 */
+    meldGangAddOpposit, /* 加杠对家 */
+    meldGangAddRight    /* 加杠下家 */
+}meldType;
 
 /* 游戏开始后的逻辑状态 */
 typedef enum mj_logic_state {
@@ -187,8 +176,6 @@ typedef struct mjpai_s {
 typedef struct mj_meld_s {
     int type;       /* 面子类型 */
     int pai_id;     /* 特征牌 */
-//    int player_no;  /* 吃碰目标玩家 */
-//    int extra_info; /* 吃,杠附加信息 */
 }mj_meld_t;
 
 void mjpai_init_id(mjpai_t* pai, int id);
