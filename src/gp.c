@@ -597,11 +597,23 @@ int gp_canplay(gp_t* gp, card_t* cards, int len)
     if (gp->last_hand_type.type != GP_BOMB && ht.type == GP_BOMB)
         return 1;
 
-    if(gp->last_hand_type.type != ht.type ||
-            gp->last_hand_type.num != ht.num)
+    /* 同类型 */
+    if (gp->last_hand_type.type != ht.type)
         return 0;
 
-    if(card_logic(&(ht.type_card)) > card_logic(&(gp->last_hand_type.type_card)))
+    /* 数量(例外:3K炸弹) */
+    if (gp->last_hand_type.num != ht.num) {
+        if (gp->game_rule == GP_RULE_ZHUJI &&
+                ht.type == GP_BOMB &&
+                card_logic(&(ht.type_card)) == cdRankK) {
+            /* K炸最大 */
+            return 1;
+        }
+        return 0;
+    }
+
+    if(card_logic(&(ht.type_card)) >
+            card_logic(&(gp->last_hand_type.type_card)))
         return 1;
 
     return 0;
