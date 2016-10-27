@@ -79,7 +79,7 @@ typedef struct mjhz_s {
     int dice[2];
     int deck_all_num;
     int deck_deal_index;    /* current deal card index */
-    //int deck_deal_end;      /* where deal end position */
+    int deck_deal_end;      /* where deal end position */
     int deck_deal_gang;     /* deal when gang */
     int deck_valid_num;     /* valid number card */
 
@@ -91,6 +91,7 @@ typedef struct mjhz_s {
     int pai_gang;           /* 当前杠牌 */
     int enable_dian_hu;     /* 能否点和(点炮、捉冲) */
     int enable_lou_hu;      /* 漏胡(弃先胡后) */
+    int enable_dl;          /* 笃老:两个骰子一样(>9)算三老庄 */
 
     time_t time_start;      /* 游戏开始时间 */
     time_t time_turn;       /* 玩家回合开始时间 */
@@ -98,6 +99,9 @@ typedef struct mjhz_s {
 
     int deck[MJHZ_DECK_PAIS];                   /* deck mj pais */
     mjhz_player_t players[MJHZ_MAX_PLAYERS];    /* players */
+
+    fp_relative_seat pf_relative_seat;
+    fp_seat_no pf_seat_no;
 }mjhz_t;
 
 /* init a mjhz game object */

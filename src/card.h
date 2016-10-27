@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#include "qpdef.h"
+#include "qp_comm.h"
 
 /* max of card logic value */
 #define CD_MAX_LOGIC	18 

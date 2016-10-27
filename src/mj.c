@@ -1,5 +1,5 @@
 ﻿#include "mj.h"
-#include "qp_error.h"
+#include "qp_comm.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -97,32 +97,6 @@ int mjpai_sign(int pai_id)
         return ((pai_id - 1) % 9 + 1);
     } else {
         return 0;
-    }
-}
-
-/* 根据座位号获取相对位置(上家、对家、下家) */
-inline int p4_relative_seat(int target, int base)
-{
-    return (seatRelative)((4 + target - base) % 4);
-}
-
-/* 获取上家、对家、下家的玩家编号(座位号) */
-inline int p4_seat_no(int target, seatRelative relative)
-{
-    return (int)((target + (int)relative) % 4);
-}
-
-inline int p2_relative_seat(int target, int base)
-{
-    return (seatRelative)(target == base ? stSelf : stOpposit);
-}
-
-inline int p2_seat_no(int target, seatRelative relative)
-{
-    if (relative == stSelf)
-        return target;
-    else {
-        return ((target + 1) % 2);
     }
 }
 

@@ -17,6 +17,13 @@ void mjhz_init(mjhz_t* mj, int mode, int player_num)
     else
         mj->mode = GAME_MODE_CLIENT;
     mj->player_num = player_num;
+    if (player_num == 2) {
+        mj->pf_relative_seat = p2_relative_seat;
+        mj->pf_seat_no = p2_seat_no;
+    } else {
+        mj->pf_relative_seat = p4_relative_seat;
+        mj->pf_seat_no = p4_seat_no;
+    }
     mj->game_state = GAME_END;
     mj->curr_player_no = -1;
     mj->first_player_no = -1;
@@ -42,8 +49,7 @@ void mjhz_init(mjhz_t* mj, int mode, int player_num)
 
 void mjhz_start(mjhz_t* mj)
 {
-    int i,j,direct,m,n;
-    int temp[MJHZ_DECK_PAIS];
+    int i,j,k,seat,n;
 
     if (!mj)
         return;
@@ -55,6 +61,15 @@ void mjhz_start(mjhz_t* mj)
 
     mj->dice[0] = rand() % 6 + 1;
     mj->dice[1] = rand() % 6 + 1;
+
+    if (mj->enable_dl) {
+        /* 笃老 */
+        if (mj->dice[0] == mj->dice[1] ||
+                mj->dice[0] + mj->dice[1] > 9) {
+            if (mj->lao_z < 3)
+                mj->lao_z = 3;
+        }
+    }
 
     /* 白板是财神 */
     mj->joker = PAI_BAI;
@@ -73,56 +88,53 @@ void mjhz_start(mjhz_t* mj)
         /* 洗牌 */
         mj_shuffle(mj->deck, mj->deck_all_num);
         /* 计算起手牌位置 */
-        direct = (mj->banker_no + MJHZ_MAX_PLAYERS
-                - (mj->dice[0] + mj->dice[1]) % MJHZ_MAX_PLAYERS)
-            % MJHZ_MAX_PLAYERS;
-        mj->deck_deal_index = direct * 17 * 2
+        seat = (mj->banker_no + mj->player_num
+                - (mj->dice[0] + mj->dice[1]) % mj->player_num)
+            % mj->player_num;
+        mj->deck_deal_index = seat * 17 * 2
             + (mj->dice[0] + mj->dice[1]) * 2;
-        /* 将牌直接交换好 */
-        m = mj->deck_all_num - mj->deck_deal_index;
-        memcpy(temp, mj->deck + mj->deck_deal_index,
-               sizeof(int) * m);
-        memcpy(temp + m, mj->deck,
-               sizeof(int) * mj->deck_deal_index);
-        mj->deck_deal_index = 0;
-        mj->deck_deal_gang = mj->deck_all_num - 1; /* 杠抓牌 */
+        mj->deck_deal_gang = mj->deck_deal_index - 1; /* 杠抓牌 */
+        mj->deck_deal_end = (mj->deck_deal_index + mj->deck_all_num - 20)
+                % mj->deck_all_num;
 
-        /* 顺时针,每人抓12张,庄家先抓,一次4张 */
-        m = 0;
-        n = mj->deck_deal_index;
+        /* 逆时针,每人抓12张,庄家先抓,一次4张 */
         for (j = 0; j < 3; ++j) {
-            for (i = 0; i < MJHZ_MAX_PLAYERS; ++i) {
-                direct = (mj->banker_no + i) % MJHZ_MAX_PLAYERS;
-                memcpy(mj->players[direct].hand + m,
-                       mj->deck + n, 4 * sizeof(int));
-                n += 4;
+            for (i = 0; i < mj->player_num; ++i) {
+                seat = mj->pf_seat_no(mj->banker_no, i);
+                for (k = 0; k < 4; ++k) {
+                    mj->players[seat].hand[j*4+k] =
+                            mj->deck[mj->deck_deal_index++];
+                    if (mj->deck_deal_index == mj->deck_all_num)
+                        mj->deck_deal_index = 0;
+                }
             }
-            m += 4;
+        }
+        /* 每人一张 */
+        for (i = 0; i < mj->player_num; ++i) {
+            seat = mj->pf_seat_no(mj->banker_no, i);
+            mj->players[seat].hand[12] =
+                    mj->deck[mj->deck_deal_index++];
+            if (mj->deck_deal_index == mj->deck_all_num)
+                mj->deck_deal_index = 0;
         }
 
-        /* 庄家跳牌2张,其他人一张 */
-        mj->players[mj->banker_no].hand[m] =  mj->deck[n];
-        mj->players[mj->banker_no].hand[m + 1] = mj->deck[n + 4];
-        n++;
-        for (i = 0; i < MJHZ_MAX_PLAYERS; ++i) {
-            if (i == mj->banker_no) continue;
-            direct = (mj->banker_no + i) % MJHZ_MAX_PLAYERS;
-            mj->players[direct].hand[m] = mj->deck[n++];
-        }
-        mj->last_takes_no = mj->banker_no;
-        mj->deck_deal_index += 13 * (MJHZ_MAX_PLAYERS - 1) + 14;
+        /* 庄家14张 */
+        mj->players[mj->banker_no].hand[13] =
+                mj->deck[mj->deck_deal_index++];
+        if (mj->deck_deal_index == mj->deck_all_num)
+            mj->deck_deal_index = 0;
         mj->deck_valid_num = mj->deck_all_num -
-                13 * (MJHZ_MAX_PLAYERS - 1) + 14;
+                13 * (mj->player_num - 1) + 14;
 
         /* 初始化分析数据 */
-        for (i = 0; i < MJHZ_MAX_PLAYERS; ++i) {
+        for (i = 0; i < mj->player_num; ++i) {
             if (i == mj->banker_no)
-                m = 14;
+                k = 14;
             else
-                m = 13;
-            for (j = 0; j < m; ++j) {
+                k = 13;
+            for (j = 0; j < k; ++j) {
                 n = mj->players[i].hand[j];
-                if (n <= 0 || n > PAI_BAI) {
+                if (n < PAI_1W || n > PAI_BAI) {
                     printf("!!!error:find mjpai index > PAI_BAI!\n");
                     continue;
                 }
@@ -130,7 +142,7 @@ void mjhz_start(mjhz_t* mj)
             }
         }
 
-        /* the first player */
+        mj->last_takes_no = mj->banker_no;
         mj->first_player_no = mj->banker_no;
         mj->curr_player_no = mj->first_player_no;
         time(&mj->time_turn);
@@ -223,9 +235,13 @@ int mjhz_draw(mjhz_t* mj, int is_gang)
     if (is_gang) {
         pai = mj->deck[mj->deck_deal_gang];
         mj->deck_deal_gang--;
+        if (mj->deck_deal_gang < 0)
+            mj->deck_deal_gang += mj->deck_all_num;
     } else {
         pai = mj->deck[mj->deck_deal_index];
         mj->deck_deal_index++;
+        if (mj->deck_deal_index >= mj->deck_all_num)
+            mj->deck_deal_index = 0;
     }
     mj->deck_valid_num--;
     mj->players[mj->curr_player_no].hand[MJHZ_MAX_HAND-1] = pai;
@@ -717,13 +733,14 @@ int mjhz_chi(mjhz_t* mj, int player_no, int pai1, int pai2)
         return -6;
     if (player->hand_js[pai2] == 0)
         return -6;
-    if (mj->player_num == 4) {
-        st = p4_relative_seat(mj->discarded_no, player_no);
-        if (st != stLeft)
-            return -7;
-    } else if (mj->player_num == 2) {
-        st = p2_relative_seat(mj->discarded_no, player_no);
+    st = mj->pf_relative_seat(
+                mj->discarded_no,
+                player_no);
+    if (mj->player_num == 2) {
         if (st != stOpposit)
+            return -7;
+    } else {
+        if (st != stLeft)
             return -7;
     }
 
@@ -827,8 +844,12 @@ int mjhz_peng(mjhz_t* mj, int player_no)
             printf("players meld overflowed!\n");
     }
     /* take the discarded tile */
-    if (mj->player_num == 4) {
-        r_no = p4_relative_seat(mj->discarded_no, player_no);
+    if (mj->player_num == 2) {
+        player->meld[set_idx].type = meldPengOpposit;
+    } else {
+        r_no = mj->pf_relative_seat(
+                    mj->discarded_no,
+                    player_no);
         if (r_no == stLeft)
             player->meld[set_idx].type = meldPengLeft;
         else if (r_no == stOpposit)
@@ -836,8 +857,7 @@ int mjhz_peng(mjhz_t* mj, int player_no)
         else
             player->meld[set_idx].type = meldPengRight;
     }
-    else
-        player->meld[set_idx].type = meldPengOpposit;
+
     player->meld[set_idx].pai_id = mj->current_discard;
     mj_delete(player->hand, MJHZ_MAX_HAND,
               mj->current_discard);
