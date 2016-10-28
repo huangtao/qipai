@@ -234,11 +234,13 @@ int mjhz_draw(mjhz_t* mj, int is_gang)
     mj->pai_gang = 0;
     if (is_gang) {
         pai = mj->deck[mj->deck_deal_gang];
+        mj->deck[mj->deck_deal_gang] = 0;
         mj->deck_deal_gang--;
         if (mj->deck_deal_gang < 0)
             mj->deck_deal_gang += mj->deck_all_num;
     } else {
         pai = mj->deck[mj->deck_deal_index];
+        mj->deck[mj->deck_deal_index] = 0;
         mj->deck_deal_index++;
         if (mj->deck_deal_index >= mj->deck_all_num)
             mj->deck_deal_index = 0;
