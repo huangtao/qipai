@@ -46,8 +46,9 @@ typedef enum seat_absolute {
     stNorth = stNo_4
 }seatAbsolute;
 
+/* 对应数组编号0,1,2,3 */
 typedef enum seat_relative {
-    stSelf, stLeft, stOpposit, stRight
+    stSelf, stRight, stOpposit, stLeft
 }seatRelative;
 
 /* 根据座位号获取相对位置(上家、对家、下家) */
