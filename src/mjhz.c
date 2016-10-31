@@ -1025,14 +1025,17 @@ void mjhz_pass(mjhz_t *mj, int player_no)
     mj->players[player_no].req_pass = 1;
 }
 
-/* 东->南->西->北(逆时针)*/
+/*
+ * 逆时针
+ * stSelf(0)->stRight(1)->stOpposit(2)->stLeft(3)
+ */
 void mjhz_next_player(mjhz_t* mj)
 {
     if (!mj)
         return;
-    mj->curr_player_no--;
-    if (mj->curr_player_no < 0)
-        mj->curr_player_no += mj->player_num;
+    mj->curr_player_no++;
+    if (mj->curr_player_no >= mj->player_num)
+        mj->curr_player_no = 0;
 }
 
 int mjhz_get_next(mjhz_t* mj)
@@ -1041,9 +1044,9 @@ int mjhz_get_next(mjhz_t* mj)
 
     if (!mj)
         return 0;
-    next_no = mj->curr_player_no - 1;
-    if (next_no < 0)
-        next_no += mj->player_num;
+    next_no = mj->curr_player_no + 1;
+    if (next_no >= mj->player_num)
+        next_no = 0;
 
     return next_no;
 }
