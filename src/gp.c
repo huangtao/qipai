@@ -525,12 +525,14 @@ int gp_play(gp_t* gp, int player_no, card_t* cards, int len)
 
     gp_handtype(gp, cards, len, &htype);
 
-    /* can play out these cards */
-    if (gp->largest_player_no != player_no) {
-        if (!gp_canplay(gp, cards, len)){
-            if (gp->debug)
-                printf("cann't play these cards(smaller).\n");
-            return -6;
+    if (gp->mode == GP_MODE_SERVER) {
+        /* can play out these cards */
+        if (gp->largest_player_no != player_no) {
+            if (!gp_canplay(gp, cards, len)){
+                if (gp->debug)
+                    printf("cann't play these cards(smaller).\n");
+                return -6;
+            }
         }
     }
 

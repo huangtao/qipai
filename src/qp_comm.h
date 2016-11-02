@@ -52,20 +52,20 @@ typedef enum seat_relative {
 }seatRelative;
 
 /* 根据座位号获取相对位置(上家、对家、下家) */
-int p4_relative_seat(int target, int base);
+int p4_relative_seat(int base, int target);
 /* 获取上家、对家、下家的玩家编号(座位号) */
-int p4_seat_no(int target, seatRelative relative);
+int p4_seat_no(int base, seatRelative relative);
 
 
-int p3_relative_seat(int target, int base);
-int p3_seat_no(int target, seatRelative relative);
+int p3_relative_seat(int base, int target);
+int p3_seat_no(int base, seatRelative relative);
 
-int p2_relative_seat(int target, int base);
-int p2_seat_no(int target, seatRelative relative);
+int p2_relative_seat(int base, int target);
+int p2_seat_no(int base, seatRelative relative);
 
 /* 函数指针声明 */
-typedef int (*fp_relative_seat)(int target, int base);
-typedef int (*fp_seat_no)(int target, seatRelative relative);
+typedef int (*fp_relative_seat)(int base, int target);
+typedef int (*fp_seat_no)(int base, seatRelative relative);
 
 
 ///* 根据座位号获取相对位置(上家、对家、下家) */

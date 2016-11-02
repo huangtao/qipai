@@ -48,7 +48,7 @@ typedef struct mjhz_player_s {
     int can_chi;
     int can_gang;
     int can_hu;
-    int can_peng[MJHZ_LEN_JS];          /* 不能弃先碰后,!=1不能碰*/
+    int pai_peng[MJHZ_LEN_JS];          /* 不能弃先碰后,!=1不能碰*/
     int pai_gang[4];    /* 杠牌信息 */
     int pass_hu;        /* 漏胡标记 */
     mjhz_hu_t hu;       /* 胡牌信息 */
