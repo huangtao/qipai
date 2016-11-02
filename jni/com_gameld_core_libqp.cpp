@@ -217,7 +217,15 @@ void Java_com_gameld_core_libqp_gpPlay(JNIEnv *env, jclass,jbyteArray jarray)
     }
     env->ReleaseByteArrayElements(jarray, p, 0);
 
-    gp_play(&g_gp, g_gp.curr_player_no, cards, GP_MAX_CARDS);
+    n = gp_play(&g_gp, g_gp.curr_player_no, cards, GP_MAX_CARDS);
+
+#ifdef TAO_DEBUG
+        char dbg_str[512];
+        strcpy(dbg_str, cards_to_string(cards, GP_MAX_CARDS));
+        __android_log_print(ANDROID_LOG_INFO, "qipai", "play cards:%s", dbg_str);
+        __android_log_print(ANDROID_LOG_INFO, "qipai", "gp_play return %d",
+            n);
+#endif
 }
 
 void Java_com_gameld_core_libqp_gpPass(JNIEnv *env, jclass)
