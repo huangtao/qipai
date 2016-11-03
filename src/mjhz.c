@@ -918,7 +918,7 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
         /* 暗杠或加杠 */
         if (player->hand_js[pai] == 4) {
             player->meld[player->meld_index].type = meldGang;
-            player->meld[player->meld_index].pai_id = mj->current_discard;
+            player->meld[player->meld_index].pai_id = pai;
             player->meld_index++;
             mj_delete(player->hand, MJHZ_MAX_HAND, pai);
             mj_delete(player->hand, MJHZ_MAX_HAND, pai);
@@ -1037,15 +1037,26 @@ int mjhz_hu(mjhz_t* mj, int player_no)
 
 void mjhz_pass(mjhz_t *mj, int player_no)
 {
+    int i,all_pass;
+
     if (!mj)
-        return;
-    if (mj->logic_state != lsTake)
         return;
     if (player_no >= mj->player_num)
         return;
 
     /* 如果所有人都过，轮到下一个玩家 */
     mj->players[player_no].req_pass = 1;
+
+    if (mj->logic_state != lsTake)
+        return;
+    all_pass = 1;
+    for (i = 0; i < mj->player_num; ++i) {
+        if (mj->players[i].req_pass == 1)
+            continue;
+    }
+    if (all_pass) {
+        mj->sec_wait = 0;
+    }
 }
 
 /*
