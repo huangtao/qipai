@@ -47,19 +47,20 @@ typedef struct mjhz_player_s {
     int last_played;
     int can_chi;
     int can_gang;
-    int can_hu;
     int pai_peng[MJHZ_LEN_JS];          /* 不能弃先碰后,!=1不能碰*/
     int pai_gang[4];    /* 杠牌信息 */
     int pass_hu;        /* 漏胡标记 */
     mjhz_hu_t hu;       /* 胡牌信息 */
-    int req_pass;       /* 请求过 */
-    int req_chi;        /* 请求吃 */
-    int req_peng;
-    int req_gang;
-    int req_hu;
+    int wait_hu;        /* 能胡,等待胡牌 */
     int wait_chi;       /* 等待吃(碰杠胡优先) */
     int wait_peng;
     int wait_gang;
+    int req_pass;       /* 请求过 */
+    int req_chi;        /* 请求吃的牌1 */
+    int req_chi2;
+    int req_peng;
+    int req_gang;
+    int req_hu;
 }mjhz_player_t;
 
 typedef struct mjhz_s {
@@ -84,11 +85,11 @@ typedef struct mjhz_s {
     int deck_valid_num;     /* valid number card */
 
     int current_discard;    /* 当前打出的麻将牌 */
-    int discarded_no;
+    int discarded_no;       /* 弃牌玩家 */
+    int gang_pai;           /* 当前杠牌 */
     int last_takes_no;      /* last takes(摸牌) player no */
     int lao_z;              /* 老庄 */
     int joker;              /* 百搭(财神) */
-    int pai_gang;           /* 当前杠牌 */
     int enable_dian_hu;     /* 能否点和(点炮、捉冲) */
     int enable_lou_hu;      /* 漏胡(弃先胡后) */
     int enable_dl;          /* 笃老:两个骰子一样(>9)算三老庄 */
@@ -115,6 +116,9 @@ void mjhz_sort(int* pais, int len);
 
 /* 弃牌,打出麻将牌 */
 int mjhz_discard(mjhz_t* mj, int pai_id);
+
+/* 判决,执行吃碰杠胡或者摸牌 */
+void mjhz_referee(mjhz_t* mj);
 
 /* 摸牌 */
 int mjhz_draw(mjhz_t* mj, int is_gang);

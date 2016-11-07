@@ -4,6 +4,90 @@
 #include <stdio.h>
 #include "mj_algo.h"
 
+void _reset_req(mjhz_t* mj)
+{
+    int i;
+
+    if (!mj)
+        return;
+    for (i = 0; i < mj->player_num; ++i) {
+        mj->players[i].req_chi = 0;
+        mj->players[i].req_chi2 = 0;
+        mj->players[i].req_peng = 0;
+        mj->players[i].req_gang = 0;
+        mj->players[i].req_hu = 0;
+    }
+}
+
+/* 吃碰杠胡优先判定 */
+void _take_referee(mjhz_t* mj)
+{
+    int i,all_select,have_hu;
+    int have_pg;
+
+    if (!mj)
+        return;
+    if (mj->logic_state != lsTake)
+        return;
+    have_hu = 0;
+    have_pg = 0;
+    for (i = 0; i < mj->player_num; ++i) {
+        if (mj->players[i].req_hu > 0)
+            have_hu = 1;
+        if (mj->players[i].req_peng > 0 ||
+                mj->players[i].req_gang > 0) {
+            have_pg = 1;
+        }
+    }
+    /* 检查其他玩家是否已选择操作 */
+    all_select = 1;
+    for (i = 0; i < mj->player_num; ++i) {
+        if (i == mj->discarded_no) {
+            /* 他弃的牌 */
+            continue;
+        }
+        if (mj->gang_pai != 0 && i == mj->curr_player_no) {
+            /* 此玩家正在杠 */
+            continue;
+        }
+        /* 已请求 */
+        if (mj->players[i].req_chi > 0)
+            continue;
+        if (mj->players[i].req_peng > 0)
+            continue;
+        if (mj->players[i].req_gang > 0)
+            continue;
+        if (mj->players[i].req_hu > 0)
+            continue;
+        if (mj->players[i].req_pass > 0)
+            continue;
+        /* 没有选择操作 */
+        if (mj->players[i].wait_hu > 0) {
+            /* 可以胡 */
+            all_select = 0;
+            break;
+        }
+        if (have_hu)
+            continue;   /* 有人要胡,不需要看吃碰杠了 */
+        if (mj->players[i].wait_gang ||
+                mj->players[i].wait_peng) {
+            all_select = 0;
+            break;
+        }
+        if (have_pg)
+            continue;
+        if (mj->players[i].wait_chi) {
+            all_select = 0;
+            break;
+        }
+    }
+
+    /* 所有其他玩家已选择 */
+    if (all_select) {
+        mj->sec_wait = 0;
+    }
+}
+
 void mjhz_init(mjhz_t* mj, int mode, int player_num)
 {
     int i,j,n;
@@ -74,10 +158,10 @@ void mjhz_start(mjhz_t* mj)
     /* 白板是财神 */
     mj->joker = PAI_BAI;
     mj->current_discard = 0;
-    mj->pai_gang = 0;
+    mj->gang_pai = 0;
 
     for (i = 0; i < MJHZ_MAX_PLAYERS; ++i) {
-        mj->players[i].can_hu = 0;
+        mj->players[i].wait_hu = 0;
         memset(mj->players[i].pai_peng, 0,
                sizeof(mj->players[i].pai_peng));
         memset(mj->players[i].pai_gang, 0,
@@ -233,7 +317,7 @@ int mjhz_draw(mjhz_t* mj, int is_gang)
         /* 流局 */
         return 0;
     }
-    mj->pai_gang = 0;
+    mj->gang_pai = 0;
     if (is_gang) {
         pai = mj->deck[mj->deck_deal_gang];
         mj->deck[mj->deck_deal_gang] = 0;
@@ -314,7 +398,7 @@ int mjhz_discard(mjhz_t* mj, int pai_id)
             flag |= mjhz_can_peng(mj, i);
             flag |= mjhz_can_chi(mj, i);
         } else {
-            mj->players[i].can_hu = 0;
+            mj->players[i].wait_hu = 0;
             mj->players[i].wait_gang = 0;
             mj->players[i].wait_peng = 0;
             mj->players[i].can_chi = 0;
@@ -330,6 +414,49 @@ int mjhz_discard(mjhz_t* mj, int pai_id)
         mj->sec_wait = 0;
 
     return 1;
+}
+
+void mjhz_referee(mjhz_t *mj)
+{
+    int i;
+
+    if (!mj)
+        return;
+    if (mj->game_state != GAME_PLAY)
+        return;
+
+    /* 有人请求胡吗 */
+    for (i = 0; i < mj->player_num; ++i) {
+        if (mj->players[i].req_hu > 0) {
+            mjhz_hu(mj, i);
+            return;
+        }
+    }
+
+    /* 杠 */
+    for (i = 0; i < mj->player_num; ++i) {
+        if (mj->players[i].req_gang > 0) {
+            mjhz_gang(mj, i, mj->gang_pai);
+            return;
+        }
+    }
+    /* 碰 */
+    for (i = 0; i < mj->player_num; ++i) {
+        if (mj->players[i].req_peng > 0) {
+            mjhz_peng(mj, i);
+            return;
+        }
+    }
+    /* 吃 */
+    for (i = 0; i < mj->player_num; ++i) {
+        if (mj->players[i].req_chi > 0) {
+            mjhz_chi(mj, i, mj->players[i].req_chi,
+                     mj->players[i].req_chi2);
+            return;
+        }
+    }
+
+    /* 摸牌 */
 }
 
 /*
@@ -597,7 +724,7 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
     if (player_no >= mj->player_num)
         return 0;
     player = &mj->players[player_no];
-    player->can_hu = 0;
+    player->wait_hu = 0;
     memset(&player->hu, 0, sizeof(mjhz_hu_t));
 
     n_joker = 0;
@@ -679,11 +806,11 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
         }
         if (mj->current_discard != 0 && player->hu.is_baotou) {
             /* 爆头不能捉冲 */
-            player->can_hu = 0;
+            player->wait_hu = 0;
         } else {
-            player->can_hu = 1;
+            player->wait_hu = 1;
         }
-        return player->can_hu;
+        return player->wait_hu;
     }
 
     /* 是否爆头 */
@@ -695,7 +822,7 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
         else
             js_joker[pai_takes]--;
         if (mjhz_all_melded_joker(js_joker, left_joker)) {
-            player->can_hu = 1;
+            player->wait_hu = 1;
             player->hu.is_baotou = 1;
             return 1;
         }
@@ -709,19 +836,19 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
 			js_joker[i] -= 2;
 			/* 判断去掉将头后是否都是面子 */
             if (mjhz_all_melded_joker(js_joker, n_joker) > 0) {
-                player->can_hu = 1;
+                player->wait_hu = 1;
 				return 1;
             }
 		} else if (js_joker[i] == 1) {
 			if (n_joker > 0) {
 				js_joker[i] = 0;
                 if (mjhz_all_melded_joker(js_joker, n_joker - 1) > 0) {
-                    player->can_hu = 1;
+                    player->wait_hu = 1;
 					return 1;
                 }
             } else {
                 if (mjhz_all_melded(js_joker)) {
-                    player->can_hu = 1;
+                    player->wait_hu = 1;
                     return 1;
                 }
             }
@@ -884,7 +1011,7 @@ int mjhz_peng(mjhz_t* mj, int player_no)
     player->wait_chi = 0;
     player->wait_peng = 0;
     player->wait_gang = 0;
-    player->can_hu = 0;
+    player->wait_hu = 0;
 
     mj->curr_player_no = player_no;
     mj->logic_state = lsDiscard;
@@ -976,7 +1103,7 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
     }
     mj_trim(player->hand, MJHZ_MAX_HAND);
     player->wait_gang = 0;
-    player->can_hu = 0;
+    player->wait_hu = 0;
 
     mj->curr_player_no = player_no;
     mj->logic_state = lsDiscard;
@@ -987,13 +1114,14 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
 
 int mjhz_hu(mjhz_t* mj, int player_no)
 {
+    int i;
     mjhz_player_t* player;
 
     if (!mj)
         return 0;
     if (player_no >= mj->player_num)
         return 0;
-    if (mj->players[player_no].can_hu == 0)
+    if (mj->players[player_no].wait_hu == 0)
         return 0;
     player = &mj->players[player_no];
     if (mj->curr_player_no == player_no) {
@@ -1007,6 +1135,13 @@ int mjhz_hu(mjhz_t* mj, int player_no)
     }
     mj->hu_player_no = player_no;
     mj->game_state = GAME_END;
+    _reset_req(mj);
+    for (i = 0; i < mj->player_num; ++i) {
+        mj->players[i].wait_chi = 0;
+        mj->players[i].wait_peng = 0;
+        mj->players[i].wait_gang = 0;
+        mj->players[i].wait_hu = 0;
+    }
 
     /* 番计算 */
     player->hu.fan = 0;
@@ -1035,28 +1170,21 @@ int mjhz_hu(mjhz_t* mj, int player_no)
     return 0;
 }
 
+/*
+ * 过判定
+ * 弃牌时,其他玩家可以吃碰杠胡
+ * 杠牌时,其他玩家可以胡
+ */
 void mjhz_pass(mjhz_t *mj, int player_no)
 {
-    int i,all_pass;
-
     if (!mj)
         return;
     if (player_no >= mj->player_num)
         return;
 
-    /* 如果所有人都过，轮到下一个玩家 */
     mj->players[player_no].req_pass = 1;
-
-    if (mj->logic_state != lsTake)
-        return;
-    all_pass = 1;
-    for (i = 0; i < mj->player_num; ++i) {
-        if (mj->players[i].req_pass == 1)
-            continue;
-    }
-    if (all_pass) {
-        mj->sec_wait = 0;
-    }
+    /* 判定 */
+    _take_referee(mj);
 }
 
 /*
