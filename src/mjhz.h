@@ -44,9 +44,6 @@ typedef struct mjhz_player_s {
     int discard_index;
     mj_meld_t meld[MJHZ_MAX_MELD];      /* 已吃碰杠 */
     int meld_index;
-    int last_played;
-    int can_chi;
-    int can_gang;
     int pai_peng[MJHZ_LEN_JS];          /* 不能弃先碰后,!=1不能碰*/
     int pai_gang[4];    /* 杠牌信息 */
     int pass_hu;        /* 漏胡标记 */
@@ -70,11 +67,15 @@ typedef struct mjhz_s {
     int logic_state;        /* mj logic state */
     int round;
     int inning;
-    int player_num;         /* 2 or 4 player */
-    int banker_no;          /* banker no. */
+    int player_num;         /* 2 ~ 4 player */
+    int dealer_no;          /* 庄家 dealer no. */
     int first_player_no;    /* first player no. */
     int curr_player_no;     /* current turn player no. */
     int hu_player_no;
+    int discard_pai;        /* 当前打出的麻将牌 */
+    int discarded_no;       /* 弃牌玩家 */
+    int gang_pai;           /* 当前杠牌 */
+    int joker;              /* 百搭(财神) */
     int flag_liu;           /* 流局标记 */
 
     int dice[2];
@@ -84,15 +85,12 @@ typedef struct mjhz_s {
     int deck_deal_gang;     /* deal when gang */
     int deck_valid_num;     /* valid number card */
 
-    int current_discard;    /* 当前打出的麻将牌 */
-    int discarded_no;       /* 弃牌玩家 */
-    int gang_pai;           /* 当前杠牌 */
-    int last_takes_no;      /* last takes(摸牌) player no */
-    int lao_z;              /* 老庄 */
-    int joker;              /* 百搭(财神) */
+    int enable_chi;         /* 能否吃 */
     int enable_dian_hu;     /* 能否点和(点炮、捉冲) */
     int enable_lou_hu;      /* 漏胡(弃先胡后) */
+    int enable_3tan;        /* 吃碰杠3摊 */
     int enable_dl;          /* 笃老:两个骰子一样(>9)算三老庄 */
+    int lao_z;              /* 老庄 */
 
     time_t time_start;      /* 游戏开始时间 */
     time_t time_turn;       /* 玩家回合开始时间 */
@@ -121,7 +119,7 @@ int mjhz_discard(mjhz_t* mj, int pai_id);
 void mjhz_referee(mjhz_t* mj);
 
 /* 摸牌 */
-int mjhz_draw(mjhz_t* mj, int is_gang);
+int mjhz_pickup(mjhz_t* mj, int is_gang);
 
 int mjhz_can_chi(mjhz_t* mj, int player_no);
 int mjhz_can_peng(mjhz_t* mj, int player_no);
@@ -137,6 +135,15 @@ int mjhz_all_melded_joker(int array[MJHZ_LEN_JS], int num_joker);
 
 /* 和(胡)判定 */
 int mjhz_can_hu(mjhz_t* mj, int player_no);
+
+/* 请求吃碰杠胡 */
+int mjhz_req_chi(mjhz_t* mj, int player_no, int pai1, int pai2);
+
+int mjhz_req_peng(mjhz_t* mj, int player_no);
+
+int mjhz_req_gang(mjhz_t* mj, int player_no, int pai);
+
+int mjhz_req_hu(mjhz_t* mj, int player_no);
 
 /* 吃 */
 int mjhz_chi(mjhz_t* mj, int player_no, int pai1, int pai2);
