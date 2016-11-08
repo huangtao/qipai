@@ -19,16 +19,16 @@ void _reset_req(mjhz_t* mj)
     }
 }
 
-/* 吃碰杠胡优先判定 */
-void _take_referee(mjhz_t* mj)
+/* 其他玩家都选择了吗 */
+int _is_all_select(mjhz_t* mj)
 {
     int i,all_select,have_hu;
     int have_pg;
 
     if (!mj)
-        return;
+        return 0;
     if (mj->logic_state != lsTake)
-        return;
+        return 0;
     have_hu = 0;
     have_pg = 0;
     for (i = 0; i < mj->player_num; ++i) {
@@ -86,6 +86,7 @@ void _take_referee(mjhz_t* mj)
     if (all_select) {
         mj->sec_wait = 0;
     }
+    return all_select;
 }
 
 int _check_chi(mjhz_t* mj, int player_no, int pai1, int pai2)
@@ -900,8 +901,7 @@ int mjhz_req_chi(mjhz_t* mj, int player_no, int pai1, int pai2)
         return 0;
     player->req_chi = pai1;
     player->req_chi2 = pai2;
-    _take_referee(mj);
-    if (mj->sec_wait == 0)
+    if (is_all_select(mj))
         mjhz_referee(mj);
 
     return 1;
@@ -1261,8 +1261,7 @@ void mjhz_pass(mjhz_t *mj, int player_no)
         return;
 
     mj->players[player_no].req_pass = 1;
-    /* 判定 */
-    _take_referee(mj);
+    is_all_select(mj);
 }
 
 /*
