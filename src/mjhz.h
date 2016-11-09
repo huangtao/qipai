@@ -112,13 +112,13 @@ void mjhz_start(mjhz_t* mj);
 /* sort a hand */
 void mjhz_sort(int* pais, int len);
 
-/* 弃牌,打出麻将牌 */
+/* 出牌(弃牌) */
 int mjhz_discard(mjhz_t* mj, int pai_id);
 
 /* 判决,执行吃碰杠胡或者摸牌 */
 void mjhz_referee(mjhz_t* mj);
 
-/* 摸牌 */
+/* 抓牌 */
 int mjhz_pickup(mjhz_t* mj, int is_gang);
 
 int mjhz_can_chi(mjhz_t* mj, int player_no);
