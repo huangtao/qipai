@@ -369,9 +369,8 @@ void mjhz_sort(int* pais, int len)
 }
 
 /*
- * 摸牌
- * 摸到的牌规定放在数组的最后，等打出后排序
- * 无牌可以摸返回0
+ * 抓牌
+ * 抓到的牌规定放在数组的最后，等打出后排序
  */
 int mjhz_pickup(mjhz_t* mj, int is_gang)
 {
@@ -537,7 +536,12 @@ void mjhz_referee(mjhz_t *mj)
 
     /* 摸牌 */
     _reset_req(mj);
-    mjhz_pickup(mj, 0);
+    if (mjhz_pickup(mj, 0) == -2) {
+        /* 流局 */
+        mj->game_state = GAME_END;
+        if (mj->pf_event)
+            mj->pf_event(mjEventLiu, 0, 0);
+    }
 }
 
 /*
@@ -1103,6 +1107,8 @@ int mjhz_chi(mjhz_t* mj, int player_no, int pai1, int pai2)
     mj_trim(player->hand, MJHZ_MAX_HAND);
     mj->curr_player_no = player_no;
     mj->discard_pai = 0;
+    if (mj->pf_event)
+        mj->pf_event(mjEventChi, player_no, 0);
 
     return 1;
 }
@@ -1156,6 +1162,8 @@ int mjhz_peng(mjhz_t* mj, int player_no)
     mj->discard_pai = 0;
     mj->discarded_no = -1;
     mj->sec_wait = WAITTIME_DISCARD;
+    if (mj->pf_event)
+        mj->pf_event(mjEventPeng, player_no, 0);
 
     return 1;
 }
@@ -1248,6 +1256,8 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
     mj->curr_player_no = player_no;
     mj->logic_state = lsDiscard;
     mj->sec_wait = WAITTIME_DISCARD;
+    if (mj->pf_event)
+        mj->pf_event(mjEventGang, player_no, 0);
 
     return 1;
 }
@@ -1306,6 +1316,8 @@ int mjhz_hu(mjhz_t* mj, int player_no)
         player->hu.fan += player->hu.cai_piao;
     }
     player->hu.fan += mj->lao_z;
+    if (mj->pf_event)
+        mj->pf_event(mjEventHu, player_no, 0);
 
     return 1;
 }
@@ -1323,7 +1335,8 @@ void mjhz_pass(mjhz_t *mj, int player_no)
         return;
 
     mj->players[player_no].req_pass = 1;
-    _is_all_select(mj);
+    if (_is_all_select(mj))
+        mjhz_referee(mj);
 }
 
 /*

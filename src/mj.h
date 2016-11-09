@@ -157,13 +157,15 @@ typedef enum mj_logic_state {
     lsTake      /* 抓牌(包括玩家吃碰杠胡) */
 }mjLogicState;
 
-/* called (claimed by other players) */
-typedef enum mj_call_type {
-    callChi,
-    callPeng,
-    callGang,
-    callHu
-}mjCallType;
+/* 麻将事件 */
+typedef enum mj_evnet_type {
+    mjEventPickup,
+    mjEventChi,
+    mjEventPeng,
+    mjEventGang,
+    mjEventHu,
+    mjEventLiu
+}mjEventType;
 
 /* a mj pai */
 typedef struct mjpai_s {
@@ -177,6 +179,9 @@ typedef struct mj_meld_s {
     int type;       /* 面子类型 */
     int pai_id;     /* 特征牌 */
 }mj_meld_t;
+
+/* 麻将事件函数指针 */
+typedef int (*fp_mj_event)(int event, int param1, int param2);
 
 void mjpai_init_id(mjpai_t* pai, int id);
 void mjpai_init_ss(mjpai_t* pai, int suit, int sign);

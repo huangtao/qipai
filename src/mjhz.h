@@ -101,6 +101,7 @@ typedef struct mjhz_s {
 
     fp_relative_seat pf_relative_seat;
     fp_seat_no pf_seat_no;
+    fp_mj_event pf_event;
 }mjhz_t;
 
 /* init a mjhz game object */
