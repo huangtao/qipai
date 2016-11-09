@@ -181,7 +181,7 @@ typedef struct mj_meld_s {
 }mj_meld_t;
 
 /* 麻将事件函数指针 */
-typedef int (*fp_mj_event)(int event, int param1, int param2);
+typedef void (*fp_mj_event)(int event, int param1, int param2);
 
 void mjpai_init_id(mjpai_t* pai, int id);
 void mjpai_init_ss(mjpai_t* pai, int suit, int sign);
