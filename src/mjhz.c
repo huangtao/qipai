@@ -418,6 +418,8 @@ int mjhz_pickup(mjhz_t* mj, int is_gang)
     /* 杠胡判定 */
     mjhz_can_hu(mj, mj->curr_player_no);
     mjhz_can_gang(mj, mj->curr_player_no);
+    if (mj->pf_event)
+        mj->pf_event(mjEventPickup, mj->curr_player_no, 0);
 
     return 1;
 }
@@ -534,8 +536,9 @@ void mjhz_referee(mjhz_t *mj)
         }
     }
 
-    /* 摸牌 */
+    /* 下家抓牌 */
     _reset_req(mj);
+    mjhz_next_player(mj);
     if (mjhz_pickup(mj, 0) == -2) {
         /* 流局 */
         mj->game_state = GAME_END;
