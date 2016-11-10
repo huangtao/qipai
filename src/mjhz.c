@@ -4,13 +4,14 @@
 #include <stdio.h>
 #include "mj_algo.h"
 
-void _reset_req(mjhz_t* mj)
+void _reset_wait_req(mjhz_t* mj)
 {
     int i;
-
-    if (!mj)
-        return;
     for (i = 0; i < mj->player_num; ++i) {
+        mj->players[i].wait_chi = 0;
+        mj->players[i].wait_peng = 0;
+        mj->players[i].wait_gang = 0;
+        mj->players[i].wait_hu = 0;
         mj->players[i].req_chi = 0;
         mj->players[i].req_chi2 = 0;
         mj->players[i].req_peng = 0;
@@ -235,12 +236,8 @@ void mjhz_start(mjhz_t* mj)
     mj->discarded_no = -1;
     mj->gang_pai = 0;
 
-    _reset_req(mj);
+    _reset_wait_req(mj);
     for (i = 0; i < MJHZ_MAX_PLAYERS; ++i) {
-        mj->players[i].wait_hu = 0;
-        mj->players[i].wait_chi = 0;
-        mj->players[i].wait_gang = 0;
-        mj->players[i].wait_peng = 0;
         memset(mj->players[i].pai_peng, 0,
                sizeof(mj->players[i].pai_peng));
         memset(mj->players[i].pai_gang, 0,
@@ -393,6 +390,7 @@ int mjhz_pickup(mjhz_t* mj, int is_gang)
         /* 流局 */
         return -2;
     }
+    _reset_wait_req(mj);
     mj->gang_pai = 0;
     if (is_gang) {
         pai = mj->deck[mj->deck_deal_gang];
@@ -424,22 +422,26 @@ int mjhz_pickup(mjhz_t* mj, int is_gang)
     return 1;
 }
 
-int mjhz_discard(mjhz_t* mj, int pai_id)
+int mjhz_discard(mjhz_t* mj, int player_no, int pai_id)
 {
     int i,n,flag;
     int no;
 
     if (!mj)
         return -1;
-    if (pai_id < PAI_1W || pai_id > PAI_BAI)
-        return -1;
     if (mj->game_state != GAME_PLAY) {
         if (mj->debug)
             printf("discard pai but game state not play.\n");
         return -2;
     }
-    no = mj->curr_player_no;
+    if (mj->logic_state != lsDiscard)
+        return -3;
+    if (player_no != mj->curr_player_no)
+        return -4;
+    if (pai_id < PAI_1W || pai_id > PAI_BAI)
+        return -5;
 
+    no = mj->curr_player_no;
     /* 有效检查并删除这张牌 */
     n = -1;
     for (i = 0; i < MJHZ_MAX_HAND; ++i){
@@ -537,7 +539,6 @@ void mjhz_referee(mjhz_t *mj)
     }
 
     /* 下家抓牌 */
-    _reset_req(mj);
     mjhz_next_player(mj);
     if (mjhz_pickup(mj, 0) == -2) {
         /* 流局 */
@@ -1036,7 +1037,7 @@ int mjhz_req_hu(mjhz_t* mj, int player_no)
 int mjhz_chi(mjhz_t* mj, int player_no, int pai1, int pai2)
 {
     int m1,m2,m3,temp;
-    int i,r,set_idx;
+    int i,r;
     mjpai_t t1,t2,t3;
     mjhz_player_t* player;
 
@@ -1064,50 +1065,43 @@ int mjhz_chi(mjhz_t* mj, int player_no, int pai1, int pai2)
         m2 = temp;
     }
     if ((m2 - m1) != 1)
-        return 0;
+        return -100;
     if ((m3 - m2) != 1)
-        return 0;
+        return -100;
     mjpai_init_id(&t1, m1);
     mjpai_init_id(&t2, m2);
     mjpai_init_id(&t3, m3);
     if (!(t1.suit == t2.suit && t1.suit == t3.suit)) {
-        return 0;
+        return -101;
     }
-    set_idx = -1;
-    for (i = 0; i < MJHZ_MAX_MELD; ++i) {
-        if (player->meld[i].type == 0) {
-            /* unused */
-            set_idx = i;
-            break;
-        }
-    }
-    if (set_idx == -1) {
-        if (mj->debug)
-            printf("players meld overflowed!\n");
-    }
-    player->meld[set_idx].pai_id = mj->discard_pai;
+    if (player->meld_index >= MJHZ_MAX_MELD)
+        return -102;
+
+    i = player->meld_index;
+    player->meld[i].pai_id = mj->discard_pai;
     if (m1 == mj->discard_pai) {
-        player->meld[set_idx].type = meldChiLow;
+        player->meld[i].type = meldChiLow;
         mj_delete(player->hand, MJHZ_MAX_HAND, m2);
         player->hand_js[m2]--;
         mj_delete(player->hand, MJHZ_MAX_HAND, m3);
         player->hand_js[m3]--;
     }
     else if (m2 == mj->discard_pai) {
-        player->meld[set_idx].type = meldChiMiddle;
+        player->meld[i].type = meldChiMiddle;
         mj_delete(player->hand, MJHZ_MAX_HAND, m1);
         player->hand_js[m1]--;
         mj_delete(player->hand, MJHZ_MAX_HAND, m3);
         player->hand_js[m3]--;
     }
     else {
-        player->meld[set_idx].type = meldChiUpper;
+        player->meld[i].type = meldChiUpper;
         mj_delete(player->hand, MJHZ_MAX_HAND, m1);
         player->hand_js[m1]--;
         mj_delete(player->hand, MJHZ_MAX_HAND, m2);
         player->hand_js[m2]--;
     }
     mj_trim(player->hand, MJHZ_MAX_HAND);
+    _reset_wait_req(mj);
     mj->curr_player_no = player_no;
     mj->discard_pai = 0;
     if (mj->pf_event)
@@ -1123,8 +1117,7 @@ int mjhz_peng(mjhz_t* mj, int player_no)
 
     r_no = _check_peng(mj, player_no);
     if (r_no < 0)
-        return -100;
-
+        return r_no;
     player = &mj->players[player_no];
     if (player->hand_js[mj->discard_pai] < 2)
         return -101;
@@ -1132,6 +1125,7 @@ int mjhz_peng(mjhz_t* mj, int player_no)
         if (mj->debug)
             printf("players meld overflowed!\n");
     }
+
     /* take the discarded tile */
     if (mj->player_num == 2) {
         player->meld[player->meld_index].type = meldPengOpposit;
@@ -1155,10 +1149,7 @@ int mjhz_peng(mjhz_t* mj, int player_no)
               mj->discard_pai);
     player->hand_js[mj->discard_pai] -= 2;
     mj_trim(player->hand, MJHZ_MAX_HAND);
-    player->wait_chi = 0;
-    player->wait_peng = 0;
-    player->wait_gang = 0;
-    player->wait_hu = 0;
+    _reset_wait_req(mj);
 
     mj->curr_player_no = player_no;
     mj->logic_state = lsDiscard;
@@ -1184,7 +1175,6 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
     if (pai == mj->joker)
         return -3;
     player = &mj->players[player_no];
-
     if (player->meld_index >= MJHZ_MAX_MELD) {
         if (mj->debug)
             printf("players meld overflowed!\n");
@@ -1253,8 +1243,7 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
         mj->discarded_no = -1;
     }
     mj_trim(player->hand, MJHZ_MAX_HAND);
-    player->wait_gang = 0;
-    player->wait_hu = 0;
+    _reset_wait_req(mj);
 
     mj->curr_player_no = player_no;
     mj->logic_state = lsDiscard;
@@ -1267,7 +1256,6 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
 
 int mjhz_hu(mjhz_t* mj, int player_no)
 {
-    int i;
     mjhz_player_t* player;
 
     if (!mj)
@@ -1288,13 +1276,7 @@ int mjhz_hu(mjhz_t* mj, int player_no)
     }
     mj->hu_player_no = player_no;
     mj->game_state = GAME_END;
-    _reset_req(mj);
-    for (i = 0; i < mj->player_num; ++i) {
-        mj->players[i].wait_chi = 0;
-        mj->players[i].wait_peng = 0;
-        mj->players[i].wait_gang = 0;
-        mj->players[i].wait_hu = 0;
-    }
+    _reset_wait_req(mj);
 
     /* 番计算 */
     player->hu.fan = 0;

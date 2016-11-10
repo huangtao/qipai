@@ -114,7 +114,7 @@ void mjhz_start(mjhz_t* mj);
 void mjhz_sort(int* pais, int len);
 
 /* 出牌(弃牌) */
-int mjhz_discard(mjhz_t* mj, int pai_id);
+int mjhz_discard(mjhz_t* mj, int player_no, int pai_id);
 
 /* 判决,执行吃碰杠胡或者摸牌 */
 void mjhz_referee(mjhz_t* mj);
