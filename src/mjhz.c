@@ -425,7 +425,6 @@ int mjhz_pickup(mjhz_t* mj, int is_gang)
 int mjhz_discard(mjhz_t* mj, int player_no, int pai_id)
 {
     int i,n,flag;
-    int no;
 
     if (!mj)
         return -1;
@@ -441,11 +440,10 @@ int mjhz_discard(mjhz_t* mj, int player_no, int pai_id)
     if (pai_id < PAI_1W || pai_id > PAI_BAI)
         return -5;
 
-    no = mj->curr_player_no;
     /* 有效检查并删除这张牌 */
     n = -1;
     for (i = 0; i < MJHZ_MAX_HAND; ++i){
-        if (mj->players[no].hand[i] == pai_id) {
+        if (mj->players[player_no].hand[i] == pai_id) {
             n = i;
             break;
         }
@@ -456,23 +454,23 @@ int mjhz_discard(mjhz_t* mj, int player_no, int pai_id)
         }
         return -4;
     } else {
-        mj->players[no].hand[n] = 0;
-        mj->players[no].hand_js[pai_id]--;
+        mj->players[player_no].hand[n] = 0;
+        mj->players[player_no].hand_js[pai_id]--;
     }
     /* 财飘处理 */
     if (pai_id == mj->joker)
-        mj->players[no].hu.cai_piao++;
+        mj->players[player_no].hu.cai_piao++;
     else
-        mj->players[no].hu.cai_piao = 0;
+        mj->players[player_no].hu.cai_piao = 0;
     mj->discard_pai = pai_id;
-    mj->discarded_no = no;
-    mj_trim(mj->players[no].hand, MJHZ_MAX_HAND);
+    mj->discarded_no = player_no;
+    mj_trim(mj->players[player_no].hand, MJHZ_MAX_HAND);
     mj->logic_state = lsTake;
 
     /* 判定吃碰杠胡 */
     flag = 0;
     for (i = 0; i < mj->player_num; ++i) {
-        if (i != no) {
+        if (i != player_no) {
             flag |= mjhz_can_hu(mj, i);
             flag |= mjhz_can_gang(mj, i);
             flag |= mjhz_can_peng(mj, i);
