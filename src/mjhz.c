@@ -170,6 +170,7 @@ void mjhz_init(mjhz_t* mj, int mode, int player_num)
 
     memset(mj, 0, sizeof(mjhz_t));
     mj->enable_chi = 1;
+    mj->enable_qg = 0;  /* 现在没有抢杠了 */
     mj->enable_3tan = 1;
     if (mode == GAME_MODE_SERVER)
         mj->mode = GAME_MODE_SERVER;
@@ -238,6 +239,7 @@ void mjhz_start(mjhz_t* mj)
 
     _reset_wait_req(mj);
     for (i = 0; i < MJHZ_MAX_PLAYERS; ++i) {
+        mj->players[i].keep_gang = 0;
         memset(mj->players[i].pai_peng, 0,
                sizeof(mj->players[i].pai_peng));
         memset(mj->players[i].pai_gang, 0,
@@ -480,6 +482,7 @@ int mjhz_discard(mjhz_t* mj, int player_no, int pai_id)
             mj->players[i].wait_gang = 0;
             mj->players[i].wait_peng = 0;
             mj->players[i].wait_chi = 0;
+            mj->players[i].pass_hu = 0;
             memset(mj->players[i].pai_peng, 0,
                    sizeof(mj->players[i].pai_peng));
             memset(mj->players[i].pai_gang, 0,
@@ -516,7 +519,7 @@ void mjhz_referee(mjhz_t *mj)
     /* 杠 */
     for (i = 0; i < mj->player_num; ++i) {
         if (mj->players[i].req_gang > 0) {
-            mjhz_gang(mj, i, mj->gang_pai);
+            mjhz_gang(mj, i, mj->discard_pai);
             return;
         }
     }
@@ -648,7 +651,7 @@ int mjhz_can_gang(mjhz_t* mj, int player_no)
         /* 轮到我且弃牌阶段，暗杠或者加杠 */
         /* 有没有暗杠 */
         for (i = 1; i < MJHZ_LEN_JS; i++) {
-            if (player->hand_js[i] == 4) {
+            if (player->hand_js[i] == 4 && i != mj->joker) {
                 player->pai_gang[num++] = i;
             }
         }
@@ -779,6 +782,9 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
 
     n_joker = 0;
     memcpy(js, player->hand_js, sizeof(js));
+    /* 漏胡后不能胡 */
+    if (player->pass_hu > 0)
+        return 0;
     if (mj->discard_pai != 0) {
         /* 配置开关 */
         if (mj->enable_dian_hu)
@@ -789,14 +795,16 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
         /* 三老庄才能捉冲 */
         if (mj->lao_z < 3)
             return 0;
-        /* 漏胡后不能胡 */
-        if (player->pass_hu > 0)
-            return 0;
         /* 闲家之间不能捉 */
         if (player_no != mj->dealer_no &&
                 mj->discarded_no != mj->dealer_no)
             return 0;
         js[mj->discard_pai]++;
+    } else if (mj->gang_pai != 0) {
+        /* 抢杠 */
+        if (mj->gang_pai == mj->joker)
+            return 0;
+        js[mj->gang_pai]++;
     } else {
         /* 自摸 */
         pai_takes = player->hand[MJHZ_MAX_HAND-1];
@@ -988,13 +996,15 @@ int mjhz_req_gang(mjhz_t* mj, int player_no, int pai)
         return -3;
     if (pai == mj->joker)
         return -4;
+    if (pai < PAI_1W && pai >= PAI_BAI)
+        return -5;
     player = &mj->players[player_no];
     if (player->wait_gang == 0)
-        return -5;
+        return -6;
     if (mj->logic_state == lsDiscard) {
         r = mjhz_gang(mj, player_no, pai);
         if (r < 0)
-            return r;
+            return (r-100);
     } else {
         player->req_gang = 1;
         if (_is_all_select(mj))
@@ -1163,8 +1173,9 @@ int mjhz_peng(mjhz_t* mj, int player_no)
 /* 杠 */
 int mjhz_gang(mjhz_t* mj, int player_no, int pai)
 {
-    int i,peng_idx;
+    int i,can_qg,peng_idx;
     mjhz_player_t* player;
+    int have_qg;
 
     if (!mj)
         return -1;
@@ -1178,6 +1189,7 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
             printf("players meld overflowed!\n");
     }
 
+    can_qg = 0;
     if (mj->logic_state == lsDiscard) {
         if (mj->curr_player_no != player_no)
             return -4;
@@ -1191,6 +1203,9 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
             mj_delete(player->hand, MJHZ_MAX_HAND, pai);
             mj_delete(player->hand, MJHZ_MAX_HAND, pai);
             player->hand_js[pai] = 0;
+            player->keep_gang++;
+            mj->gang_pai = pai;
+            /* 不能抢杠 */
         } else if (player->hand_js[pai] == 1) {
             /* 找到面子 */
             peng_idx = -1;
@@ -1217,6 +1232,9 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
                 player->meld[peng_idx].type = meldGangAddRight;
             mj_delete(player->hand, MJHZ_MAX_HAND, pai);
             player->hand_js[pai] = 0;
+            player->keep_gang++;
+            mj->gang_pai = pai;
+            can_qg = 1;
         } else {
             if (mj->debug)
                 printf("players gang unknow situation!\n");
@@ -1235,19 +1253,41 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
         mj_delete(player->hand, MJHZ_MAX_HAND, pai);
         mj_delete(player->hand, MJHZ_MAX_HAND, pai);
         mj->players[player_no].hand_js[pai] = 0;
-        player->wait_chi = 0;
-        player->wait_peng = 0;
+        player->keep_gang = 0;
+        mj->gang_pai = pai;
+        can_qg = 1;
         mj->discard_pai = 0;
         mj->discarded_no = -1;
     }
     mj_trim(player->hand, MJHZ_MAX_HAND);
     _reset_wait_req(mj);
-
-    mj->curr_player_no = player_no;
-    mj->logic_state = lsDiscard;
-    mj->sec_wait = WAITTIME_DISCARD;
     if (mj->pf_event)
         mj->pf_event(mjEventGang, player_no, 0);
+    have_qg = 0;
+    if (can_qg && mj->enable_qg) {
+        /* 抢杠判断 */
+        for (i = 0; i < mj->player_num; ++i) {
+            if (i == player_no) continue;
+            mjhz_can_hu(mj, i);
+            if (mj->players[i].wait_hu &&
+                    !mj->players[i].hu.is_baotou) {
+                /* 爆头不能抢 */
+                mj->players[i].hu.is_qg = 1;
+                have_qg = 1;
+            }
+        }
+    }
+    if (!have_qg) {
+        mjhz_pickup(mj, 1);
+        if (mj->game_state == GAME_PLAY) {
+            mj->curr_player_no = player_no;
+            mj->logic_state = lsDiscard;
+            mj->sec_wait = WAITTIME_DISCARD;
+        }
+    } else {
+        mj->sec_wait = WAITTIME_TAKE;
+    }
+    time(&mj->time_turn);
 
     return 1;
 }

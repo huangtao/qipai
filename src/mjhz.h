@@ -29,6 +29,7 @@ typedef struct mjhz_hu_s {
     int pair7_h4;	/* 7对子包含4个的数量 */
     int is_baotou;	/* 爆头 */
     int is_gk;      /* 杠开 */
+    int is_qg;      /* 抢杠 */
     int cai_piao;	/* 财飘次数 */
 }mjhz_hu_t;
 
@@ -46,6 +47,7 @@ typedef struct mjhz_player_s {
     int meld_index;
     int pai_peng[MJHZ_LEN_JS];          /* 不能弃先碰后,!=1不能碰*/
     int pai_gang[4];    /* 杠牌信息 */
+    int keep_gang;      /* 连续杠 */
     int pass_hu;        /* 漏胡标记 */
     mjhz_hu_t hu;       /* 胡牌信息 */
     int wait_hu;        /* 能胡,等待胡牌 */
@@ -88,6 +90,7 @@ typedef struct mjhz_s {
     int enable_chi;         /* 能否吃 */
     int enable_dian_hu;     /* 能否点和(点炮、捉冲) */
     int enable_lou_hu;      /* 漏胡(弃先胡后) */
+    int enable_qg;          /* 能否抢杠 */
     int enable_3tan;        /* 吃碰杠3摊 */
     int enable_dl;          /* 笃老:两个骰子一样(>9)算三老庄 */
     int lao_z;              /* 老庄 */
