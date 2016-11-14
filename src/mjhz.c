@@ -776,15 +776,15 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
         return 0;
     if (player_no >= mj->player_num)
         return 0;
+
     player = &mj->players[player_no];
     player->wait_hu = 0;
     memset(&player->hu, 0, sizeof(mjhz_hu_t));
-
-    n_joker = 0;
-    memcpy(js, player->hand_js, sizeof(js));
     /* 漏胡后不能胡 */
     if (player->pass_hu > 0)
         return 0;
+    n_joker = 0;
+    memcpy(js, player->hand_js, sizeof(js));
     if (mj->discard_pai != 0) {
         /* 配置开关 */
         if (mj->enable_dian_hu)
