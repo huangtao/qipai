@@ -170,7 +170,8 @@ void mjhz_init(mjhz_t* mj, int mode, int player_num)
 
     memset(mj, 0, sizeof(mjhz_t));
     mj->enable_chi = 1;
-    mj->enable_qg = 0;  /* 现在没有抢杠了 */
+    mj->enable_qg = 0;          /* 现在没有抢杠了 */
+    mj->enable_dian_hu = 0;     /* 现在没有捉冲了 */
     mj->enable_3tan = 1;
     if (mode == GAME_MODE_SERVER)
         mj->mode = GAME_MODE_SERVER;
