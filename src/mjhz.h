@@ -63,7 +63,6 @@ typedef struct mjhz_player_s {
 }mjhz_player_t;
 
 typedef struct mjhz_s {
-    int debug;              /* output debug info */
     int mode;               /* client or server mode */
     int game_state;         /* game state */
     int logic_state;        /* mj logic state */
@@ -79,6 +78,8 @@ typedef struct mjhz_s {
     int gang_pai;           /* 当前杠牌 */
     int joker;              /* 百搭(财神) */
     int flag_liu;           /* 流局标记 */
+    int debug;              /* output debug info */
+    int step_by_step;       /* for debug */
 
     int dice[2];
     int deck_all_num;

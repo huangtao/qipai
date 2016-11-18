@@ -540,6 +540,9 @@ void mjhz_referee(mjhz_t *mj)
         }
     }
 
+    if (mj->step_by_step)
+        return;
+
     /* 下家抓牌 */
     mjhz_next_player(mj);
     if (mjhz_pickup(mj, 0) == -2) {
