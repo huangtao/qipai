@@ -17,6 +17,7 @@ void _reset_wait_req(mjhz_t* mj)
         mj->players[i].req_peng = 0;
         mj->players[i].req_gang = 0;
         mj->players[i].req_hu = 0;
+        mj->players[i].req_pass = 0;
     }
 }
 
