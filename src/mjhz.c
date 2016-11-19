@@ -876,6 +876,8 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
             player->wait_hu = 1;
         }
         return player->wait_hu;
+    } else {
+        player->hu.is_pair7 = 0;
     }
 
     /* 是否爆头 */
