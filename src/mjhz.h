@@ -31,6 +31,7 @@ typedef struct mjhz_hu_s {
     int is_gk;      /* 杠开 */
     int is_qg;      /* 抢杠 */
     int cai_piao;	/* 财飘次数 */
+    int pao_no;     /* 点炮玩家,-1表示自摸 */
 }mjhz_hu_t;
 
 typedef struct mjhz_player_s {

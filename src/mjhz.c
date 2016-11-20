@@ -242,6 +242,8 @@ void mjhz_start(mjhz_t* mj)
     _reset_wait_req(mj);
     for (i = 0; i < MJHZ_MAX_PLAYERS; ++i) {
         mj->players[i].keep_gang = 0;
+        memset(&mj->players[i].hu, 0,
+               sizeof(mjhz_hu_t));
         memset(mj->players[i].pai_peng, 0,
                sizeof(mj->players[i].pai_peng));
         memset(mj->players[i].pai_gang, 0,
@@ -1312,12 +1314,14 @@ int mjhz_hu(mjhz_t* mj, int player_no)
     player = &mj->players[player_no];
     if (mj->curr_player_no == player_no) {
         /* 自摸、杠开 */
+        player->hu.pao_no = -1;
     } else {
         /* 点炮 */
         if (!mj->enable_dian_hu)
             return -4;
         player->hand[MJHZ_MAX_HAND-1] = mj->discard_pai;
         player->hand_js[mj->discard_pai]++;
+        player->hu.pao_no = mj->discarded_no;
     }
     mj->hu_player_no = player_no;
     mj->game_state = GAME_END;
