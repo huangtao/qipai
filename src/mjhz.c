@@ -774,7 +774,7 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
     int i;
     int n_pai,n_4;
     int n_joker,left_joker;
-    int pai_takes; /* 刚刚摸到的牌 */
+    int pai_pickup; /* 刚刚摸到的牌 */
     int js[MJHZ_LEN_JS];
     int js_joker[MJHZ_LEN_JS];
     mjhz_player_t *player;
@@ -791,10 +791,11 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
     if (player->pass_hu > 0)
         return 0;
     n_joker = 0;
+    pai_pickup = PAI_EMPTY;
     memcpy(js, player->hand_js, sizeof(js));
     if (mj->discard_pai != 0) {
         /* 配置开关 */
-        if (mj->enable_dian_hu)
+        if (!mj->enable_dian_hu)
             return 0;
         /* 捉冲，财神不能捉。 */
         if (mj->discard_pai == mj->joker)
@@ -814,7 +815,7 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
         js[mj->gang_pai]++;
     } else {
         /* 自摸 */
-        pai_takes = player->hand[MJHZ_MAX_HAND-1];
+        pai_pickup = player->hand[MJHZ_MAX_HAND-1];
     }
     n_joker = left_joker = js[PAI_BAI];
     js[PAI_BAI] = 0;
@@ -856,7 +857,8 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
         /* 判定爆头 */
         if (n_joker > 0) {
             left_joker = n_joker - 1;
-            js_joker[pai_takes]--;
+            if (pai_pickup != PAI_EMPTY)
+                js_joker[pai_pickup]--;
             player->hu.is_baotou = 1;
             for (i = 1; i < MJHZ_LEN_JS; ++i) {
                 if (js_joker[i] % 2 == 0)
@@ -886,10 +888,12 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
     if (n_joker > 0) {
         memcpy(js_joker, js, sizeof(js_joker));
         left_joker = n_joker - 1;
-        if (pai_takes == mj->joker)
-            left_joker--;
-        else
-            js_joker[pai_takes]--;
+        if (pai_pickup != PAI_EMPTY) {
+            if (pai_pickup == mj->joker)
+                left_joker--;
+            else
+                js_joker[pai_pickup]--;
+        }
         if (mjhz_all_melded_joker(js_joker, left_joker)) {
             player->wait_hu = 1;
             player->hu.is_baotou = 1;
