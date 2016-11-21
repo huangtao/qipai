@@ -241,6 +241,9 @@ void mjhz_start(mjhz_t* mj)
 
     _reset_wait_req(mj);
     for (i = 0; i < MJHZ_MAX_PLAYERS; ++i) {
+        mj->players[i].meld_index = 0;
+        memset(&mj->players[i].meld, 0,
+               sizeof(mj->players[i].meld));
         mj->players[i].keep_gang = 0;
         memset(&mj->players[i].hu, 0,
                sizeof(mjhz_hu_t));
@@ -400,13 +403,11 @@ int mjhz_pickup(mjhz_t* mj, int is_gang)
     mj->gang_pai = 0;
     if (is_gang) {
         pai = mj->deck[mj->deck_deal_gang];
-        mj->deck[mj->deck_deal_gang] = 0;
         mj->deck_deal_gang--;
         if (mj->deck_deal_gang < 0)
             mj->deck_deal_gang += mj->deck_all_num;
     } else {
         pai = mj->deck[mj->deck_deal_index];
-        mj->deck[mj->deck_deal_index] = 0;
         mj->deck_deal_index++;
         if (mj->deck_deal_index >= mj->deck_all_num)
             mj->deck_deal_index = 0;
