@@ -241,10 +241,15 @@ void mjhz_start(mjhz_t* mj)
 
     _reset_wait_req(mj);
     for (i = 0; i < MJHZ_MAX_PLAYERS; ++i) {
+        memset(mj->players[i].hand, 0,
+               sizeof(mj->players[i].hand));
+        memset(mj->players[i].hand_js, 0,
+               sizeof(mj->players[i].hand_js));
         mj->players[i].meld_index = 0;
         memset(&mj->players[i].meld, 0,
                sizeof(mj->players[i].meld));
         mj->players[i].keep_gang = 0;
+        mj->players[i].pass_hu = 0;
         memset(&mj->players[i].hu, 0,
                sizeof(mjhz_hu_t));
         memset(mj->players[i].pai_peng, 0,
@@ -411,6 +416,10 @@ int mjhz_pickup(mjhz_t* mj, int is_gang)
         mj->deck_deal_index++;
         if (mj->deck_deal_index >= mj->deck_all_num)
             mj->deck_deal_index = 0;
+        /* 重置弃胡弃碰 */
+        mj->players[mj->curr_player_no].pass_hu = 0;
+        memset(mj->players[mj->curr_player_no].pai_peng, 0,
+               sizeof(mj->players[mj->curr_player_no].pai_peng));
     }
     mj->deck_valid_num--;
     mj->players[mj->curr_player_no].hand[MJHZ_MAX_HAND-1] = pai;
@@ -487,9 +496,6 @@ int mjhz_discard(mjhz_t* mj, int player_no, int pai_id)
             mj->players[i].wait_gang = 0;
             mj->players[i].wait_peng = 0;
             mj->players[i].wait_chi = 0;
-            mj->players[i].pass_hu = 0;
-            memset(mj->players[i].pai_peng, 0,
-                   sizeof(mj->players[i].pai_peng));
             memset(mj->players[i].pai_gang, 0,
                    sizeof(mj->players[i].pai_gang));
         }
