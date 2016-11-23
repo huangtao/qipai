@@ -95,6 +95,8 @@ typedef struct mjhz_s {
     int enable_qg;          /* 能否抢杠 */
     int enable_3tan;        /* 吃碰杠3摊 */
     int enable_dl;          /* 笃老:两个骰子一样(>9)算三老庄 */
+    int enable_cp_gang;     /* 财飘情况下其他人能否杠 */
+    int cai_piao_no;        /* 记录财飘玩家号 */
     int lao_z;              /* 老庄 */
 
     time_t time_start;      /* 游戏开始时间 */
