@@ -1285,6 +1285,7 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
         mj->discarded_no = -1;
     }
     mj_trim(player->hand, MJHZ_MAX_HAND);
+    mj->curr_player_no = player_no;
     _reset_wait_req(mj);
     if (mj->pf_event)
         mj->pf_event(mjEventGang, player_no, 0);
@@ -1305,7 +1306,6 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
     if (!have_qg) {
         mjhz_pickup(mj, 1);
         if (mj->game_state == GAME_PLAY) {
-            mj->curr_player_no = player_no;
             mj->logic_state = lsDiscard;
             mj->sec_wait = WAITTIME_DISCARD;
         }
