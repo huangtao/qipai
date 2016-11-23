@@ -892,15 +892,13 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
     }
 
     /* 是否爆头 */
-    if (n_joker > 0) {
+    if (n_joker > 0 && pai_pickup != PAI_EMPTY) {
         memcpy(js_joker, js, sizeof(js_joker));
         left_joker = n_joker - 1;
-        if (pai_pickup != PAI_EMPTY) {
-            if (pai_pickup == mj->joker)
-                left_joker--;
-            else
-                js_joker[pai_pickup]--;
-        }
+        if (pai_pickup == mj->joker)
+            left_joker--;
+        else
+            js_joker[pai_pickup]--;
         if (mjhz_all_melded_joker(js_joker, left_joker)) {
             player->wait_hu = 1;
             player->hu.is_baotou = 1;
@@ -1195,7 +1193,7 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
 {
     int i,can_qg,peng_idx;
     mjhz_player_t* player;
-    int have_qg;
+    int relative,have_qg;
 
     if (!mj)
         return -1;
@@ -1266,7 +1264,14 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
             return -7;
         if (pai != mj->discard_pai)
             return -8;
-        player->meld[player->meld_index].type = meldGang;
+        relative = mj->pf_relative_seat(
+                    player_no, mj->discarded_no);
+        if (relative == stLeft)
+            player->meld[player->meld_index].type = meldGangLeft;
+        else if (relative == stRight)
+            player->meld[player->meld_index].type = meldGangRight;
+        else
+            player->meld[player->meld_index].type = meldGangOpposit;
         player->meld[player->meld_index].pai_id = pai;
         player->meld_index++;
         mj_delete(player->hand, MJHZ_MAX_HAND, pai);

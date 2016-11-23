@@ -147,9 +147,11 @@ int mj_hornor_melded(int* array, int* num_joker)
         if (js[i] % 3 == 1) {
             if (left_joker < 2)
                 return 0;
+            left_joker -= 2;
         } else if (js[i] % 3 == 2) {
             if (left_joker == 0)
                 return 0;
+            left_joker--;
         }
         js[i] = 0;
     }
