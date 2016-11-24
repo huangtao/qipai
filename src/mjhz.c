@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 #include "mj_algo.h"
 
 void _reset_wait_req(mjhz_t* mj)
@@ -112,8 +113,11 @@ int _check_chi(mjhz_t* mj, int player_no, int pai1, int pai2)
         return -6;
     if (mj->discard_pai == mj->joker)
         return -7;
-    if (mj->cai_piao_no != -1)
-        return -8;
+    if (mj->cai_piao_no != -1) {
+        /* 有人财飘 */
+        if (mj->cai_piao_no != player_no)
+            return -8;
+    }
 
     player = &mj->players[player_no];
     st = mj->pf_seat_no(player_no, stLeft);
@@ -160,8 +164,10 @@ int _check_peng(mjhz_t* mj, int player_no)
         return -5;
     if (mj->discard_pai == mj->joker)
         return -6;
-    if (mj->cai_piao_no != -1)
-        return -7;
+    if (mj->cai_piao_no != -1) {
+        if (mj->cai_piao_no != player_no)
+            return -7;
+    }
 
     return 1;
 }
@@ -174,6 +180,7 @@ void mjhz_init(mjhz_t* mj, int mode, int player_num)
         return;
 
     memset(mj, 0, sizeof(mjhz_t));
+    mj->lao_z = 1;
     mj->enable_chi = 1;
     mj->enable_qg = 0;          /* 现在没有抢杠了 */
     mj->enable_dian_hu = 0;     /* 现在没有捉冲了 */
@@ -671,8 +678,10 @@ int mjhz_can_gang(mjhz_t* mj, int player_no)
     num = 0;
     memset(player->pai_gang, 0, sizeof(int) * 4);
     if (mj->cai_piao_no != -1) {
-        if (!mj->enable_cp_gang)
-            return 0;
+        if (!mj->enable_cp_gang) {
+            if (mj->cai_piao_no != player_no)
+                return 0;
+        }
     }
 
     if (mj->curr_player_no == player_no &&
@@ -822,9 +831,6 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
         /* 捉冲，财神不能捉。 */
         if (mj->discard_pai == mj->joker)
             return 0;
-        /* 财飘期间不能捉冲 */
-        if (mj->cai_piao_no != -1)
-            return 0;
         /* 三老庄才能捉冲 */
         if (mj->lao_z < 3)
             return 0;
@@ -832,6 +838,11 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
         if (player_no != mj->dealer_no &&
                 mj->discarded_no != mj->dealer_no)
             return 0;
+        /* 非财飘选手不能捉冲 */
+        if (mj->cai_piao_no != -1) {
+            if (mj->cai_piao_no != player_no)
+                return 0;
+        }
         js[mj->discard_pai]++;
     } else if (mj->gang_pai != 0) {
         /* 抢杠 */
@@ -1219,6 +1230,13 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
         return -2;
     if (pai == mj->joker)
         return -3;
+    if (mj->cai_piao_no != -1) {
+        if (!mj->enable_cp_gang) {
+            if (mj->cai_piao_no != player_no)
+                return 0;
+        }
+    }
+
     player = &mj->players[player_no];
     if (player->meld_index >= MJHZ_MAX_MELD) {
         if (mj->debug)
@@ -1333,6 +1351,7 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
 
 int mjhz_hu(mjhz_t* mj, int player_no)
 {
+    int i,bei,x_bei;
     mjhz_player_t* player;
 
     if (!mj)
@@ -1345,8 +1364,7 @@ int mjhz_hu(mjhz_t* mj, int player_no)
     if (mj->curr_player_no == player_no) {
         /* 自摸、杠开 */
         player->hu.pao_no = -1;
-        if (player->keep_gang > 0)
-            player->hu.is_gk = 1;
+        player->hu.gang = player->keep_gang;
     } else {
         /* 点炮 */
         if (!mj->enable_dian_hu)
@@ -1368,22 +1386,37 @@ int mjhz_hu(mjhz_t* mj, int player_no)
     }
     if (player->hu.is_baotou)
         player->hu.fan++;
-    if (player->hu.is_gk) {
-        if (player->hu.cai_piao) {
-            /* 飘杠(3番) */
-            player->hu.fan += 3;
-            if (player->hu.cai_piao > 1) {
-                player->hu.fan +=
-                        player->hu.cai_piao - 1;
-            }
-        } else {
-            player->hu.fan += player->keep_gang;
-        }
-    } else {
-        player->hu.fan += player->hu.cai_piao;
-    }
+    if (player->hu.gang)
+        player->hu.fan += player->hu.gang;
     if (player->hu.cai_piao)
         player->hu.fan += player->hu.cai_piao;
+
+    bei = pow(2, player->hu.fan);
+    if (player_no == mj->dealer_no) {
+        mj->lao_z++;
+        if (mj->lao_z > 3)
+            mj->lao_z = 3;
+        for (i = 0; i < mj->player_num; ++i) {
+            if (i == mj->dealer_no) {
+                mj->players[i].win_lose =
+                        (mj->player_num - 1) * bei;
+            } else {
+                mj->players[i].win_lose = -1 * bei;
+            }
+        }
+    } else {
+        mj->lao_z = 1;
+        x_bei = bei / 2;
+        for (i = 0; i < mj->player_num; ++i) {
+            if (i == mj->dealer_no)
+                mj->players[i].win_lose = -1 * bei;
+            else if (i != player_no)
+                mj->players[i].win_lose = -1 * x_bei;
+        }
+        mj->players[player_no].win_lose =
+                bei + (mj->player_num - 2) * x_bei;
+    }
+
     if (mj->pf_event)
         mj->pf_event(mjEventHu, player_no, 0);
 
@@ -1403,6 +1436,8 @@ void mjhz_pass(mjhz_t *mj, int player_no)
         return;
 
     mj->players[player_no].req_pass = 1;
+    if (mj->players[player_no].wait_hu)
+        mj->players[player_no].pass_hu = 1;
     if (_is_all_select(mj))
         mjhz_referee(mj);
 }

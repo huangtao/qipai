@@ -6,7 +6,7 @@ int p4_relative_seat(int base, int target)
     return (seatRelative)((4 + target - base) % 4);
 }
 
-/* 获取上家、对家、下家的玩家编号(座位号) */
+/* 获取上家、对家、下家的选手编号(座位号) */
 int p4_seat_no(int base, seatRelative relative)
 {
     return (int)((base + (int)relative) % 4);

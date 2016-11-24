@@ -12,7 +12,7 @@ extern "C" {
 
 #include "mj.h"
 
-#define MJHZ_MAX_PLAYERS	4       /* 游戏最多玩家 */
+#define MJHZ_MAX_PLAYERS	4       /* 游戏最多选手 */
 #define MJHZ_MAX_HAND		14      /* 手上牌最大数量 */
 #define MJHZ_MAX_MELD       6       /* 面子最大数量 */
 #define MJHZ_DECK_PAIS      136     /* 杭州麻将麻将牌最大数量 */
@@ -25,21 +25,20 @@ extern "C" {
 typedef struct mjhz_hu_s {
     int fan;		/* 番数 */
     int is_tianhu;  /* 天胡 */
+    int is_baotou;	/* 爆头 */
+    int is_qg;      /* 抢杠 */
     int is_pair7;	/* 7对子 */
     int pair7_h4;	/* 7对子包含4个的数量 */
-    int is_baotou;	/* 爆头 */
-    int is_gk;      /* 杠开 */
-    int is_qg;      /* 抢杠 */
+    int gang;       /* 胡之前连杠数量 */
     int cai_piao;	/* 财飘次数 */
-    int pao_no;     /* 点炮玩家,-1表示自摸 */
+    int pao_no;     /* 点炮选手,-1表示自摸 */
 }mjhz_hu_t;
 
 typedef struct mjhz_player_s {
     int level;
     int state;
     int position;
-    int64_t score;
-    uint64_t gold;
+    int win_lose;
     int hand[MJHZ_MAX_HAND];            /* 手牌 */
     int hand_js[MJHZ_LEN_JS];           /* 手牌计数 */
     int discard[MJHZ_MAX_DISCARDED];    /* 舍牌(打出的牌) */
@@ -75,7 +74,7 @@ typedef struct mjhz_s {
     int curr_player_no;     /* current turn player no. */
     int hu_player_no;
     int discard_pai;        /* 当前打出的麻将牌 */
-    int discarded_no;       /* 弃牌玩家 */
+    int discarded_no;       /* 弃牌选手 */
     int gang_pai;           /* 当前杠牌 */
     int joker;              /* 百搭(财神) */
     int flag_liu;           /* 流局标记 */
@@ -96,11 +95,11 @@ typedef struct mjhz_s {
     int enable_3tan;        /* 吃碰杠3摊 */
     int enable_dl;          /* 笃老:两个骰子一样(>9)算三老庄 */
     int enable_cp_gang;     /* 财飘情况下其他人能否杠 */
-    int cai_piao_no;        /* 记录财飘玩家号 */
+    int cai_piao_no;        /* 记录财飘选手编号 */
     int lao_z;              /* 老庄 */
 
     time_t time_start;      /* 游戏开始时间 */
-    time_t time_turn;       /* 玩家回合开始时间 */
+    time_t time_turn;       /* 选手回合开始时间 */
     int sec_wait;           /* 当前操作总共等待时间(秒) */
 
     int deck[MJHZ_DECK_PAIS];                   /* deck mj pais */
