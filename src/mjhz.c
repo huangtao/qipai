@@ -433,7 +433,7 @@ int mjhz_pickup(mjhz_t* mj, int is_gang)
     mjhz_can_hu(mj, mj->curr_player_no);
     mjhz_can_gang(mj, mj->curr_player_no);
     if (mj->pf_event)
-        mj->pf_event(mjEventPickup, mj->curr_player_no, 0);
+        mj->pf_event(mjEventPickup, mj->curr_player_no, is_gang);
 
     return 1;
 }
