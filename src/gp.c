@@ -746,7 +746,7 @@ int gp_hint(gp_t* gp, card_t* cards, int len, int flag)
         if (ret == 0) {
             /* 对面少于5张的时候有炸就炸 */
             n = cards_num(gp->players[gp->largest_player_no].cards, GP_MAX_CARDS);
-            /* flag == 1 代表玩家需要提示 */
+            /* flag == 1 代表选手需要提示 */
             if (flag || n <= 5) {
                 /* 有炸弹吗 */
                 memset(&htype, 0, sizeof(hand_type));

@@ -154,7 +154,7 @@ typedef enum meld_type {
 /* 游戏开始后的逻辑状态 */
 typedef enum mj_logic_state {
     lsDiscard,  /* 弃牌(打出牌) */
-    lsTake      /* 抓牌(包括玩家吃碰杠胡) */
+    lsTake      /* 抓牌(包括选手吃碰杠胡) */
 }mjLogicState;
 
 /* 麻将事件 */
