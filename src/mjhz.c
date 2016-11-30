@@ -817,7 +817,12 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
 
     player = &mj->players[player_no];
     player->wait_hu = 0;
-    memset(&player->hu, 0, sizeof(mjhz_hu_t));
+    player->hu.fan = 0;
+    player->hu.is_baotou = 0;
+    player->hu.is_pair7 = 0;
+    player->hu.is_qg = 0;
+    player->hu.is_tianhu = 0;
+    player->hu.pair7_h4 = 0;
     /* 漏胡后不能胡 */
     if (player->pass_hu > 0)
         return 0;
