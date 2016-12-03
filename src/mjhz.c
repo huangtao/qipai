@@ -341,9 +341,9 @@ void mjhz_start(mjhz_t* mj)
         /* 初始化，真实数据需要收到服务器数据赋值。 */
         for (i = 0; i < MJHZ_MAX_PLAYERS; i++) {
             memset(mj->players[i].hand, 0,
-                   sizeof(int) * MJHZ_MAX_HAND);
+                   sizeof(mj->players[i].hand));
             memset(mj->players[i].discard, 0,
-                   sizeof(int) * MJHZ_MAX_DISCARDED);
+                   sizeof(mj->players[i].discard));
         }
         mj->dealer_no = -1;
         mj->first_player_no = -1;

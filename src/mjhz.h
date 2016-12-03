@@ -18,7 +18,7 @@ extern "C" {
 #define MJHZ_DECK_PAIS      136     /* 杭州麻将麻将牌最大数量 */
 #define MJHZ_MAX_PAITYPE    34      /* 杭州麻将使用34种牌(27张序数+7张字牌) */
 #define MJHZ_WALL_REMAIN    20      /* 长城保留的牌数 */
-#define MJHZ_MAX_DISCARDED  30      /* 记录打出的牌 */
+#define MJHZ_MAX_DISCARDED  20      /* 记录打出的牌 */
 #define MJHZ_LEN_JS         35      /* 用于计数 */
 
 /* mjhz hu info */
