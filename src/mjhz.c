@@ -617,21 +617,21 @@ int mjhz_can_chi(mjhz_t* mj, int player_no)
         pos1 = pos2 = pos3 = 1;
     }
     if (pos1) {
-        if (player->hand_js[pai.sign+1] > 0 &&
-                player->hand_js[pai.sign+2] > 0) {
-            chi_info &= 0x01;
+        if (player->hand_js[mj->discard_pai+1] > 0 &&
+                player->hand_js[mj->discard_pai+2] > 0) {
+            chi_info |= 0x01;
         }
     }
     if (pos2) {
-        if (player->hand_js[pai.sign-1] > 0 &&
-                player->hand_js[pai.sign+1] >0) {
-            chi_info &= 0x02;
+        if (player->hand_js[mj->discard_pai-1] > 0 &&
+                player->hand_js[mj->discard_pai+1] >0) {
+            chi_info |= 0x02;
         }
     }
     if (pos3) {
-        if (player->hand_js[pai.sign-1] > 0 &&
-                player->hand_js[pai.sign-2] >0) {
-            chi_info &= 0x04;
+        if (player->hand_js[mj->discard_pai-1] > 0 &&
+                player->hand_js[mj->discard_pai-2] >0) {
+            chi_info |= 0x04;
         }
     }
     player->wait_chi = chi_info;
@@ -991,21 +991,21 @@ int mjhz_req_chi(mjhz_t* mj, int player_no, int pai1, int pai2)
         pai1 = pai2;
         pai2 = temp;
     }
-    if (player->wait_chi & 0x01) {
-        if (pai1 != (mj->discard_pai + 1) ||
-                pai2 != (mj->discard_pai + 2))
+    if (pai1 == (mj->discard_pai + 1) &&
+            pai2 == (mj->discard_pai + 2))
+        if (!(player->wait_chi & 0x01))
             return -102;
-    }
-    if (player->wait_chi & 0x02) {
-        if (pai1 != (mj->discard_pai - 1) ||
-                pai2 != (mj->discard_pai + 1))
+
+    if (pai1 == (mj->discard_pai - 1) &&
+            pai2 == (mj->discard_pai + 1))
+        if (!(player->wait_chi & 0x02))
             return -102;
-    }
-    if (player->wait_chi & 0x04) {
-        if (pai1 != (mj->discard_pai - 2) ||
-                pai2 != (mj->discard_pai - 1))
+
+    if (pai1 == (mj->discard_pai - 2) &&
+            pai2 == (mj->discard_pai - 1))
+        if (!(player->wait_chi & 0x04))
             return -102;
-    }
+
     player->req_chi = pai1;
     player->req_chi2 = pai2;
     if (_is_all_select(mj))
@@ -1160,10 +1160,15 @@ int mjhz_chi(mjhz_t* mj, int player_no, int pai1, int pai2)
         mj_delete(player->hand, MJHZ_MAX_HAND, m2);
         player->hand_js[m2]--;
     }
+    player->meld_index++;
     mj_trim(player->hand, MJHZ_MAX_HAND);
     _reset_wait_req(mj);
+
     mj->curr_player_no = player_no;
+    mj->logic_state = lsDiscard;
     mj->discard_pai = 0;
+    mj->discarded_no = -1;
+    mj->sec_wait = WAITTIME_DISCARD;
     if (mj->pf_event)
         mj->pf_event(mjEventChi, player_no, 0);
 
