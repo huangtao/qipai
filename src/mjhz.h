@@ -83,7 +83,6 @@ typedef struct mjhz_s {
 
     int dice[2];
     int deck_all_num;
-    int deck_deal_start;    /* deal start position */
     int deck_deal_end;      /* where deal end position */
     int deck_deal_index;    /* current deal card index */
     int deck_deal_gang;     /* deal when gang */

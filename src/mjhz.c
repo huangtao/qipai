@@ -281,11 +281,10 @@ void mjhz_start(mjhz_t* mj)
         seat = (mj->dealer_no + mj->player_num
                 - (mj->dice[0] + mj->dice[1]) % mj->player_num)
             % mj->player_num;
-        mj->deck_deal_start = seat * 17 * 2
+        mj->deck_deal_index = seat * 17 * 2
             + (mj->dice[0] + mj->dice[1]) * 2;
-        mj->deck_deal_index = mj->deck_deal_start;
-        mj->deck_deal_gang = mj->deck_deal_start - 1; /* 杠抓牌 */
-        mj->deck_deal_end = (mj->deck_deal_start + mj->deck_all_num - 20)
+        mj->deck_deal_gang = mj->deck_deal_index - 1; /* 杠抓牌 */
+        mj->deck_deal_end = (mj->deck_deal_index + mj->deck_all_num - 20)
                 % mj->deck_all_num;
 
         /* 逆时针,每人抓12张,庄家先抓,一次4张 */
