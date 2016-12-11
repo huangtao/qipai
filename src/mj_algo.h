@@ -12,7 +12,7 @@ extern "C" {
 #include "mj.h"
 
 /*
- * 用于判断一门是否全成面子
+ * 用于判断一门序数牌是否全成面子
  * array : 计数数组
  * start : 开始索引
  * num_joker : 财神数量(返回剩余数量)
@@ -25,6 +25,7 @@ int mj_range_melded(int* array, int start, int* num_joker);
  */
 int mj_hornor_melded(int* array, int* num_joker);
 
+/* 删除成面子的牌 */
 void _sign_meld_delete(int* array, int* num_joker);
 void _hornor_meld_delete(int* array, int* num_joker);
 

@@ -314,7 +314,7 @@ void mjhz_start(mjhz_t* mj)
         if (mj->deck_deal_index == mj->deck_all_num)
             mj->deck_deal_index = 0;
         mj->deck_valid_num = mj->deck_all_num -
-                13 * (mj->player_num - 1) + 14;
+                13 * (mj->player_num - 1) - 14;
 
         /* 初始化分析数据 */
         for (i = 0; i < mj->player_num; ++i) {
