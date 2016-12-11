@@ -1,4 +1,4 @@
-#include "qp_comm.h"
+#include "qp_common.h"
 
 /* 根据座位号获取相对位置(上家、对家、下家) */
 int p4_relative_seat(int base, int target)

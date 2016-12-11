@@ -16,7 +16,7 @@ SOURCES += ../src/card.c \
     ../src/mj.c \
     ../src/mj_algo.c \
     ../src/mjhz.c \
-    ../src/qp_comm.c
+    ../src/qp_common.c
 
 HEADERS += \
     ../src/card.h \
@@ -26,7 +26,7 @@ HEADERS += \
     ../src/mj.h \
     ../src/mj_algo.h \
     ../src/mjhz.h \
-    ../src/qp_comm.h
+    ../src/qp_common.h
 
 unix {
     target.path = /usr/lib

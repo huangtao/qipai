@@ -1,5 +1,5 @@
 ﻿#include "mj.h"
-#include "qp_comm.h"
+#include "qp_common.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>

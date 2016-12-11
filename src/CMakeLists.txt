@@ -6,22 +6,20 @@
 #
 
 # Set projectname
-project(libqp)
+project(libqipai)
 
 # CMake policies
 cmake_minimum_required(VERSION 2.8)
 
 # define all source files
 set(sources
+    qp_common.c
+    mj.c
+    mj_algo.c
+    mjhz.c
     card.c
-    hand.c
-    deck.c
-    hand_type.c
-    card_player.c
-    sort_card.c
-    ddz.c
+    card_algo.c
     gp.c
-    texas.c
 )
 
 # defile all header files

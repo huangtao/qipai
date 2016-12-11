@@ -10,7 +10,7 @@
 extern "C" {
 #endif
 
-#include "qp_comm.h"
+#include "qp_common.h"
 #include <time.h>
 
 /*

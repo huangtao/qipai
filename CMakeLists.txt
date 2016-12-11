@@ -6,7 +6,7 @@
 #
 
 # Set projectname 
-project(libqp)
+project(libqipai)
 
 # CMake policies
 cmake_minimum_required(VERSION 2.8)
