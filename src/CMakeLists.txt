@@ -41,7 +41,8 @@ source_group("Header Files" FILES ${headers})
 #libqipai-d.a for debug
 #set(CMAKE_DEBUG_POSTFIX -d)
 
-add_library(qipai ${sources} ${headers})
+# 生成静态库
+add_library(qipai STATIC ${sources} ${headers})
 #add_library(libqipai SHARED ${sources} ${headers})
 #add_library(libqipai-s STATIC ${sources} ${headers})
 #set_target_properties(libqipai-s PROPERTIES OUTPUT_NAME "libqipai" PREFIX "lib")
