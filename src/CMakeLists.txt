@@ -6,7 +6,7 @@
 #
 
 # Set projectname
-project(libqipai)
+project(qipai)
 
 # CMake policies
 cmake_minimum_required(VERSION 2.8)
@@ -24,17 +24,14 @@ set(sources
 
 # defile all header files
 set(headers
-    ht_lch.h
-    card.h
-    hand.h
     qipai.h
-    deck.h
-    hand_type.h
-    card_player.h
-    sort_card.h
-    ddz.h
+    qp_common.h
+    mj.h
+    mj_algo.h
+    mjhz.h
+    card.h
+    card_algo.h
     gp.h
-    texas.h
 )
 
 # add all .h files to a group(visual studio)
@@ -44,11 +41,11 @@ source_group("Header Files" FILES ${headers})
 #libqipai-d.a for debug
 #set(CMAKE_DEBUG_POSTFIX -d)
 
-add_library(libqp ${sources} ${headers})
+add_library(qipai ${sources} ${headers})
 #add_library(libqipai SHARED ${sources} ${headers})
 #add_library(libqipai-s STATIC ${sources} ${headers})
 #set_target_properties(libqipai-s PROPERTIES OUTPUT_NAME "libqipai" PREFIX "lib")
 
 # add the install targets
-install(TARGETS libqp DESTINATION lib)
+install(TARGETS qipai DESTINATION lib)
 install(FILES ${headers} DESTINATION include)
