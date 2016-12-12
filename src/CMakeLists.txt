@@ -47,6 +47,19 @@ add_library(qipai STATIC ${sources} ${headers})
 #add_library(libqipai-s STATIC ${sources} ${headers})
 #set_target_properties(libqipai-s PROPERTIES OUTPUT_NAME "libqipai" PREFIX "lib")
 
+# link
+target_link_libraries(qipai m)
+
+if(ANDROID)
+message(STATUS "android doesn't need ARCHIVE_OUTPUT_DIRECTORY")
+else(ANDROID)
+set_target_properties(qipai
+        PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        )
+endif(ANDROID)
+
 # add the install targets
 install(TARGETS qipai DESTINATION lib)
 install(FILES ${headers} DESTINATION include)
