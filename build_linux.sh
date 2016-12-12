@@ -1,6 +1,9 @@
 #!/bin/sh
-
+# 为了同时构建32位和64位
+# 我们需要安装必要的包
+# 32位时指定CXX_FLAGS = m32
 sudo apt-get install libc6-dev-i386
+sudo apt-get install lib32stdc++6
 
 LIBNAME="qipai"
 

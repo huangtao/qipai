@@ -47,9 +47,10 @@ add_library(qipai STATIC ${sources} ${headers})
 #add_library(libqipai-s STATIC ${sources} ${headers})
 #set_target_properties(libqipai-s PROPERTIES OUTPUT_NAME "libqipai" PREFIX "lib")
 
-# link
+# 链接库
 target_link_libraries(qipai m)
 
+# 设置输出目录
 if(ANDROID)
 message(STATUS "android doesn't need ARCHIVE_OUTPUT_DIRECTORY")
 else(ANDROID)
