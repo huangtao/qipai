@@ -139,7 +139,7 @@ int mj_trim(int* pais, int len)
 {
     int i,n;
     int* p;
-    int temp[len];  /* c99 */
+    int temp[32];
 
     if (len > 32)
         return 0;

@@ -1,17 +1,8 @@
-#
-# A library for poker and majang application.
-# It's provide common poker and majang algorithm.
-#
-# Copyright (C) 2013 Huang Tao <huangtao117@gmail.com>
-#
+# 版本号
+set(qipai_VERSION_MAJOR 1)
+set(qipai_VERSION_MINOR 0)
 
-# Set projectname
-project(qipai)
-
-# CMake policies
-cmake_minimum_required(VERSION 2.8)
-
-# define all source files
+# 源文件
 set(sources
     qp_common.c
     mj.c
@@ -22,7 +13,7 @@ set(sources
     gp.c
 )
 
-# defile all header files
+# 头文件
 set(headers
     qipai.h
     qp_common.h
@@ -33,6 +24,9 @@ set(headers
     card_algo.h
     gp.h
 )
+
+# 目录下的源文件保存到变量
+aux_source_directory(. DIR_LIB_SRCS)
 
 # add all .h files to a group(visual studio)
 source_group("Header Files" FILES ${headers})
@@ -48,7 +42,9 @@ add_library(qipai STATIC ${sources} ${headers})
 #set_target_properties(libqipai-s PROPERTIES OUTPUT_NAME "libqipai" PREFIX "lib")
 
 # 链接库
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 target_link_libraries(qipai m)
+endif(CMAKE_SYSTEM_NAME MATCHES "Linux")
 
 # 设置输出目录
 if(ANDROID)

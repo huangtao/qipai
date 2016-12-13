@@ -45,8 +45,8 @@ typedef struct mjhz_player_s {
     int discard_index;
     mj_meld_t meld[MJHZ_MAX_MELD];      /* 已吃碰杠 */
     int meld_index;
-    int pai_peng[MJHZ_LEN_JS];          /* 不能弃先碰后,!=1不能碰*/
-    int pai_gang[4];    /* 杠牌信息 */
+    int pai_peng[MJHZ_LEN_JS];			/* 不能弃先碰后,!=1不能碰 */
+	int pai_gang[4];	/* 杠牌信息 */
     int keep_gang;      /* 连续杠 */
     int pass_hu;        /* 漏胡标记 */
     mjhz_hu_t hu;       /* 胡牌信息 */

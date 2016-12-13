@@ -677,7 +677,7 @@ int mjhz_can_gang(mjhz_t* mj, int player_no)
         return 0;
     player = &mj->players[player_no];
     num = 0;
-    memset(player->pai_gang, 0, sizeof(int) * 4);
+    memset(player->pai_gang, 0, sizeof(player->pai_gang));
     if (mj->cai_piao_no != -1) {
         if (!mj->enable_cp_gang) {
             if (mj->cai_piao_no != player_no)
