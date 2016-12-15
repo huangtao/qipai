@@ -232,6 +232,9 @@ void mjhz_start(mjhz_t* mj)
     mj->logic_state = lsDiscard;
     time(&mj->time_start);
     mj->inning++;
+    if (mj->inning > 1) {
+        mj->dealer_no = mjhz_get_next(mj, mj->dealer_no);
+    }
 
     mj->dice[0] = rand() % 6 + 1;
     mj->dice[1] = rand() % 6 + 1;
@@ -1466,13 +1469,13 @@ void mjhz_next_player(mjhz_t* mj)
         mj->curr_player_no = 0;
 }
 
-int mjhz_get_next(mjhz_t* mj)
+int mjhz_get_next(mjhz_t* mj, int player_no)
 {
     int next_no;
 
     if (!mj)
         return -1;
-    next_no = mj->curr_player_no + 1;
+    next_no = player_no + 1;
     if (next_no >= mj->player_num)
         next_no = 0;
 
