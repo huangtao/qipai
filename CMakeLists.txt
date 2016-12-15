@@ -8,7 +8,7 @@
 # CMake版本要求
 cmake_minimum_required(VERSION 2.8)
 
-# 项目名称 
+# 项目名称
 project(qipai)
 
 MESSAGE(STATUS "operation system is ${CMAKE_SYSTEM}")
@@ -23,4 +23,6 @@ endif(LINUX32)
 
 # 包含子目录
 add_subdirectory(src)
+if(!IOS)
 add_subdirectory(test)
+endif(!IOS)
