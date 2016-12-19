@@ -198,6 +198,7 @@ void mjhz_init(mjhz_t* mj, int mode, int player_num)
         mj->pf_seat_no = p4_seat_no;
     }
     mj->game_state = GAME_END;
+    mj->hu_player_no = -1;
     mj->curr_player_no = -1;
     mj->first_player_no = -1;
 
@@ -233,7 +234,20 @@ void mjhz_start(mjhz_t* mj)
     time(&mj->time_start);
     mj->inning++;
     if (mj->inning > 1) {
-        mj->dealer_no = mjhz_get_next(mj, mj->dealer_no);
+        if (mj->hu_player_no != mj->dealer_no &&
+                mj->hu_player_no != -1) {
+            /* 闲家胡,换庄 */
+            mj->dealer_no = mj->hu_player_no;
+            mj->lao_z = 1;
+        } else {
+            /* 庄家胡或流局->连庄 */
+            mj->lao_z++;
+            if (mj->lao_z > 3)
+                mj->lao_z = 3;
+        }
+    } else {
+        /* 第一局随机庄 */
+        mj->dealer_no = rand() % mj->player_num;
     }
 
     mj->dice[0] = rand() % 6 + 1;
@@ -580,6 +594,7 @@ void mjhz_referee(mjhz_t *mj)
     if (mjhz_pickup(mj, 0) == -2) {
         /* 流局 */
         mj->game_state = GAME_END;
+        mj->hu_player_no = -1;
         if (mj->pf_event)
             mj->pf_event(mjEventLiu, 0, 0);
     }
@@ -659,6 +674,8 @@ int mjhz_can_peng(mjhz_t* mj, int player_no)
     player = &mj->players[player_no];
     if (player->hand_js[mj->discard_pai] >= 2)
         player->pai_peng[mj->discard_pai]++;
+    else
+        player->pai_peng[mj->discard_pai] = 0;
 
     if (player->pai_peng[mj->discard_pai] == 1)
         player->wait_peng = 1;
@@ -1407,9 +1424,6 @@ int mjhz_hu(mjhz_t* mj, int player_no)
 
     bei = pow(2, player->hu.fan);
     if (player_no == mj->dealer_no) {
-        mj->lao_z++;
-        if (mj->lao_z > 3)
-            mj->lao_z = 3;
         for (i = 0; i < mj->player_num; ++i) {
             if (i == mj->dealer_no) {
                 mj->players[i].win_lose =
@@ -1419,7 +1433,6 @@ int mjhz_hu(mjhz_t* mj, int player_no)
             }
         }
     } else {
-        mj->lao_z = 1;
         x_bei = bei / 2;
         for (i = 0; i < mj->player_num; ++i) {
             if (i == mj->dealer_no)

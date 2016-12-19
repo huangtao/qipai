@@ -67,7 +67,7 @@ typedef struct mjhz_s {
     int game_state;         /* game state */
     int logic_state;        /* mj logic state */
     int round;
-    int inning;
+    int inning;             /* 局数 */
     int player_num;         /* 2 ~ 4 player */
     int dealer_no;          /* 庄家 dealer no. */
     int first_player_no;    /* first player no. */
