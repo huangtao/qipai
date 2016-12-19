@@ -1422,7 +1422,7 @@ int mjhz_hu(mjhz_t* mj, int player_no)
     if (player->hu.cai_piao)
         player->hu.fan += player->hu.cai_piao;
 
-    bei = pow(2, player->hu.fan);
+    bei = (int)pow(2, player->hu.fan);
     if (player_no == mj->dealer_no) {
         for (i = 0; i < mj->player_num; ++i) {
             if (i == mj->dealer_no) {

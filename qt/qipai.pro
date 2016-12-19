@@ -37,6 +37,18 @@ macx {
 QMAKE_MAC_SDK = macosx10.12
 }
 
+# vc默认不支持utf-8无BOM中文
+msvc:QMAKE_CFLAGS +=/source-charset:utf-8
+msvc:QMAKE_CXXFLAGS +=/source-charset:utf-8
+msvc:DEFINES += _CRT_SECURE_NO_WARNINGS
+#gcc:
+
+contains(QT_ARCH, i386) {
+    message("32-bit")
+} else {
+    message("64-bit")
+}
+
 DISTFILES += \
     ../src/CMakeLists.txt \
     ../src/Makefile

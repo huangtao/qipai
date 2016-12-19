@@ -22,19 +22,18 @@ extern "C" {
 #define QIPAI_STATE             -6
 #define QIPAI_RULE              -7
 
-/* 游戏状态 */
+/* game state */
 typedef enum gamestate_e {
     GAME_END = 0,   /* game end */
     GAME_PLAY       /* playing */
 }GAME_STATE;
 
-/* 服务器/客户端模式 */
+/* server or client */
 typedef enum game_mode_e {
     GAME_MODE_SERVER = 0,
     GAME_MODE_CLIENT
 }GAME_MODE;
 
-/* 座位号定义 */
 typedef enum seat_absolute {
     stNo_1,
     stEast = stNo_1,
@@ -46,7 +45,7 @@ typedef enum seat_absolute {
     stNorth = stNo_4
 }seatAbsolute;
 
-/* 对应数组编号0,1,2,3 */
+/* seat no <-> array index 0,1,2,3 */
 typedef enum seat_relative {
     stSelf, stRight, stOpposit, stLeft
 }seatRelative;

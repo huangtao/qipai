@@ -327,7 +327,7 @@ int cards_from_string(card_t* cards, int len, const char* str)
 
     if (!cards || !str)
         return 0;
-    len_str = strlen(str);
+    len_str = (int)strlen(str);
 	if (len_str < 2)
         return 0;
     memset(cards, 0, sizeof(card_t) * len);
