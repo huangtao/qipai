@@ -26,14 +26,13 @@ set(headers
 )
 
 # 目录下的源文件保存到变量
-aux_source_directory(. DIR_LIB_SRCS)
+aux_source_directory(. MY_SRCS)
 
 # add all .h files to a group(visual studio)
 source_group("Header Files" FILES ${headers})
 
-#libqipai.a for release
-#libqipai-d.a for debug
-#set(CMAKE_DEBUG_POSTFIX -d)
+# 调试版本加_d
+set(CMAKE_DEBUG_POSTFIX _d)
 
 # 生成静态库
 add_library(qipai STATIC ${sources} ${headers})

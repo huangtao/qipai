@@ -6,7 +6,11 @@
 
 QT       -= core gui
 
-TARGET = qipai
+CONFIG(debug, debug | release) {
+    TARGET = qipai_d
+} else {
+    TARGET = qipai
+}
 TEMPLATE = lib
 CONFIG += staticlib
 
@@ -36,6 +40,8 @@ unix {
 macx {
 QMAKE_MAC_SDK = macosx10.12
 }
+
+DEBUG_POSTFIX=_d
 
 # vc默认不支持utf-8无BOM中文
 msvc:QMAKE_CFLAGS +=/source-charset:utf-8
