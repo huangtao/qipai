@@ -11,6 +11,7 @@ CONFIG(debug, debug | release) {
 } else {
     TARGET = qipai
 }
+#TARGET = qipai
 TEMPLATE = lib
 CONFIG += staticlib
 
