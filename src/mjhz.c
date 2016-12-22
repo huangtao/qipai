@@ -300,7 +300,10 @@ void mjhz_start(mjhz_t* mj)
             % mj->player_num;
         mj->deck_deal_index = seat * 17 * 2
             + (mj->dice[0] + mj->dice[1]) * 2;
+        mj->deck_deal_index = mj->deck_deal_index % mj->deck_all_num;
         mj->deck_deal_gang = mj->deck_deal_index - 1; /* 杠抓牌 */
+        if (mj->deck_deal_gang < 0)
+            mj->deck_deal_gang += mj->deck_all_num;
         mj->deck_deal_end = (mj->deck_deal_index + mj->deck_all_num - 20)
                 % mj->deck_all_num;
 
