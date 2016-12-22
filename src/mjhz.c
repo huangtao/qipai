@@ -1395,7 +1395,7 @@ int mjhz_hu(mjhz_t* mj, int player_no)
     if (mj->players[player_no].wait_hu == 0)
         return -3;
     player = &mj->players[player_no];
-    if (mj->curr_player_no == player_no) {
+    if (mj->discard_pai == 0) {
         /* 自摸、杠开 */
         player->hu.pao_no = -1;
         player->hu.gang = player->keep_gang;
@@ -1406,6 +1406,8 @@ int mjhz_hu(mjhz_t* mj, int player_no)
         player->hand[MJHZ_MAX_HAND-1] = mj->discard_pai;
         player->hand_js[mj->discard_pai]++;
         player->hu.pao_no = mj->discarded_no;
+        mj->discard_pai = 0;
+        mj->discarded_no = -1;
     }
     mj->hu_player_no = player_no;
     mj->game_state = GAME_END;
