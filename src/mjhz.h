@@ -32,6 +32,7 @@ typedef struct mjhz_hu_s {
     int gang;       /* 胡之前连杠数量 */
     int cai_piao;	/* 财飘次数 */
     int pao_no;     /* 点炮选手,-1表示自摸 */
+    int joker_eyes; /* 将牌中有财神 */
 }mjhz_hu_t;
 
 typedef struct mjhz_player_s {
@@ -76,7 +77,7 @@ typedef struct mjhz_s {
     int discard_pai;        /* 当前打出的麻将牌 */
     int discarded_no;       /* 弃牌选手 */
     int gang_pai;           /* 当前杠牌 */
-    int joker;              /* 百搭(财神) */
+    int joker;              /* 财神(百搭) */
     int flag_liu;           /* 流局标记 */
     int debug;              /* output debug info */
     int step_by_step;       /* for debug */

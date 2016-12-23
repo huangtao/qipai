@@ -847,6 +847,7 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
     player->hu.is_qg = 0;
     player->hu.is_tianhu = 0;
     player->hu.pair7_h4 = 0;
+    player->hu.joker_eyes = 0;
     /* 漏胡后不能胡 */
     if (player->pass_hu > 0)
         return 0;
@@ -980,6 +981,7 @@ int mjhz_can_hu(mjhz_t* mj, int player_no)
 				js_joker[i] = 0;
                 if (mjhz_all_melded_joker(js_joker, n_joker - 1) > 0) {
                     player->wait_hu = 1;
+                    player->hu.joker_eyes = 1;
 					return 1;
                 }
             } else {
@@ -1196,6 +1198,9 @@ int mjhz_chi(mjhz_t* mj, int player_no, int pai1, int pai2)
     if (mj->pf_event)
         mj->pf_event(mjEventChi, player_no, 0);
 
+    /* 吃碰后可以杠(做杠爆) */
+    mjhz_can_gang(mj, player_no);
+
     return 1;
 }
 
@@ -1247,6 +1252,9 @@ int mjhz_peng(mjhz_t* mj, int player_no)
     mj->sec_wait = WAITTIME_DISCARD;
     if (mj->pf_event)
         mj->pf_event(mjEventPeng, player_no, 0);
+
+    /* 吃碰后可以杠(做杠爆) */
+    mjhz_can_gang(mj, player_no);
 
     return 1;
 }
