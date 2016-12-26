@@ -178,6 +178,7 @@ typedef struct mjpai_s {
 typedef struct mj_meld_s {
     int type;       /* 面子类型 */
     int pai_id;     /* 特征牌 */
+    int no;         /* 吃3摊判定 */
 }mj_meld_t;
 
 /* 麻将事件函数指针 */
