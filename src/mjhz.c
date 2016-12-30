@@ -172,6 +172,65 @@ int _check_peng(mjhz_t* mj, int player_no)
     return 1;
 }
 
+/* 承包情况计算 */
+int _calc_cb(mjhz_t* mj)
+{
+    int i,n;
+    mjhz_player_t* player;
+    int mn[MJHZ_MAX_PLAYERS];
+
+    if (!mj)
+        return 0;
+    if (mj->hu_player_no == -1)
+        return 0;
+    player = &mj->players[mj->hu_player_no];
+    if (player->meld_index < 3)
+        return 0;
+    n = 0;
+    memset(mn, 0, sizeof(mn));
+    for (i = 0; i < player->meld_index; ++i) {
+        if (player->meld[i].no == mj->hu_player_no)
+            continue;
+        mn[player->meld[i].no]++;
+        if(mn[player->meld[i].no] >= 3) {
+            n++;
+            mj->players[player->meld[i].no].need_cb = 1;
+        }
+    }
+    return n;
+}
+
+/* 倒承包情况计算 */
+int _calc_dcb(mjhz_t* mj)
+{
+    int i,j,n;
+    mjhz_player_t* player;
+    int mn[MJHZ_MAX_PLAYERS];
+
+    if (!mj)
+        return 0;
+    if (mj->hu_player_no == -1)
+        return 0;
+    n = 0;
+    for (i = 0; i < mj->player_num; ++i) {
+        if (i == mj->hu_player_no) continue;
+        player = &mj->players[i];
+        if (player->meld_index < 3)
+            continue;
+        memset(mn, 0, sizeof(mn));
+        for (j = 0; j < player->meld_index; ++j) {
+            if (player->meld[i].no != mj->hu_player_no)
+                continue;
+            mn[i]++;
+            if(mn[i] >= 3) {
+                player->need_dcb = 1;
+                n++;
+            }
+        }
+    }
+    return n;
+}
+
 void mjhz_init(mjhz_t* mj, int mode, int player_num)
 {
     int i,j,n;
@@ -290,6 +349,8 @@ void mjhz_start(mjhz_t* mj)
         memset(mj->players[i].discard, 0,
                sizeof(mj->players[i].discard));
         mj->players[i].win_lose = 0;
+        mj->players[i].need_cb = 0;
+        mj->players[i].need_dcb = 0;
     }
 
     if (mj->mode == GAME_MODE_SERVER) {
@@ -1398,10 +1459,9 @@ int mjhz_gang(mjhz_t* mj, int player_no, int pai)
 
 int mjhz_hu(mjhz_t* mj, int player_no)
 {
-    int i,bei;
-    int cb_no;
-    int cb[MJHZ_MAX_PLAYERS];
+    int i,bei,flag_cb;
     mjhz_player_t* player;
+    unsigned int temp,win_total;
 
     if (!mj)
         return -1;
@@ -1442,62 +1502,85 @@ int mjhz_hu(mjhz_t* mj, int player_no)
     if (player->hu.cai_piao)
         player->hu.fan += player->hu.cai_piao;
 
-    /* 有承包吗 */
-    cb_no = -1;
-    if (player->meld_index >= 2) {
-        memset(cb, 0, sizeof(cb));
-        for (i = 0; i < player->meld_index; ++i) {
-            if (player->meld[i].no == player_no)
-                continue;
-            cb[player->meld[i].no]++;
-            if(cb[player->meld[i].no] >= 3) {
-                cb_no = player->meld[i].no;
-                break;
-            }
-        }
-    }
+    /* 承包和倒承包 */
+    flag_cb = _calc_cb(mj);
+    flag_cb |= _calc_dcb(mj);
 
     bei = (int)pow(2, player->hu.fan);
+    win_total = 0;
     if (player->hu.pao_no == -1) {
         /* 自摸 */
         if (mj->hu_player_no == mj->dealer_no) {
             /* 庄家自摸 */
-            if (cb_no == -1) {
+            if (flag_cb) {
+                /* 有承包或倒承包 */
+                temp  = (mj->player_num - 1) * bei;
                 for (i = 0; i < mj->player_num; ++i) {
-                    if (i != mj->dealer_no) {
-                        mj->players[i].win_lose = -1 * bei;
+                    if (i == mj->hu_player_no) continue;
+                    if (mj->players[i].need_cb) {
+                        mj->players[i].win_lose = -temp;
+                        win_total += temp;
+                    } else if (mj->players[i].need_dcb) {
+                        mj->players[i].win_lose = -2 * temp;
+                        win_total += 2 * temp;
                     }
                 }
             } else {
-                mj->players[cb_no].win_lose =
-                        -1 * (mj->player_num - 1) * bei;
+                for (i = 0; i < mj->player_num; ++i) {
+                    if (i != mj->dealer_no) {
+                        mj->players[i].win_lose = -bei;
+                        win_total += bei;
+                    }
+                }
             }
-            mj->players[mj->dealer_no].win_lose =
-                    (mj->player_num - 1) * bei;
+            mj->players[mj->dealer_no].win_lose = win_total;
         } else {
             /* 闲家自摸 */
-            if (cb_no == -1) {
+            if (flag_cb) {
+                temp = -(bei + (mj->player_num - 2));
                 for (i = 0; i < mj->player_num; ++i) {
-                    if (i == mj->dealer_no)
-                        mj->players[i].win_lose = -1 * bei;
-                    else if (i != player_no)
-                        mj->players[i].win_lose = -1;
+                    if (i == mj->hu_player_no) continue;
+                    if (mj->players[i].need_cb) {
+                        mj->players[i].win_lose = -temp;
+                        win_total += temp;
+                    } else if (mj->players[i].need_dcb) {
+                        mj->players[i].win_lose = -2 * temp;
+                        win_total += 2 * temp;
+                    }
                 }
             } else {
-                mj->players[cb_no].win_lose =
-                        -1 * (bei + (mj->player_num - 2));
+                for (i = 0; i < mj->player_num; ++i) {
+                    if (i == mj->dealer_no) {
+                        mj->players[i].win_lose = -1 * bei;
+                        win_total += bei;
+                    }
+                    else if (i != player_no) {
+                        mj->players[i].win_lose = -1;
+                        win_total += 1;
+                    }
+                }
             }
-            mj->players[player_no].win_lose =
-                    bei + (mj->player_num - 2);
+            mj->players[player_no].win_lose = win_total;
         }
     } else {
         /* 捉冲 */
-        if (cb_no >= 0 && cb_no < mj->player_num) {
-            mj->players[cb_no].win_lose = -1 * bei;
+        if (flag_cb) {
+            temp = bei;
+            for (i = 0; i < mj->player_num; ++i) {
+                if (i == mj->hu_player_no) continue;
+                if (mj->players[i].need_cb) {
+                    mj->players[i].win_lose = -temp;
+                    win_total += temp;
+                } else if (mj->players[i].need_dcb) {
+                    mj->players[i].win_lose = -2 * temp;
+                    win_total += 2 * temp;
+                }
+            }
         } else {
-            mj->players[player->hu.pao_no].win_lose = -1 * bei;
+            mj->players[player->hu.pao_no].win_lose = -bei;
+            win_total = bei;
         }
-        mj->players[mj->hu_player_no].win_lose = bei;
+        mj->players[mj->hu_player_no].win_lose = win_total;
     }
 
     if (mj->pf_event)

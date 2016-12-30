@@ -61,6 +61,8 @@ typedef struct mjhz_player_s {
     int req_peng;
     int req_gang;
     int req_hu;
+    int need_cb;        /* 是否需要承包 */
+    int need_dcb;       /* 是否需要倒承包 */
 }mjhz_player_t;
 
 typedef struct mjhz_s {
