@@ -1537,7 +1537,7 @@ int mjhz_hu(mjhz_t* mj, int player_no)
         } else {
             /* 闲家自摸 */
             if (flag_cb) {
-                temp = -(bei + (mj->player_num - 2));
+                temp = bei + (mj->player_num - 2);
                 for (i = 0; i < mj->player_num; ++i) {
                     if (i == mj->hu_player_no) continue;
                     if (mj->players[i].need_cb) {
