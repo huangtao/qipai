@@ -125,7 +125,7 @@ typedef enum pai_id {
     /* 字牌 */
     PAI_DF, PAI_NF, PAI_XF, PAI_BF, PAI_ZHONG, PAI_FA, PAI_BAI,
     /* 花牌 */
-    PAI_MEI, PAI_LAN, PAI_ZHU, PAI_JU, PAI_CUN, PAI_XIA, PAI_QIU, PAI_DONG,
+    PAI_CUN, PAI_XIA, PAI_QIU, PAI_DONG,PAI_MEI, PAI_LAN, PAI_ZHU, PAI_JU,
     /* 特殊 */
     PAI_UNKNOW = 50
 }paiID;
