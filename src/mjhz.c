@@ -231,7 +231,7 @@ int _calc_dcb(mjhz_t* mj)
     return n;
 }
 
-void mjhz_init(mjhz_t* mj, int mode, int player_num)
+void mjhz_init(mjhz_t* mj, int mode)
 {
     int i,j,n;
 
@@ -248,14 +248,9 @@ void mjhz_init(mjhz_t* mj, int mode, int player_num)
         mj->mode = GAME_MODE_SERVER;
     else
         mj->mode = GAME_MODE_CLIENT;
-    mj->player_num = player_num;
-    if (player_num == 2) {
-        mj->pf_relative_seat = p2_relative_seat;
-        mj->pf_seat_no = p2_seat_no;
-    } else {
-        mj->pf_relative_seat = p4_relative_seat;
-        mj->pf_seat_no = p4_seat_no;
-    }
+    mj->player_num = 4;
+    mj->pf_relative_seat = p4_relative_seat;
+    mj->pf_seat_no = p4_seat_no;
     mj->game_state = GAME_END;
     mj->hu_player_no = -1;
     mj->curr_player_no = -1;
@@ -280,12 +275,22 @@ void mjhz_init(mjhz_t* mj, int mode, int player_num)
     }
 }
 
-void mjhz_start(mjhz_t* mj)
+void mjhz_start(mjhz_t* mj, int player_num)
 {
     int i,j,k,seat,n;
 
     if (!mj)
         return;
+    if (mj->player_num != player_num) {
+        mj->player_num = player_num;
+        if (player_num == 2) {
+            mj->pf_relative_seat = p2_relative_seat;
+            mj->pf_seat_no = p2_seat_no;
+        } else {
+            mj->pf_relative_seat = p4_relative_seat;
+            mj->pf_seat_no = p4_seat_no;
+        }
+    }
 
     mj->round = 0;
     mj->game_state = GAME_PLAY;

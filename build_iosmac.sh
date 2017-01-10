@@ -17,6 +17,7 @@ cmake -DCMAKE_TOOLCHAIN_FILE=../toolchain/iOS.cmake -DCMAKE_IOS_DEVELOPER_ROOT=/
 #xcodebuild -project qipai.xcodeproj -alltargets -sdk iphonesimulator"${IOS_SDK_VERSION}" -configuration Release
 #xcodebuild -project qipai.xcodeproj -alltargets -sdk iphonesimulator -arch i386 -arch x86_64 -configuration Release
 xcodebuild -project qipai.xcodeproj -alltargets -sdk iphonesimulator -arch x86_64 -configuration Release
+xcodebuild -project qipai.xcodeproj -alltargets -sdk iphonesimulator -arch x86_64 -configuration Debug
 
 cd ..
 mkdir -p lib/x86_64
@@ -26,6 +27,7 @@ cp build.ios/lib/Release/lib"${LIBNAME}".a lib/x86_64
 #xcodebuild -project build.ios/qipai.xcodeproj -alltargets -sdk iphoneos"${IOS_SDK_VERSION}" -configuration Release
 #xcodebuild -project build.ios/qipai.xcodeproj -alltargets -sdk iphoneos -arch armv7 -arch armv7s -configuration Release
 xcodebuild -project build.ios/qipai.xcodeproj -alltargets -sdk iphoneos -arch arm64 -configuration Release
+xcodebuild -project build.ios/qipai.xcodeproj -alltargets -sdk iphoneos -arch arm64 -configuration Debug
 
 mkdir -p lib/arm64
 cp build.ios/lib/Release/lib"${LIBNAME}".a lib/arm64

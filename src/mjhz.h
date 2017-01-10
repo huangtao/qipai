@@ -114,10 +114,10 @@ typedef struct mjhz_s {
 }mjhz_t;
 
 /* init a mjhz game object */
-void mjhz_init(mjhz_t* mj, int mode, int player_num);
+void mjhz_init(mjhz_t* mj, int mode);
 
 /* start a new game */
-void mjhz_start(mjhz_t* mj);
+void mjhz_start(mjhz_t* mj, int player_num);
 
 /* sort a hand */
 void mjhz_sort(int* pais, int len);
