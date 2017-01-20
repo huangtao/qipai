@@ -612,6 +612,8 @@ int mjhz_discard(mjhz_t* mj, int player_no, int pai_id)
     }
     else
         mj->sec_wait = 0;
+    if (mj->pf_event)
+        mj->pf_event(mjEventDiscard, player_no, pai_id);
 
     return 1;
 }

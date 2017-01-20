@@ -160,6 +160,7 @@ typedef enum mj_logic_state {
 /* 麻将事件 */
 typedef enum mj_evnet_type {
     mjEventPickup,
+    mjEventDiscard,
     mjEventChi,
     mjEventPeng,
     mjEventGang,
